@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAME HUB</title>
+<style>
+  :root{--bg:#05050f;--cyan:#00fff2;--magenta:#ff2fd0;--yellow:#ffe600;--green:#39ff14;--orange:#ff6a00;--red:#ff003c;--purple:#9d4edd;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;
+    background:radial-gradient(ellipse at 20% 0%,#14143a 0%,transparent 55%),radial-gradient(ellipse at 80% 100%,#2a0a3a 0%,transparent 55%),var(--bg);
+    font-family:'Consolas','Courier New',monospace;color:#fff;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:repeating-linear-gradient(0deg,rgba(0,255,242,.04) 0px,rgba(0,255,242,.04) 1px,transparent 1px,transparent 3px);}
+  header{position:relative;z-index:1;text-align:center;padding:50px 20px 20px;}
+  header h1{margin:0;font-size:clamp(38px,9vw,78px);letter-spacing:10px;color:var(--cyan);
+    text-shadow:0 0 12px var(--cyan),0 0 34px var(--cyan),0 0 70px rgba(0,255,242,.5);animation:flicker 4s infinite;}
+  @keyframes flicker{0%,19%,21%,23%,25%,54%,56%,100%{opacity:1;}20%,22%,24%,55%{opacity:.72;}}
+  header p{margin:14px 0 0;color:var(--magenta);letter-spacing:4px;font-size:clamp(11px,2.4vw,15px);text-shadow:0 0 10px var(--magenta);}
+  .sec-lbl{position:relative;z-index:1;text-align:center;font-size:11px;letter-spacing:4px;color:#445;margin:22px 0 0;padding:0 20px;}
+  #grid{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:16px 20px 70px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px;}
+  .card{display:block;text-decoration:none;color:inherit;background:rgba(255,255,255,.03);
+    border:2px solid var(--c);border-radius:10px;padding:22px 20px 20px;position:relative;overflow:hidden;
+    box-shadow:0 0 16px -4px var(--c),inset 0 0 40px -25px var(--c);
+    transition:transform .18s ease,box-shadow .18s ease,background .18s ease;}
+  .card:hover{transform:translateY(-6px) scale(1.02);background:rgba(255,255,255,.07);box-shadow:0 0 34px -2px var(--c),inset 0 0 60px -20px var(--c);}
+  .card .icon{font-size:40px;line-height:1;display:block;margin-bottom:12px;filter:drop-shadow(0 0 8px var(--c));}
+  .card h2{margin:0 0 8px;font-size:19px;letter-spacing:3px;color:var(--c);text-shadow:0 0 10px var(--c);}
+  .card p{margin:0;font-size:12.5px;line-height:1.6;color:#b9c4cc;}
+  .card .play{margin-top:16px;display:inline-block;font-size:12px;letter-spacing:3px;color:var(--c);border:1px solid var(--c);padding:7px 15px;border-radius:4px;}
+  .card:hover .play{background:var(--c);color:#000;}
+  .card .tag{position:absolute;top:12px;right:12px;font-size:10px;letter-spacing:2px;color:#000;background:var(--c);padding:3px 8px;border-radius:3px;font-weight:bold;}
+  footer{position:relative;z-index:1;text-align:center;padding:0 20px 40px;color:#55606b;font-size:12px;letter-spacing:2px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>GAME HUB</h1>
+  <p>◄ SELECT YOUR GAME ►</p>
+</header>
+<div class="sec-lbl">— 6 GAMES AVAILABLE —</div>
+<div id="grid">
+
+  <a class="card" href="platformer.html" style="--c:var(--green)">
+    <span class="tag">UPDATED</span>
+    <span class="icon">🏃</span>
+    <h2>NEON RUNNER</h2>
+    <p>20-level precision platformer. Double jump, wall-slide, wall-jump. Pause, settings: retro mode, low motion, accessibility (slow hazards).</p>
+    <span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card" href="galaxia.html" style="--c:var(--cyan)">
+    <span class="tag">60 WAVES</span>
+    <span class="icon">🚀</span>
+    <h2>GALAXIA</h2>
+    <p>60 waves of escalating alien assault. 7 enemy types all shooting back. Boss every 10 waves. 5 power-ups. Hi-score saved.</p>
+    <span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card" href="snake.html" style="--c:var(--magenta)">
+    <span class="tag">DEBUGGED</span>
+    <span class="icon">🐍</span>
+    <h2>NEON SNAKE</h2>
+    <p>3 modes: Classic, Walls Kill, Maze. Buffered input, speed-up levels. Bonus apple, shrink, and speed-boost pickups.</p>
+    <span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card" href="brickbreaker.html" style="--c:var(--yellow)">
+    <span class="tag">DEBUGGED</span>
+    <span class="icon">🧱</span>
+    <h2>BRICK BREAKER</h2>
+    <p>Mouse/touch paddle, multi-HP bricks, accurate circle-vs-brick collision. 5 power-ups including multi-ball and fireball.</p>
+    <span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card" href="blockfall.html" style="--c:var(--orange)">
+    <span class="tag">DEBUGGED</span>
+    <span class="icon">🧩</span>
+    <h2>BLOCK FALL</h2>
+    <p>Full Tetris: 7 tetrominoes, 7-bag randomiser, wall kicks, ghost piece, hold, hard drop, DAS/ARR, combo scoring.</p>
+    <span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card" href="pong.html" style="--c:var(--purple)">
+    <span class="tag">NEW</span>
+    <span class="icon">🏓</span>
+    <h2>PONG ARENA</h2>
+    <p>1P vs CPU or 2-player local. Power-ups: big paddle, speed ball, ghost ball, tiny paddle. CPU gets harder each point. First to 7 wins.</p>
+    <span class="play">▶ PLAY</span>
+  </a>
+
+</div>
+<footer>GAME HUB — BUILT FOR JACK &nbsp;•&nbsp; ALL GAMES SELF-CONTAINED &amp; OFFLINE-READY</footer>
+</body>
+</html>
