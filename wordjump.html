@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WORD JUMP</title>
+<style>
+  html,body{margin:0;height:100%;background:#03030c;font-family:'Consolas','Courier New',monospace;overflow:hidden;color:#00fff2;-webkit-user-select:none;user-select:none;}
+  #wrap{position:relative;width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
+  #hud{display:flex;gap:22px;font-size:14px;letter-spacing:2px;}
+  .lbl{color:#ff2fd0;}.val{color:#ffe600;font-weight:bold;}
+  #clue{font-size:18px;color:#aaa;letter-spacing:3px;text-transform:uppercase;max-width:500px;text-align:center;}
+  #wordDisplay{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  .slot{width:44px;height:54px;border-bottom:3px solid rgba(0,255,242,.4);display:flex;align-items:flex-end;justify-content:center;font-size:26px;font-weight:bold;color:#00fff2;padding-bottom:4px;text-transform:uppercase;transition:border-color .2s;}
+  .slot.correct{border-color:#39ff14;color:#39ff14;text-shadow:0 0 10px #39ff14;}
+  .slot.wrong{border-color:#ff003c;color:#ff003c;animation:shake .3s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}};
+  #keyboard{display:flex;flex-direction:column;gap:8px;align-items:center;}
+  .krow{display:flex;gap:6px;}
+  .key{width:38px;height:46px;border-radius:6px;border:2px solid rgba(0,255,242,.25);background:rgba(0,255,242,.06);
+    color:#00fff2;font-family:inherit;font-size:14px;cursor:pointer;font-weight:bold;letter-spacing:0;}
+  .key:hover{background:rgba(0,255,242,.18);border-color:#00fff2;}
+  .key.used-correct{background:rgba(57,255,20,.2);border-color:#39ff14;color:#39ff14;}
+  .key.used-present{background:rgba(255,230,0,.15);border-color:#ffe600;color:#ffe600;}
+  .key.used-absent{background:rgba(50,50,50,.4);border-color:#333;color:#555;}
+  .key.wide{width:58px;font-size:12px;}
+  #msg{font-size:15px;letter-spacing:3px;color:#ffe600;height:20px;text-align:center;}
+  #overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(2,2,8,.94);z-index:10;padding:20px;}
+  #overlay h1{font-size:clamp(28px,6vw,52px);margin:0;color:#00fff2;letter-spacing:8px;text-shadow:0 0 16px #00fff2,0 0 40px #00fff2;animation:pulse 1.4s infinite;}
+  #overlay h2{font-size:16px;margin:10px 0;color:#ff2fd0;}
+  #overlay p{color:#9fb0ba;font-size:13px;margin:4px 0;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.7;}}
+  .wbtn{cursor:pointer;background:transparent;color:#ffe600;border:2px solid #ffe600;padding:11px 26px;font-family:inherit;font-size:15px;letter-spacing:3px;margin:6px;border-radius:4px;}
+  .wbtn:hover{background:#ffe600;color:#000;}
+  #back{position:absolute;bottom:14px;left:18px;z-index:5;color:#00fff2;text-decoration:none;border:1px solid #00fff2;padding:7px 14px;font-size:12px;letter-spacing:2px;border-radius:4px;}
+  #back:hover{background:#00fff2;color:#000;}
+  #attemptsViz{display:flex;flex-direction:column;gap:4px;align-items:center;min-height:44px;}
+  .atRow{display:flex;gap:6px;}
+  .atCell{width:34px;height:34px;border-radius:5px;border:2px solid #333;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;text-transform:uppercase;}
+  .atCell.c{background:rgba(57,255,20,.2);border-color:#39ff14;color:#39ff14;}
+  .atCell.p{background:rgba(255,230,0,.15);border-color:#ffe600;color:#ffe600;}
+  .atCell.a{background:rgba(50,50,50,.4);border-color:#444;color:#666;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="hud">
+    <span class="lbl">ROUND</span><span class="val" id="round">1</span>
+    <span class="lbl">SCORE</span><span class="val" id="sc">0</span>
+    <span class="lbl">STREAK</span><span class="val" id="streak">0</span>
+    <span class="lbl">GUESSES LEFT</span><span class="val" id="left">6</span>
+  </div>
+  <div id="clue"></div>
+  <div id="attemptsViz"></div>
+  <div id="wordDisplay"></div>
+  <div id="msg"></div>
+  <div id="keyboard"></div>
+</div>
+<a id="back" href="index.html">◄ HUB</a>
+<div id="overlay">
+  <h1>WORD JUMP</h1>
+  <h2>NEON WORDLE</h2>
+  <p>Guess the word — you have 6 attempts.</p>
+  <p>🟢 Right letter, right spot &nbsp;|&nbsp; 🟡 Right letter, wrong spot &nbsp;|&nbsp; ⬛ Not in word</p>
+  <p>A clue is shown for each word. Score more by guessing in fewer tries!</p>
+  <button class="wbtn" id="startBtn" style="margin-top:18px">▶ PLAY</button>
+</div>
+<script>
+(function(){
+const WORDS=[
+  {w:'SPACE',c:'The final frontier'},
+  {w:'LASER',c:'Coherent light weapon'},
+  {w:'ORBIT',c:'Path around a planet'},
+  {w:'COMET',c:'Icy rock with a tail'},
+  {w:'ALIEN',c:'Not from Earth'},
+  {w:'PILOT',c:'Flies the ship'},
+  {w:'FLAME',c:'What rockets leave behind'},
+  {w:'PROBE',c:'Unmanned space explorer'},
+  {w:'BLAST',c:'Rocket launch sound'},
+  {w:'LUNAR',c:'Relating to the moon'},
+  {w:'ASTRO',c:'Star prefix'},
+  {w:'SOLAR',c:'Relating to the sun'},
+  {w:'NEBUL',c:'Cosmic gas cloud (abbr)'},
+  {w:'QUARK',c:'Subatomic particle'},
+  {w:'PIXEL',c:'Screen building block'},
+  {w:'GLYPH',c:'Carved symbol'},
+  {w:'FLARE',c:'Solar eruption'},
+  {w:'STORM',c:'Meteorological chaos'},
+  {w:'VAULT',c:'Protected space'},
+  {w:'GLIDE',c:'Smooth flight mode'},
+  {w:'NEXUS',c:'Central connection point'},
+  {w:'PRISM',c:'Splits light into spectrum'},
+  {w:'CHAOS',c:'Complete disorder'},
+  {w:'DRONE',c:'Unmanned aerial vehicle'},
+  {w:'SURGE',c:'Sudden power increase'},
+  {w:'PHASE',c:'Stage of a cycle'},
+  {w:'SPARK',c:'Ignition starter'},
+  {w:'SWIFT',c:'Very fast'},
+  {w:'TRACE',c:'Follow the path of'},
+  {w:'WARP',c:'Faster than light (4 letters)'},
+];
+
+// Fix WARP to 4 letters - replace with another
+WORDS[WORDS.length-1]={w:'FOCUS',c:'Center of attention'};
+WORDS.push({w:'LOGIC',c:'Reasoned thinking'});
+WORDS.push({w:'NEON',c:'Glowing noble gas (4 letters)'}); // 4-letter for variety — keep all 5
+
+// Keep only 5-letter words
+const WORDLIST=WORDS.filter(o=>o.w.length===5);
+
+const clueEl=document.getElementById('clue'),displayEl=document.getElementById('wordDisplay'),
+      msgEl=document.getElementById('msg'),kbEl=document.getElementById('keyboard'),
+      attEl=document.getElementById('attemptsViz'),overlay=document.getElementById('overlay'),
+      roundEl=document.getElementById('round'),scEl=document.getElementById('sc'),
+      streakEl=document.getElementById('streak'),leftEl=document.getElementById('left');
+
+const ROWS_KB=[['Q','W','E','R','T','Y','U','I','O','P'],['A','S','D','F','G','H','J','K','L'],['ENTER','Z','X','C','V','B','N','M','⌫']];
+let word,clue,guesses,current,keyState,score,streak,round,running=false;
+
+function buildKB(){
+  kbEl.innerHTML='';
+  ROWS_KB.forEach(row=>{
+    const div=document.createElement('div');div.className='krow';
+    row.forEach(k=>{
+      const btn=document.createElement('button');
+      btn.className='key'+(k==='ENTER'||k==='⌫'?' wide':'');
+      btn.textContent=k;btn.dataset.k=k;
+      btn.addEventListener('click',()=>handleKey(k));
+      div.appendChild(btn);
+    });
+    kbEl.appendChild(div);
+  });
+  keyState={};
+}
+
+function startRound(){
+  const entry=WORDLIST[Math.floor(Math.random()*WORDLIST.length)];
+  word=entry.w;clue=entry.c;
+  guesses=[];current='';
+  buildKB();renderDisplay();renderAttempts();
+  clueEl.textContent='CLUE: '+clue;msgEl.textContent='';
+  leftEl.textContent=6;roundEl.textContent=round;
+}
+
+function renderDisplay(){
+  displayEl.innerHTML='';
+  for(let i=0;i<word.length;i++){
+    const div=document.createElement('div');div.className='slot';
+    div.textContent=current[i]||'';displayEl.appendChild(div);
+  }
+}
+
+function renderAttempts(){
+  attEl.innerHTML='';
+  guesses.forEach(g=>{
+    const row=document.createElement('div');row.className='atRow';
+    const result=score_guess(g,word);
+    g.split('').forEach((ch,i)=>{
+      const cell=document.createElement('div');cell.className='atCell '+result[i];
+      cell.textContent=ch;row.appendChild(cell);
+    });
+    attEl.appendChild(row);
+  });
+}
+
+function score_guess(g,w){
+  const res=Array(w.length).fill('a');
+  const wArr=w.split(''),used=Array(w.length).fill(false);
+  // correct
+  g.split('').forEach((ch,i)=>{if(ch===wArr[i]){res[i]='c';used[i]=true;}});
+  // present
+  g.split('').forEach((ch,i)=>{
+    if(res[i]==='c')return;
+    const j=wArr.findIndex((c,idx)=>c===ch&&!used[idx]);
+    if(j>=0){res[i]='p';used[j]=true;}
+  });
+  return res;
+}
+
+addEventListener('keydown',e=>{if(running)handleKey(e.key.toUpperCase());});
+
+function handleKey(k){
+  if(!running)return;
+  if(k==='BACKSPACE'||k==='⌫'){if(current.length>0)current=current.slice(0,-1);}
+  else if(k==='ENTER'){submitGuess();}
+  else if(/^[A-Z]$/.test(k)&&current.length<word.length){current+=k;}
+  renderDisplay();
+}
+
+function submitGuess(){
+  if(current.length<word.length){flash('NOT ENOUGH LETTERS','#ff003c');return;}
+  const g=current;
+  guesses.push(g);current='';
+  const result=score_guess(g,word);
+  // update key states
+  g.split('').forEach((ch,i)=>{
+    const prev=keyState[ch]||'';
+    if(result[i]==='c')keyState[ch]='c';
+    else if(result[i]==='p'&&prev!=='c')keyState[ch]='p';
+    else if(!prev)keyState[ch]='a';
+  });
+  updateKB();renderAttempts();renderDisplay();leftEl.textContent=6-guesses.length;
+  if(g===word){roundWin();}
+  else if(guesses.length>=6){roundLose();}
+}
+
+function updateKB(){
+  document.querySelectorAll('.key[data-k]').forEach(btn=>{
+    const k=btn.dataset.k;const st=keyState[k];
+    btn.className='key'+(k==='ENTER'||k==='⌫'?' wide':'');
+    if(st==='c')btn.classList.add('used-correct');
+    else if(st==='p')btn.classList.add('used-present');
+    else if(st==='a')btn.classList.add('used-absent');
+  });
+}
+
+function flash(txt,col){msgEl.textContent=txt;msgEl.style.color=col;setTimeout(()=>msgEl.textContent='',1500);}
+
+function roundWin(){
+  const pts=(6-guesses.length+1)*100;
+  score+=pts;streak++;
+  scEl.textContent=score;streakEl.textContent=streak;
+  flash('CORRECT! +'+pts,'#39ff14');
+  setTimeout(()=>{
+    round++;running=false;
+    overlay.innerHTML=`<h1 style="color:#39ff14;text-shadow:0 0 16px #39ff14">CORRECT!</h1>
+      <h2>${guesses.length===1?'GENIUS! ':''}Solved in ${guesses.length} guess${guesses.length!==1?'es':''}!</h2>
+      <p>+${pts} points &nbsp;|&nbsp; Streak: ${streak}</p>
+      <button class="wbtn" id="rb">▶ NEXT WORD</button>
+      <p style="margin-top:10px"><a href="index.html" style="color:#00fff2">◄ HUB</a></p>`;
+    overlay.style.display='flex';
+    document.getElementById('rb').onclick=()=>{overlay.style.display='none';running=true;startRound();};
+  },800);
+}
+
+function roundLose(){
+  streak=0;streakEl.textContent=0;
+  flash('THE WORD WAS: '+word,'#ff003c');
+  setTimeout(()=>{
+    running=false;
+    overlay.innerHTML=`<h1 style="color:#ff003c;text-shadow:0 0 16px #ff003c">UNLUCKY</h1>
+      <h2>The word was <strong style="color:#ffe600">${word}</strong></h2>
+      <p>Score: ${score} &nbsp;|&nbsp; Best streak: ${streak}</p>
+      <button class="wbtn" id="rb">↻ TRY AGAIN</button>
+      <p style="margin-top:10px"><a href="index.html" style="color:#00fff2">◄ HUB</a></p>`;
+    overlay.style.display='flex';
+    document.getElementById('rb').onclick=()=>{overlay.style.display='none';round++;running=true;startRound();};
+  },1200);
+}
+
+document.getElementById('startBtn').onclick=()=>{
+  overlay.style.display='none';score=0;streak=0;round=1;
+  scEl.textContent=0;streakEl.textContent=0;
+  running=true;startRound();
+};
+})();
+</script>
+</body>
+</html>
