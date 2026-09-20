@@ -101,7 +101,7 @@ Push the folder to a GitHub repo, go to **Settings → Pages**, set source to `m
 
 | Game | Status |
 |------|--------|
-| Tower Defense | 🔜 Coming Soon |
+| Tower Defense | 🔜 Coding... |
 | Pixel Invaders | 🔜 Coming Soon |
 | Slide Puzzle | 🔜 Coming Soon |
 | Void Dash (endless runner) | 🔜 Coming Soon |
