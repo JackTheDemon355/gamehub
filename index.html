@@ -1,96 +1,406 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="neon">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GAME HUB</title>
 <style>
-  :root{--bg:#05050f;--cyan:#00fff2;--magenta:#ff2fd0;--yellow:#ffe600;--green:#39ff14;--orange:#ff6a00;--red:#ff003c;--purple:#9d4edd;}
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;min-height:100%;
-    background:radial-gradient(ellipse at 20% 0%,#14143a 0%,transparent 55%),radial-gradient(ellipse at 80% 100%,#2a0a3a 0%,transparent 55%),var(--bg);
-    font-family:'Consolas','Courier New',monospace;color:#fff;}
-  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:repeating-linear-gradient(0deg,rgba(0,255,242,.04) 0px,rgba(0,255,242,.04) 1px,transparent 1px,transparent 3px);}
-  header{position:relative;z-index:1;text-align:center;padding:50px 20px 20px;}
-  header h1{margin:0;font-size:clamp(38px,9vw,78px);letter-spacing:10px;color:var(--cyan);
-    text-shadow:0 0 12px var(--cyan),0 0 34px var(--cyan),0 0 70px rgba(0,255,242,.5);animation:flicker 4s infinite;}
+  /* ── Theme tokens ──────────────────────────────────── */
+  :root{
+    --bg:#05050f;
+    --surface:rgba(255,255,255,.03);
+    --border-alpha:.55;
+    --cyan:#00fff2;
+    --magenta:#ff2fd0;
+    --yellow:#ffe600;
+    --green:#39ff14;
+    --orange:#ff6a00;
+    --red:#ff003c;
+    --purple:#9d4edd;
+    --blue:#4da6ff;
+    --pink:#ff69b4;
+    --text:#fff;
+    --sub:#b9c4cc;
+    --shadow-mult:1;
+    --scan-opacity:.04;
+    --glow-hdr:0 0 12px var(--cyan),0 0 34px var(--cyan),0 0 70px rgba(0,255,242,.5);
+  }
+  html[data-theme="retro"]{
+    --bg:#111;
+    --surface:rgba(255,255,255,.05);
+    --cyan:#5bf;
+    --magenta:#e6a;
+    --yellow:#fd3;
+    --green:#6d4;
+    --orange:#f80;
+    --red:#f44;
+    --purple:#a7d;
+    --blue:#69f;
+    --pink:#f8c;
+    --text:#eee;
+    --sub:#999;
+    --shadow-mult:0;
+    --scan-opacity:0;
+    --glow-hdr:none;
+  }
+  /* ── Reset ─────────────────────────────────────────── */
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{min-height:100%;font-family:'Consolas','Courier New',monospace;color:var(--text);background:var(--bg);}
+  html[data-theme="neon"] body{
+    background:radial-gradient(ellipse at 20% 0%,#14143a 0%,transparent 55%),
+               radial-gradient(ellipse at 80% 100%,#2a0a3a 0%,transparent 55%),var(--bg);
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:repeating-linear-gradient(0deg,rgba(0,255,242,var(--scan-opacity)) 0px,rgba(0,255,242,var(--scan-opacity)) 1px,transparent 1px,transparent 3px);
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  header{position:relative;z-index:1;text-align:center;padding:44px 20px 16px;}
+  header h1{
+    font-size:clamp(36px,9vw,76px);letter-spacing:10px;color:var(--cyan);
+    text-shadow:var(--glow-hdr);animation:flicker 4s infinite;
+  }
   @keyframes flicker{0%,19%,21%,23%,25%,54%,56%,100%{opacity:1;}20%,22%,24%,55%{opacity:.72;}}
-  header p{margin:14px 0 0;color:var(--magenta);letter-spacing:4px;font-size:clamp(11px,2.4vw,15px);text-shadow:0 0 10px var(--magenta);}
-  .sec-lbl{position:relative;z-index:1;text-align:center;font-size:11px;letter-spacing:4px;color:#445;margin:22px 0 0;padding:0 20px;}
-  #grid{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:16px 20px 70px;
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px;}
-  .card{display:block;text-decoration:none;color:inherit;background:rgba(255,255,255,.03);
-    border:2px solid var(--c);border-radius:10px;padding:22px 20px 20px;position:relative;overflow:hidden;
-    box-shadow:0 0 16px -4px var(--c),inset 0 0 40px -25px var(--c);
+  html[data-theme="retro"] header h1{animation:none;}
+  header p{margin:12px 0 0;color:var(--magenta);letter-spacing:4px;font-size:clamp(11px,2.2vw,14px);}
+
+  /* ── Toolbar ─────────────────────────────────────────── */
+  #toolbar{position:relative;z-index:1;display:flex;justify-content:center;align-items:center;gap:12px;padding:10px 20px;flex-wrap:wrap;}
+  .tbtn{cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--sub);
+    padding:7px 16px;font-family:inherit;font-size:11px;letter-spacing:2px;border-radius:4px;transition:.2s;}
+  .tbtn:hover,.tbtn.active{border-color:var(--cyan);color:var(--cyan);}
+  #searchBox{background:rgba(0,0,0,.4);border:1px solid rgba(0,255,242,.2);color:var(--text);
+    padding:8px 14px;font-family:inherit;font-size:12px;letter-spacing:2px;border-radius:4px;outline:none;width:220px;}
+  #searchBox:focus{border-color:var(--cyan);}
+  #searchBox::placeholder{color:#555;}
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+  .flt{cursor:pointer;background:transparent;border:1px solid #333;color:#666;
+    padding:5px 12px;font-family:inherit;font-size:10px;letter-spacing:2px;border-radius:20px;transition:.2s;}
+  .flt:hover,.flt.active{border-color:var(--yellow);color:var(--yellow);}
+
+  /* ── Settings panel ──────────────────────────────────── */
+  #settingsPanel{
+    position:fixed;top:0;right:-340px;width:320px;height:100vh;z-index:100;
+    background:rgba(5,5,20,.97);border-left:2px solid rgba(0,255,242,.25);
+    padding:30px 24px;overflow-y:auto;transition:right .3s ease;
+  }
+  #settingsPanel.open{right:0;}
+  #settingsPanel h2{font-size:16px;letter-spacing:5px;color:var(--cyan);margin-bottom:24px;}
+  .setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+  .setting-row span{font-size:12px;letter-spacing:2px;color:var(--text);}
+  .setting-row small{display:block;font-size:10px;color:#555;letter-spacing:1px;margin-top:2px;}
+  .pill{width:46px;height:24px;border-radius:12px;background:#222;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+  .pill.on{background:var(--cyan);}
+  .pill::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .2s;}
+  .pill.on::after{left:25px;}
+  .close-settings{cursor:pointer;background:transparent;border:1px solid var(--cyan);color:var(--cyan);
+    padding:10px 20px;font-family:inherit;font-size:12px;letter-spacing:2px;border-radius:4px;width:100%;margin-top:20px;}
+  .close-settings:hover{background:var(--cyan);color:#000;}
+  #settingsOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;}
+  #settingsOverlay.open{display:block;}
+
+  /* ── Section label ───────────────────────────────────── */
+  .sec-lbl{position:relative;z-index:1;text-align:center;font-size:10px;letter-spacing:5px;color:#334;margin:18px 0 0;padding:0 20px;}
+
+  /* ── Grid ────────────────────────────────────────────── */
+  #grid{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:14px 20px 60px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:20px;}
+
+  /* ── Cards ───────────────────────────────────────────── */
+  .card{display:block;text-decoration:none;color:inherit;
+    background:var(--surface);border:2px solid color-mix(in srgb,var(--c) calc(var(--border-alpha)*100%),transparent);
+    border-radius:12px;padding:22px 20px 18px;position:relative;overflow:hidden;
+    box-shadow:0 0 18px -6px var(--c),inset 0 0 40px -28px var(--c);
     transition:transform .18s ease,box-shadow .18s ease,background .18s ease;}
-  .card:hover{transform:translateY(-6px) scale(1.02);background:rgba(255,255,255,.07);box-shadow:0 0 34px -2px var(--c),inset 0 0 60px -20px var(--c);}
-  .card .icon{font-size:40px;line-height:1;display:block;margin-bottom:12px;filter:drop-shadow(0 0 8px var(--c));}
-  .card h2{margin:0 0 8px;font-size:19px;letter-spacing:3px;color:var(--c);text-shadow:0 0 10px var(--c);}
-  .card p{margin:0;font-size:12.5px;line-height:1.6;color:#b9c4cc;}
-  .card .play{margin-top:16px;display:inline-block;font-size:12px;letter-spacing:3px;color:var(--c);border:1px solid var(--c);padding:7px 15px;border-radius:4px;}
+  .card:hover{transform:translateY(-6px) scale(1.02);background:rgba(255,255,255,.07);
+    box-shadow:0 0 38px -2px var(--c),inset 0 0 60px -18px var(--c);}
+  html[data-theme="retro"] .card{box-shadow:none;border-radius:4px;}
+  html[data-theme="retro"] .card:hover{box-shadow:inset 0 0 0 2px var(--c);}
+  .card .icon{font-size:38px;line-height:1;display:block;margin-bottom:10px;filter:drop-shadow(0 0 8px var(--c));}
+  html[data-theme="retro"] .card .icon{filter:none;}
+  .card h2{margin:0 0 7px;font-size:18px;letter-spacing:3px;color:var(--c);}
+  .card p{font-size:12px;line-height:1.6;color:var(--sub);}
+  .card .play{margin-top:14px;display:inline-block;font-size:11px;letter-spacing:3px;color:var(--c);
+    border:1px solid var(--c);padding:7px 14px;border-radius:4px;}
   .card:hover .play{background:var(--c);color:#000;}
-  .card .tag{position:absolute;top:12px;right:12px;font-size:10px;letter-spacing:2px;color:#000;background:var(--c);padding:3px 8px;border-radius:3px;font-weight:bold;}
-  footer{position:relative;z-index:1;text-align:center;padding:0 20px 40px;color:#55606b;font-size:12px;letter-spacing:2px;}
+  .tag{position:absolute;top:12px;right:12px;font-size:9px;letter-spacing:2px;color:#000;
+    background:var(--c);padding:3px 8px;border-radius:3px;font-weight:bold;}
+  .badge{display:inline-block;font-size:9px;letter-spacing:1px;background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.12);border-radius:3px;padding:2px 6px;margin-top:8px;color:#777;}
+  .card.hidden-filter{display:none;}
+
+  /* Shimmer for NEW cards */
+  .card.new-card::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.04) 50%,transparent 60%);
+    animation:shimmer 3s infinite;}
+  @keyframes shimmer{0%{transform:translateX(-100%);}100%{transform:translateX(200%);}}
+
+  /* ── Footer ──────────────────────────────────────────── */
+  footer{position:relative;z-index:1;text-align:center;padding:0 20px 36px;color:#334;font-size:11px;letter-spacing:2px;}
+  footer a{color:var(--cyan);text-decoration:none;margin:0 8px;}
+  footer a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
+
+<!-- Settings overlay -->
+<div id="settingsOverlay" onclick="closeSettings()"></div>
+
+<!-- Settings panel -->
+<div id="settingsPanel">
+  <h2>⚙ HUB SETTINGS</h2>
+
+  <div class="setting-row">
+    <div><span>NEON MODE</span><small>Glows, scan lines, neon colours</small></div>
+    <div class="pill on" id="pNeon" onclick="toggleSetting('neon',this)"></div>
+  </div>
+  <div class="setting-row">
+    <div><span>SCAN LINES</span><small>CRT scanline overlay</small></div>
+    <div class="pill on" id="pScan" onclick="toggleSetting('scan',this)"></div>
+  </div>
+  <div class="setting-row">
+    <div><span>CARD GLOW</span><small>Neon glow on cards</small></div>
+    <div class="pill on" id="pGlow" onclick="toggleSetting('glow',this)"></div>
+  </div>
+  <div class="setting-row">
+    <div><span>ANIMATIONS</span><small>Flicker, shimmer, pulse</small></div>
+    <div class="pill on" id="pAnim" onclick="toggleSetting('anim',this)"></div>
+  </div>
+  <div class="setting-row">
+    <div><span>RETRO MODE</span><small>Plain colours, no glow, classic look</small></div>
+    <div class="pill" id="pRetro" onclick="toggleSetting('retro',this)"></div>
+  </div>
+
+  <div style="margin-top:24px;font-size:10px;letter-spacing:2px;color:#445;line-height:2;">
+    Settings are saved in your browser.<br>
+    They only affect the Hub — each game has its own settings.
+  </div>
+  <button class="close-settings" onclick="closeSettings()">✓ DONE</button>
+</div>
+
 <header>
   <h1>GAME HUB</h1>
   <p>◄ SELECT YOUR GAME ►</p>
 </header>
-<div class="sec-lbl">— 6 GAMES AVAILABLE —</div>
+
+<div id="toolbar">
+  <input id="searchBox" type="text" placeholder="🔍 SEARCH GAMES..." oninput="filterCards()">
+  <div class="filter-row">
+    <button class="flt active" data-cat="all" onclick="setFilter(this)">ALL</button>
+    <button class="flt" data-cat="action" onclick="setFilter(this)">ACTION</button>
+    <button class="flt" data-cat="puzzle" onclick="setFilter(this)">PUZZLE</button>
+    <button class="flt" data-cat="arcade" onclick="setFilter(this)">ARCADE</button>
+    <button class="flt" data-cat="word" onclick="setFilter(this)">WORD</button>
+  </div>
+  <button class="tbtn" onclick="openSettings()">⚙ SETTINGS</button>
+</div>
+
+<div class="sec-lbl" id="secLbl">— 9 GAMES AVAILABLE —</div>
 <div id="grid">
 
-  <a class="card" href="neonrunner.html" style="--c:var(--green)">
+  <!-- ── LIVE GAMES ───────────────────────────────────── -->
+
+  <a class="card" href="platformer.html" style="--c:var(--green)" data-cat="action" data-name="neon runner platformer jump">
     <span class="tag">UPDATED</span>
     <span class="icon">🏃</span>
     <h2>NEON RUNNER</h2>
-    <p>20-level precision platformer. Double jump, wall-slide, wall-jump. Pause, settings, and accessibility options.</p>
-    <span class="play">▶ PLAY</span>
+    <p>20-level precision platformer. Double jump, wall-slide, wall-jump. Pause, retro mode, low-motion, accessibility settings.</p>
+    <span class="badge">20 LEVELS</span> <span class="badge">WALL JUMP</span>
+    <br><span class="play">▶ PLAY</span>
   </a>
 
-  <a class="card" href="galaxia.html" style="--c:var(--cyan)">
+  <a class="card" href="galaxia.html" style="--c:var(--cyan)" data-cat="action" data-name="galaxia space shooter waves aliens">
     <span class="tag">60 WAVES</span>
     <span class="icon">🚀</span>
     <h2>GALAXIA</h2>
     <p>60 waves of escalating alien assault. 7 enemy types all shooting back. Boss every 10 waves. 5 power-ups. Hi-score saved.</p>
-    <span class="play">▶ PLAY</span>
+    <span class="badge">60 WAVES</span> <span class="badge">7 ENEMIES</span>
+    <br><span class="play">▶ PLAY</span>
   </a>
 
-  <a class="card" href="snake.html" style="--c:var(--magenta)">
-    <span class="tag">DEBUGGED</span>
+  <a class="card" href="snake.html" style="--c:var(--magenta)" data-cat="arcade" data-name="snake classic neon eat grow">
+    <span class="tag">3 MODES</span>
     <span class="icon">🐍</span>
     <h2>NEON SNAKE</h2>
-    <p>3 modes: Classic, Walls Kill, Maze. Buffered input, speed-up levels. Bonus apple, shrink, and speed-boost pickups.</p>
-    <span class="play">▶ PLAY</span>
+    <p>Classic, Walls Kill, and Maze modes. Buffered input, speed-up levels. Bonus, shrink, and speed-boost pickups.</p>
+    <span class="badge">3 MODES</span> <span class="badge">MAZE</span>
+    <br><span class="play">▶ PLAY</span>
   </a>
 
-  <a class="card" href="brickbreaker.html" style="--c:var(--yellow)">
-    <span class="tag">DEBUGGED</span>
+  <a class="card" href="brickbreaker.html" style="--c:var(--yellow)" data-cat="arcade" data-name="brick breaker paddle ball powerups">
+    <span class="tag">POWER-UPS</span>
     <span class="icon">🧱</span>
     <h2>BRICK BREAKER</h2>
-    <p>Mouse/touch paddle, multi-HP bricks, accurate circle-vs-brick collision. 5 power-ups including multi-ball and fireball.</p>
-    <span class="play">▶ PLAY</span>
+    <p>Mouse/touch paddle. Multi-HP bricks, accurate collision. 5 power-ups: life, wide paddle, multi-ball, speed, fireball.</p>
+    <span class="badge">MULTI-BALL</span> <span class="badge">FIREBALL</span>
+    <br><span class="play">▶ PLAY</span>
   </a>
 
-  <a class="card" href="blockfall.html" style="--c:var(--orange)">
-    <span class="tag">DEBUGGED</span>
+  <a class="card" href="blockfall.html" style="--c:var(--orange)" data-cat="puzzle" data-name="tetris block fall puzzle hold ghost">
+    <span class="tag">TETRIS</span>
     <span class="icon">🧩</span>
     <h2>BLOCK FALL</h2>
-    <p>Full Tetris: 7 tetrominoes, 7-bag randomiser, wall kicks, ghost piece, hold, hard drop, DAS/ARR, combo scoring.</p>
-    <span class="play">▶ PLAY</span>
+    <p>Full Tetris: 7 tetrominoes, 7-bag randomiser, wall kicks, ghost piece, hold, hard drop, DAS/ARR, combos. Pause with P.</p>
+    <span class="badge">WALL KICKS</span> <span class="badge">COMBOS</span>
+    <br><span class="play">▶ PLAY</span>
   </a>
 
-  <a class="card" href="pong.html" style="--c:var(--purple)">
-    <span class="tag">NEW</span>
+  <a class="card" href="pong.html" style="--c:var(--purple)" data-cat="arcade" data-name="pong arena 2 player cpu difficulty">
+    <span class="tag">2 PLAYER</span>
     <span class="icon">🏓</span>
     <h2>PONG ARENA</h2>
-    <p>1P vs CPU or 2-player local. Power-ups: big paddle, speed ball, ghost ball, tiny paddle. CPU gets harder each point. First to 7 wins.</p>
-    <span class="play">▶ PLAY</span>
+    <p>1P vs CPU (Easy/Medium/Hard) or 2-player local. CPU predicts ball path. 5 power-ups. First to 7 wins.</p>
+    <span class="badge">VS CPU</span> <span class="badge">LOCAL 2P</span>
+    <br><span class="play">▶ PLAY</span>
   </a>
 
+  <a class="card new-card" href="asteroids.html" style="--c:var(--blue)" data-cat="action" data-name="asteroids space shoot rocks ufo thrust">
+    <span class="tag">NEW</span>
+    <span class="icon">☄️</span>
+    <h2>ASTEROID STORM</h2>
+    <p>Classic asteroids: rotate, thrust, shoot. Rocks split into smaller pieces. UFOs appear from wave 3. Infinite waves, hi-score.</p>
+    <span class="badge">INFINITE</span> <span class="badge">UFOs</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card new-card" href="memorymatch.html" style="--c:var(--pink)" data-cat="puzzle" data-name="memory match pairs cards flip grid">
+    <span class="tag">NEW</span>
+    <span class="icon">🃏</span>
+    <h2>MEMORY MATCH</h2>
+    <p>Flip cards to find matching pairs. 4 grid sizes (4×4 to 6×8). Score based on moves and time. CSS 3D flip animations.</p>
+    <span class="badge">4 SIZES</span> <span class="badge">TIMED</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card new-card" href="wordjump.html" style="--c:var(--green)" data-cat="word" data-name="word jump wordle guess letters puzzle">
+    <span class="tag">NEW</span>
+    <span class="icon">🔤</span>
+    <h2>WORD JUMP</h2>
+    <p>Neon Wordle: guess the 5-letter word in 6 tries. Colour-coded feedback, clue shown for each word, streak scoring.</p>
+    <span class="badge">WORDLE</span> <span class="badge">STREAKS</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+
+  <!-- ── COMING SOON ───────────────────────────────────── -->
+  <div class="card" style="--c:var(--red);opacity:.32;pointer-events:none;border-style:dashed" data-cat="action" data-name="tower defense coming soon">
+    <span class="tag">SOON</span>
+    <span class="icon">🗼</span>
+    <h2>TOWER DEFENSE</h2>
+    <p>Place turrets to stop waves of enemies marching down the path. Upgrade, sell, and survive 30 waves.</p>
+    <span class="badge">COMING SOON</span>
+    <br><span class="play">▶ PLAY</span>
+  </div>
+
+  <div class="card" style="--c:var(--orange);opacity:.32;pointer-events:none;border-style:dashed" data-cat="action" data-name="space invaders coming soon">
+    <span class="tag">SOON</span>
+    <span class="icon">👾</span>
+    <h2>PIXEL INVADERS</h2>
+    <p>Classic space invaders reimagined. Shields, mystery UFO, descending formations. 20 levels.</p>
+    <span class="badge">COMING SOON</span>
+    <br><span class="play">▶ PLAY</span>
+  </div>
+
+  <div class="card" style="--c:var(--purple);opacity:.32;pointer-events:none;border-style:dashed" data-cat="puzzle" data-name="sliding puzzle 15 coming soon">
+    <span class="tag">SOON</span>
+    <span class="icon">🔢</span>
+    <h2>SLIDE PUZZLE</h2>
+    <p>Neon 15-puzzle slider. Multiple sizes, timer, move counter, and shuffle algorithm guarantee.</p>
+    <span class="badge">COMING SOON</span>
+    <br><span class="play">▶ PLAY</span>
+  </div>
+
+  <div class="card" style="--c:var(--cyan);opacity:.32;pointer-events:none;border-style:dashed" data-cat="action" data-name="endless runner dash jump obstacle coming soon">
+    <span class="tag">SOON</span>
+    <span class="icon">🌀</span>
+    <h2>VOID DASH</h2>
+    <p>Endless auto-runner. Tap/click to jump or double jump. Obstacles speed up infinitely. Coin multipliers.</p>
+    <span class="badge">COMING SOON</span>
+    <br><span class="play">▶ PLAY</span>
+  </div>
+
+  <div class="card" style="--c:var(--yellow);opacity:.32;pointer-events:none;border-style:dashed" data-cat="arcade" data-name="rhythm music tap beat coming soon">
+    <span class="tag">SOON</span>
+    <span class="icon">🎵</span>
+    <h2>BEAT SMASH</h2>
+    <p>Rhythm game: hit targets in time with the beat. Multiple songs, difficulty levels, perfect/great/miss scoring.</p>
+    <span class="badge">COMING SOON</span>
+    <br><span class="play">▶ PLAY</span>
+  </div>
+
 </div>
-<footer>GAME HUB — BUILT FOR JACK &nbsp;•&nbsp; ALL GAMES SELF-CONTAINED &amp; OFFLINE-READY</footer>
+
+<footer>
+  GAME HUB &nbsp;•&nbsp; BUILT FOR JACK &nbsp;•&nbsp; ALL GAMES OFFLINE-READY
+  <br><br>
+  <a href="contact.html">📧 CONTACT</a>
+  <a href="contact.html">🐛 BUG REPORT</a>
+  <a href="https://github.com" target="_blank">🐙 GITHUB</a>
+</footer>
+
+<script>
+// ── Settings ──────────────────────────────────────────────
+const S={neon:true,scan:true,glow:true,anim:true,retro:false};
+const html=document.documentElement;
+
+// Load saved settings
+try{const saved=JSON.parse(localStorage.getItem('hub_settings')||'null');if(saved)Object.assign(S,saved);}catch(e){}
+applyAll();
+
+function applyAll(){
+  // retro mode overrides everything
+  if(S.retro){html.dataset.theme='retro';}
+  else{html.dataset.theme='neon';}
+  // scan lines
+  html.style.setProperty('--scan-opacity',S.scan&&!S.retro?'0.04':'0');
+  // glow
+  html.style.setProperty('--border-alpha',S.glow&&!S.retro?'0.55':'0.3');
+  // animations
+  document.querySelectorAll('.card.new-card').forEach(c=>c.style.animation=S.anim?'':'none');
+  // sync pills
+  ['neon','scan','glow','anim','retro'].forEach(k=>{
+    const p=document.getElementById('p'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(p)p.classList.toggle('on',S[k]);
+  });
+  try{localStorage.setItem('hub_settings',JSON.stringify(S));}catch(e){}
+}
+
+window.toggleSetting=function(key,pill){
+  if(key==='retro'){S.retro=!S.retro;}
+  else{S[key]=!S[key];}
+  applyAll();
+};
+
+window.openSettings=function(){
+  document.getElementById('settingsPanel').classList.add('open');
+  document.getElementById('settingsOverlay').classList.add('open');
+};
+window.closeSettings=function(){
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('settingsOverlay').classList.remove('open');
+};
+
+// ── Search & Filter ───────────────────────────────────────
+let activeFilter='all';
+window.setFilter=function(btn){
+  activeFilter=btn.dataset.cat;
+  document.querySelectorAll('.flt').forEach(b=>b.classList.toggle('active',b===btn));
+  filterCards();
+};
+
+window.filterCards=function(){
+  const q=document.getElementById('searchBox').value.toLowerCase();
+  let visible=0;
+  document.querySelectorAll('#grid .card,[id] .card').forEach(c=>{
+    const name=(c.dataset.name||'').toLowerCase()+(c.querySelector('h2')?.textContent||'').toLowerCase();
+    const cat=c.dataset.cat||'';
+    const matchQ=!q||name.includes(q);
+    const matchF=activeFilter==='all'||cat===activeFilter;
+    const hide=!matchQ||!matchF;
+    c.classList.toggle('hidden-filter',hide);
+    if(!hide)visible++;
+  });
+  document.getElementById('secLbl').textContent=`— ${visible} GAME${visible!==1?'S':''} SHOWN —`;
+};
+</script>
 </body>
 </html>
