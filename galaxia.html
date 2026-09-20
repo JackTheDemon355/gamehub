@@ -52,7 +52,7 @@
       <span class="lbl">HI</span><span class="val" id="hiV">0</span>
     </div>
     <div class="box">
-      <span class="lbl">WAVE</span><span class="val" id="waveV">1</span>/<span id="maxWV">60</span>
+      <span class="lbl">WAVE</span><span class="val" id="waveV">1</span>/<span id="maxWV">80</span>
       <span class="lbl">LIVES</span><span class="val" id="livesV">3</span>
       <span class="lbl">BOMBS</span><span class="val" id="bombsV">3</span>
     </div>
@@ -68,7 +68,7 @@
     <h1>GALAXIA</h1>
     <h2>STAR ASSAULT</h2>
     <p>◄ ► / A D — move &nbsp;|&nbsp; SPACE — fire &nbsp;|&nbsp; SHIFT — bomb (screen clear)</p>
-    <p>60 waves. 7 enemy types. All enemies shoot. Boss every 10 waves.</p>
+    <p>80 waves. 8 enemy types all shooting back. Boss every 10 waves. Splitters spawn mini-enemies. Mega-boss at wave 80.</p>
     <p style="margin-top:6px;color:#666;font-size:12px;">Power-ups: R=rapid fire &nbsp; S=shield &nbsp; B=bomb &nbsp; +=life &nbsp; P=weapon upgrade</p>
     <button class="gbtn" id="startBtn" style="margin-top:20px">▶ LAUNCH</button>
   </div>
@@ -87,7 +87,7 @@ const scoreV=document.getElementById('scoreV'),hiV=document.getElementById('hiV'
       bombsV=document.getElementById('bombsV'),
       menuOverlay=document.getElementById('menuOverlay'),
       lvlBanner=document.getElementById('lvlBanner');
-const MAX_WAVE=60;
+const MAX_WAVE=80;
 document.getElementById('maxWV').textContent=MAX_WAVE;
 
 let hi=0;try{hi=parseInt(localStorage.getItem('galaxia_hi2')||'0')||0;}catch(e){}
@@ -137,7 +137,7 @@ function updateHUD(){
 function eCol(t){return{grunt:'#39ff14',zigzag:'#ffe600',diver:'#ff2fd0',shooter:'#00fff2',sniper:'#aaaaff',tank:'#ff6a00',kamikaze:'#ff003c',boss:'#ff003c'}[t]||'#fff';}
 
 function makeEnemy(type,px,py,w){
-  const bHP={grunt:1,zigzag:1,diver:2,shooter:2,sniper:2,tank:6,kamikaze:1,boss:50+w*5};
+  const bHP={grunt:1,zigzag:1,diver:2,shooter:2,sniper:2,tank:6,kamikaze:1,boss:60+w*6};
   const hp=Math.ceil((bHP[type]||1)*(1+w*.04));
   return{type,x:px,y:py,startX:px,startY:py,w:type==='boss'?96:28,h:type==='boss'?64:26,
     hp,maxHp:hp,t:Math.random()*100,vx:0,vy:0,fcd:1+Math.random()*2,dead:false,
