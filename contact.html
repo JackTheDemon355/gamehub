@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONTACT — GAME HUB</title>
+<style>
+  :root{--bg:#05050f;--cyan:#00fff2;--magenta:#ff2fd0;--yellow:#ffe600;--green:#39ff14;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;min-height:100%;background:radial-gradient(ellipse at 20% 0%,#14143a 0%,transparent 55%),radial-gradient(ellipse at 80% 100%,#2a0a3a 0%,transparent 55%),var(--bg);font-family:'Consolas','Courier New',monospace;color:#fff;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,255,242,.03) 0px,rgba(0,255,242,.03) 1px,transparent 1px,transparent 3px);}
+  header{text-align:center;padding:50px 20px 30px;position:relative;z-index:1;}
+  header h1{margin:0;font-size:clamp(28px,6vw,52px);letter-spacing:8px;color:var(--cyan);text-shadow:0 0 14px var(--cyan),0 0 40px var(--cyan);}
+  header p{color:var(--magenta);letter-spacing:4px;margin:10px 0 0;font-size:13px;}
+  .container{position:relative;z-index:1;max-width:600px;margin:0 auto;padding:0 20px 60px;}
+  .card{background:rgba(255,255,255,.04);border:2px solid rgba(0,255,242,.3);border-radius:12px;padding:36px 40px;}
+  label{display:block;font-size:11px;letter-spacing:3px;color:var(--magenta);margin:18px 0 6px;}
+  input,textarea,select{width:100%;background:rgba(0,0,0,.4);border:1px solid rgba(0,255,242,.25);border-radius:6px;padding:12px 14px;color:#fff;font-family:inherit;font-size:14px;outline:none;transition:border-color .2s;}
+  input:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,255,242,.12);}
+  textarea{resize:vertical;min-height:130px;}
+  .submit{margin-top:24px;width:100%;background:transparent;color:var(--yellow);border:2px solid var(--yellow);padding:14px;font-family:inherit;font-size:16px;letter-spacing:4px;cursor:pointer;border-radius:6px;transition:.2s;}
+  .submit:hover{background:var(--yellow);color:#000;}
+  #thanks{display:none;text-align:center;padding:24px 0;}
+  #thanks h2{color:var(--green);font-size:26px;letter-spacing:4px;text-shadow:0 0 14px var(--green);}
+  #thanks p{color:#aaa;font-size:14px;}
+  .info{margin-top:28px;padding:20px 24px;background:rgba(0,0,0,.3);border:1px solid rgba(0,255,242,.12);border-radius:8px;font-size:13px;color:#8af;line-height:1.9;}
+  .info a{color:var(--cyan);text-decoration:none;}
+  .info a:hover{text-decoration:underline;}
+  #back{display:inline-block;margin-bottom:28px;color:var(--cyan);text-decoration:none;border:1px solid var(--cyan);padding:8px 16px;font-size:12px;letter-spacing:2px;border-radius:4px;}
+  #back:hover{background:var(--cyan);color:#000;}
+</style>
+</head>
+<body>
+<header>
+  <h1>CONTACT</h1>
+  <p>GET IN TOUCH WITH THE DEVELOPER</p>
+</header>
+<div class="container">
+  <a id="back" href="index.html">◄ GAME HUB</a>
+  <div class="card">
+    <form id="contactForm" action="https://formspree.io/f/xaennwkb" method="POST">
+      <div id="formFields">
+        <label>YOUR NAME</label>
+        <input type="text" name="name" placeholder="Enter your name" required>
+        <label>EMAIL ADDRESS</label>
+        <input type="email" name="email" placeholder="your@email.com" required>
+        <label>SUBJECT</label>
+        <select name="subject">
+          <option value="bug">🐛 Bug Report</option>
+          <option value="feature">💡 Feature Request</option>
+          <option value="game">🎮 New Game Idea</option>
+          <option value="other">📩 Other</option>
+        </select>
+        <label>MESSAGE</label>
+        <textarea name="message" placeholder="Tell us what's on your mind..." required></textarea>
+        <button type="submit" class="submit">▶ SEND MESSAGE</button>
+      </div>
+      <div id="thanks">
+        <h2>✓ MESSAGE SENT!</h2>
+        <p>Thanks for reaching out. We'll get back to you at your email soon.</p>
+        <a href="index.html" style="color:var(--cyan);font-size:13px;letter-spacing:2px;">◄ Back to Game Hub</a>
+      </div>
+    </form>
+    <div class="info">
+      📧 Direct email: <a href="mailto:jvanwijk.business@outlook.com">jvanwijk.business@outlook.com</a><br>
+      🎮 Game Hub — All games built by Jack<br>
+      🐛 Found a bug? Use the Bug Report option above.<br>
+      💡 Got a game idea? We'd love to hear it!
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('contactForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const btn=this.querySelector('.submit');
+  btn.textContent='SENDING...';btn.disabled=true;
+  try{
+    const res=await fetch('https://formspree.io/f/xaennwkb',{method:'POST',body:new FormData(this),headers:{Accept:'application/json'}});
+    if(res.ok){document.getElementById('formFields').style.display='none';document.getElementById('thanks').style.display='block';}
+    else{btn.textContent='ERROR — TRY AGAIN';btn.disabled=false;}
+  }catch(err){btn.textContent='ERROR — TRY AGAIN';btn.disabled=false;}
+});
+</script>
+</body>
+</html>
