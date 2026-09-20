@@ -44,7 +44,7 @@
   <div id="overlay">
     <h1>BRICK BREAKER</h1>
     <h2>SMASH THE GRID</h2>
-    <p>Mouse / Touch — move paddle &nbsp;|&nbsp; Click / Tap — launch ball</p>
+    <p>Mouse / Touch / ← → — move paddle &nbsp;|&nbsp; Click / Tap — launch ball</p>
     <p>Power-ups fall from destroyed bricks. Multi-ball chaos at higher levels!</p>
     <p style="margin-top:8px;font-size:11px;color:#556">
       + Extra life &nbsp;·&nbsp; ↔ Wide paddle &nbsp;·&nbsp; ● Multi-ball &nbsp;·&nbsp; ⚡ Speed &nbsp;·&nbsp; 🔥 Fireball (1-shot)
@@ -125,6 +125,10 @@ function pop(px,py,col,n){
 
 // Mouse / touch
 cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();mouseX=e.clientX-r.left;});
+// Keyboard paddle control
+let kLeft=false,kRight=false;
+addEventListener('keydown',e=>{if(e.key==='ArrowLeft')kLeft=true;if(e.key==='ArrowRight')kRight=true;if(e.key===' '&&!launched){e.preventDefault();launch();}});
+addEventListener('keyup',e=>{if(e.key==='ArrowLeft')kLeft=false;if(e.key==='ArrowRight')kRight=false;});
 cv.addEventListener('click',()=>{if(!launched)launch();});
 cv.addEventListener('touchmove',e=>{e.preventDefault();const r=cv.getBoundingClientRect();mouseX=e.touches[0].clientX-r.left;},{passive:false});
 cv.addEventListener('touchstart',e=>{e.preventDefault();const r=cv.getBoundingClientRect();mouseX=e.touches[0].clientX-r.left;if(!launched)launch();},{passive:false});
@@ -159,6 +163,10 @@ function update(dt){
   padX+=(mouseX-padX)*Math.min(1,dt*20);
   padX=Math.max(padW/2,Math.min(W-padW/2,padX));
   if(padWideTimer>0){padWideTimer-=dt;if(padWideTimer<=0){padW=PAD_W_BASE;padWideTimer=0;}}
+
+  // Keyboard paddle movement
+  if(kLeft)mouseX=Math.max(padW/2,mouseX-PAD_SPEED*dt);
+  if(kRight)mouseX=Math.min(W-padW/2,mouseX+PAD_SPEED*dt);
 
   if(!launched){
     if(balls.length>0){balls[0].x=padX;balls[0].y=PAD_Y-BALL_R-1;}
