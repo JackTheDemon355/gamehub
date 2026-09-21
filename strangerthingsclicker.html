@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stranger Things Clicker</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at center, rgba(120,0,0,.35), transparent 35%),
+        linear-gradient(#080808, #160000);
+      color: white;
+      text-align: center;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      margin: 18px 0 4px;
+      color: #ff3131;
+      letter-spacing: 3px;
+      text-shadow: 0 0 8px #ff0000, 0 0 20px #770000;
+      font-size: clamp(28px, 6vw, 54px);
+    }
+
+    .subtitle {
+      color: #bbb;
+      margin-bottom: 14px;
+    }
+
+    .wrap {
+      width: min(900px, 94vw);
+      margin: auto;
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
+      padding-bottom: 30px;
+    }
+
+    .panel {
+      background: rgba(15,15,15,.9);
+      border: 2px solid #541111;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 0 20px rgba(255,0,0,.12);
+    }
+
+    .score {
+      font-size: 30px;
+      font-weight: bold;
+      margin: 8px;
+    }
+
+    .small {
+      color: #bbb;
+      font-size: 14px;
+    }
+
+    #clickBtn {
+      width: 230px;
+      height: 230px;
+      border-radius: 50%;
+      border: 5px solid #b52020;
+      background:
+        radial-gradient(circle, rgba(255,40,40,.85) 0 5%, rgba(120,0,0,.65) 8%, transparent 17%),
+        repeating-conic-gradient(from 10deg, rgba(255,40,40,.22) 0deg 4deg, transparent 4deg 12deg),
+        radial-gradient(ellipse at center, #250000 0 28%, #090000 58%, #020202 100%);
+      color: white;
+      font-size: 72px;
+      cursor: pointer;
+      box-shadow: 0 0 25px #7d0000, inset 0 0 30px #ff1616;
+      transition: transform .06s, box-shadow .15s;
+      position: relative;
+      margin: 20px 0;
+      user-select: none;
+    }
+
+    #clickBtn:active {
+      transform: scale(.93);
+      box-shadow: 0 0 65px #ff2020, inset 0 0 45px #ff2020;
+    }
+
+    .gateNote {
+      margin: -4px auto 8px;
+      max-width: 360px;
+      color: #d85a5a;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+
+    .upgrade {
+      width: 100%;
+      text-align: left;
+      margin: 10px 0;
+      background: #1c1c1c;
+      color: white;
+      border: 1px solid #4b4b4b;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      transition: .15s;
+    }
+
+    .upgrade:hover { background: #292929; }
+    .upgrade:disabled { opacity: .45; cursor: not-allowed; }
+
+    .upgrade strong {
+      color: #ff5555;
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    #message {
+      min-height: 28px;
+      color: #ff8c8c;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    .danger {
+      animation: flash .4s infinite alternate;
+    }
+
+    @keyframes flash {
+      from { background-color: rgba(30,0,0,.2); }
+      to { background-color: rgba(100,0,0,.55); }
+    }
+
+    .floating {
+      position: fixed;
+      pointer-events: none;
+      font-weight: bold;
+      color: #ff5656;
+      font-size: 22px;
+      animation: floatUp .8s forwards;
+    }
+
+    @keyframes floatUp {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-80px); }
+    }
+
+    .bossBox {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      border: 2px solid #9f1616;
+      border-radius: 12px;
+      background: #210000;
+    }
+
+    .bar {
+      height: 18px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #333;
+      margin-top: 8px;
+    }
+
+    .barFill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ff2d2d, #800000);
+      transition: width .15s;
+    }
+
+    .reset {
+      margin-top: 14px;
+      background: none;
+      color: #777;
+      border: 0;
+      cursor: pointer;
+    }
+
+    @media (max-width: 720px) {
+      .wrap { grid-template-columns: 1fr; }
+      #clickBtn { width: 190px; height: 190px; font-size: 58px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>STRANGER THINGS CLICKER</h1>
+  <div class="subtitle" id="subtitle">Collect Hawkins Energy. Survive the Upside Down.</div>
+  <label style="display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;background:#171717;border:1px solid #5b2020;border-radius:999px;padding:8px 14px;cursor:pointer;">
+    <input type="checkbox" id="talesToggle">
+    <span>❄️ Tales From ’85 Mode</span>
+  </label>
+
+  <div class="wrap">
+    <div class="panel" id="mainPanel">
+      <div class="score">⚡ <span id="energy">0</span> Energy</div>
+      <div class="small">Per click: <span id="perClick">1</span> • Per second: <span id="perSecond">0</span></div>
+
+      <button id="clickBtn" title="Click the Gate!">🩸</button>
+      <div>The Gate</div>
+      <div class="gateNote">A living tear into the Upside Down</div>
+      <div id="message"></div>
+
+      <div class="bossBox" id="bossBox">
+        <strong id="bossName">👾 DEMOGORGON ATTACK!</strong>
+        <div id="bossDesc">Click the Gate to fight it!</div>
+        <div class="bar"><div class="barFill" id="bossBar"></div></div>
+        <div class="small"><span id="bossHp">0</span> HP • <span id="bossTimer">20</span>s</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>🛒 Upgrades</h2>
+
+      <button class="upgrade" id="u1">
+        <strong>🍟 Scoops Ahoy Snack</strong>
+        +1 energy per click<br>
+        Cost: <span id="c1">25</span>
+      </button>
+
+      <button class="upgrade" id="u2">
+        <strong>📻 Walkie-Talkie Crew</strong>
+        +1 energy per second<br>
+        Cost: <span id="c2">50</span>
+      </button>
+
+      <button class="upgrade" id="u3">
+        <strong>🚲 Hawkins Bike Squad</strong>
+        +5 energy per second<br>
+        Cost: <span id="c3">200</span>
+      </button>
+
+      <button class="upgrade" id="u4">
+        <strong>🧇 Eleven's Waffles</strong>
+        Double click power<br>
+        Cost: <span id="c4">500</span>
+      </button>
+
+      <button class="upgrade" id="u5">
+        <strong>🌀 Close the Gate</strong>
+        +25 energy per second<br>
+        Cost: <span id="c5">1500</span>
+      </button>
+
+      <button class="reset" onclick="resetGame()">Reset save</button>
+    </div>
+  </div>
+
+<script>
+let energy = Number(localStorage.stEnergy || 0);
+let perClick = Number(localStorage.stPerClick || 1);
+let perSecond = Number(localStorage.stPerSecond || 0);
+
+let costs = JSON.parse(localStorage.stCosts || '{"u1":60,"u2":150,"u3":600,"u4":1800,"u5":6000}');
+
+let bossActive = false;
+let bossHp = 0;
+let bossMax = 0;
+let bossTime = 0;
+let currentBoss = null;
+let talesMode = localStorage.stTalesMode === "true";
+
+const normalBosses = [
+  { name: "👾 DEMOGORGON", desc: "The monster is breaking through!", hp: 1.0, reward: 1.8 },
+  { name: "🕷️ MIND FLAYER", desc: "The shadow monster has entered Hawkins!", hp: 2.6, reward: 2.2 },
+  { name: "🕴️ VECNA", desc: "Vecna is pulling you into his mind!", hp: 4.2, reward: 2.8 },
+  { name: "👹 DEMOGORGON ALPHA", desc: "A much bigger creature emerges from the Gate!", hp: 6.5, reward: 3.5 }
+];
+
+const talesBosses = [
+  { name: "🦈 SNOW STALKER", desc: "Something is moving beneath the frozen snow!", hp: 2.0, reward: 2.0 },
+  { name: "🧪 SPORE CREATURE", desc: "Strange glowing spores are spreading through Hawkins!", hp: 2.8, reward: 2.3 },
+  { name: "👑 HORDE QUEEN", desc: "The Queen is gathering a monstrous swarm!", hp: 6.8, reward: 3.8 },
+  { name: "👻 GHOSTLY TERROR", desc: "A paranormal presence has appeared in Hawkins!", hp: 7.5, reward: 4.2 }
+];
+
+const bosses = normalBosses;
+
+const energyEl = document.getElementById("energy");
+const perClickEl = document.getElementById("perClick");
+const perSecondEl = document.getElementById("perSecond");
+const clickBtn = document.getElementById("clickBtn");
+const msg = document.getElementById("message");
+const bossBox = document.getElementById("bossBox");
+const bossHpEl = document.getElementById("bossHp");
+const bossBar = document.getElementById("bossBar");
+const bossTimerEl = document.getElementById("bossTimer");
+const bossNameEl = document.getElementById("bossName");
+const bossDescEl = document.getElementById("bossDesc");
+const talesToggle = document.getElementById("talesToggle");
+const subtitleEl = document.getElementById("subtitle");
+const mainPanel = document.getElementById("mainPanel");
+
+function save() {
+  localStorage.stEnergy = energy;
+  localStorage.stPerClick = perClick;
+  localStorage.stPerSecond = perSecond;
+  localStorage.stCosts = JSON.stringify(costs);
+}
+
+function update() {
+  energyEl.textContent = Math.floor(energy);
+  perClickEl.textContent = perClick;
+  perSecondEl.textContent = perSecond;
+
+  ["u1","u2","u3","u4","u5"].forEach(id => {
+    document.getElementById(id).disabled = energy < costs[id];
+    document.getElementById("c" + id.substring(1)).textContent = costs[id];
+  });
+
+  if (bossActive) {
+    bossHpEl.textContent = Math.max(0, Math.ceil(bossHp));
+    bossTimerEl.textContent = bossTime;
+    bossBar.style.width = Math.max(0, bossHp / bossMax * 100) + "%";
+  }
+}
+
+function floatText(text, x, y) {
+  const el = document.createElement("div");
+  el.className = "floating";
+  el.textContent = text;
+  el.style.left = x + "px";
+  el.style.top = y + "px";
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
+
+clickBtn.addEventListener("click", e => {
+  if (bossActive) {
+    bossHp -= perClick;
+    floatText("-" + perClick, e.clientX, e.clientY);
+    if (bossHp <= 0) beatBoss();
+  } else {
+    energy += perClick;
+    floatText("+" + perClick, e.clientX, e.clientY);
+    if (Math.random() < 0.005 && energy >= 250) startBoss();
+  }
+  update();
+  save();
+});
+
+function buy(id, clickAdd = 0, secAdd = 0, doubleClick = false) {
+  if (energy < costs[id]) return;
+  energy -= costs[id];
+
+  if (doubleClick) perClick *= 2;
+  else {
+    perClick += clickAdd;
+    perSecond += secAdd;
+  }
+
+  costs[id] = Math.ceil(costs[id] * 2.05);
+  msg.textContent = "Upgrade bought!";
+  setTimeout(() => msg.textContent = "", 900);
+  update();
+  save();
+}
+
+document.getElementById("u1").onclick = () => buy("u1", 1, 0);
+document.getElementById("u2").onclick = () => buy("u2", 0, 1);
+document.getElementById("u3").onclick = () => buy("u3", 0, 5);
+document.getElementById("u4").onclick = () => buy("u4", 0, 0, true);
+document.getElementById("u5").onclick = () => buy("u5", 0, 25);
+
+function startBoss() {
+  bossActive = true;
+  bossTime = 20;
+  const bossPool = talesMode ? talesBosses : normalBosses;
+  currentBoss = bossPool[Math.floor(Math.random() * bossPool.length)];
+
+  // Stronger bosses become possible as your Energy grows.
+  let difficulty = currentBoss.hp;
+  if (energy > 5000) difficulty *= 1.25;
+  if (energy > 20000) difficulty *= 1.5;
+
+  bossMax = Math.max(250, Math.floor((perClick * 90 + perSecond * 45 + energy * 0.08) * difficulty));
+  bossHp = bossMax;
+
+  bossNameEl.textContent = currentBoss.name + " ATTACK!";
+  bossDescEl.textContent = currentBoss.desc;
+  bossBox.style.display = "block";
+  mainPanel.classList.add("danger");
+  msg.textContent = "THE UPSIDE DOWN IS OPEN!";
+  update();
+}
+
+function beatBoss() {
+  bossActive = false;
+  const reward = Math.ceil(bossMax * currentBoss.reward);
+  energy += reward;
+  bossBox.style.display = "none";
+  mainPanel.classList.remove("danger");
+  msg.textContent = currentBoss.name + " defeated! +" + reward + " energy!";
+  setTimeout(() => msg.textContent = "", 1800);
+  save();
+}
+
+setInterval(() => {
+  if (!bossActive) {
+    energy += perSecond;
+  } else {
+    bossTime--;
+    if (bossTime <= 0) {
+      const loss = Math.min(Math.floor(energy * 0.35), 10000);
+      energy -= loss;
+      bossActive = false;
+      bossBox.style.display = "none";
+      mainPanel.classList.remove("danger");
+      msg.textContent = "The Gate overwhelmed Hawkins! -" + loss + " energy.";
+      setTimeout(() => msg.textContent = "", 2200);
+    }
+  }
+  update();
+  save();
+}, 1000);
+
+function resetGame() {
+  if (!confirm("Reset all progress?")) return;
+  localStorage.removeItem("stEnergy");
+  localStorage.removeItem("stPerClick");
+  localStorage.removeItem("stPerSecond");
+  localStorage.removeItem("stCosts");
+  location.reload();
+}
+
+
+function applyMode() {
+  talesMode = talesToggle.checked;
+  localStorage.stTalesMode = talesMode;
+  if (talesMode) {
+    document.querySelector("h1").textContent = "STRANGER THINGS: TALES FROM ’85 CLICKER";
+    subtitleEl.textContent = "❄️ Winter 1985 — Hawkins Investigators Club";
+    clickBtn.textContent = "❄️";
+    document.querySelector("#mainPanel > div:nth-of-type(2)").textContent = "Investigate Hawkins!";
+    msg.textContent = "TALES FROM ’85 MODE ACTIVATED!";
+  } else {
+    document.querySelector("h1").textContent = "STRANGER THINGS CLICKER";
+    subtitleEl.textContent = "Collect Hawkins Energy. Survive the Upside Down.";
+    clickBtn.textContent = "🩸";
+    document.querySelector("#mainPanel > div:nth-of-type(2)").textContent = "The Gate";
+    msg.textContent = "Classic Hawkins mode activated!";
+  }
+  setTimeout(() => msg.textContent = "", 1200);
+  update();
+  save();
+}
+
+talesToggle.checked = talesMode;
+talesToggle.addEventListener("change", applyMode);
+
+update();
+</script>
+</body>
+</html>
