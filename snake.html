@@ -327,6 +327,12 @@ function draw(dt){
   ctx.globalAlpha=1;
   particles=particles.filter(p=>p.life>0);
 
+  // Speed boost indicator
+  if(boostTimer>0&&running){
+    ctx.fillStyle='rgba(255,47,208,.2)';ctx.fillRect(0,H-6,W*(boostTimer/4),6);
+    ctx.fillStyle='#ff2fd0';ctx.font='11px monospace';ctx.textAlign='right';
+    ctx.fillText('BOOST',W-6,H-10);
+  }
   // Pause overlay
   if(paused&&running){
     ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,0,W,H);
