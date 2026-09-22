@@ -101,6 +101,9 @@ addEventListener('keydown',e=>{
   if(e.key===' ')keys.Fire=true;
   if(e.key==='Shift')keys.Bomb=true;
 });
+addEventListener('keydown',e=>{
+  if((e.key==='p'||e.key==='P')&&state==='playing'){paused=!paused;}
+});
 addEventListener('keyup',e=>{
   keys[e.key]=false;keys[e.key.toLowerCase()]=false;
   if(e.key===' ')keys.Fire=false;
@@ -118,7 +121,7 @@ initStars();
 function drawStars(dt){for(const s of stars){s.y+=s.spd*dt*60;if(s.y>H){s.y=0;s.x=Math.random()*W;}x.globalAlpha=.8;x.fillStyle=s.hue;x.fillRect(s.x,s.y,s.sz,s.sz);}x.globalAlpha=1;}
 
 // State
-let state='menu',score=0,wave=1,lives=3,bombs=3,invuln=0,bannerTimer=0,lastT=0;
+let state='menu',score=0,wave=1,lives=3,bombs=3,invuln=0,bannerTimer=0,lastT=0,paused=false;
 const ship={x:W/2,y:H-70,w:40,h:40,spd:350,cd:0,fr:0.28,power:1};
 let bullets=[],eBullets=[],enemies=[],particles=[],powerups=[],spawnQ=[],stageT=0;
 
@@ -388,6 +391,11 @@ function frame(dt){
   for(const p of particles){x.globalAlpha=Math.max(0,p.life/p.ml);x.fillStyle=p.color;x.fillRect(p.x-p.sz/2,p.y-p.sz/2,p.sz,p.sz);}
   x.globalAlpha=1;
   if(state==='playing'||state==='intro')drawShip(ship.x,ship.y,invuln>0);
+  if(paused&&state==='playing'){
+    x.fillStyle='rgba(0,0,0,.55)';x.fillRect(0,0,W,H);
+    x.fillStyle='#00fff2';x.font='bold 24px monospace';x.textAlign='center';
+    x.fillText('PAUSED — P to resume',W/2,H/2);
+  }
   if(invuln>1){
     x.save();x.strokeStyle=`rgba(0,255,242,${Math.min(invuln*.25,.5)})`;x.lineWidth=2;x.shadowColor='#00fff2';x.shadowBlur=10;
     x.beginPath();x.arc(ship.x,ship.y,28,0,Math.PI*2);x.stroke();x.restore();x.shadowBlur=0;
@@ -396,7 +404,7 @@ function frame(dt){
 
 function loop(ts){
   if(!lastT)lastT=ts;let dt=(ts-lastT)/1000;lastT=ts;dt=Math.min(dt,.05);
-  if(state==='playing')update(dt);
+  if(state==='playing'&&!paused)update(dt);
   else if(state==='intro'){
     bannerTimer-=dt;
     if(bannerTimer<=0){hideBanner();state='playing';}
