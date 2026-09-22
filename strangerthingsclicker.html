@@ -1,452 +1,352 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stranger Things Clicker</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Arial, sans-serif;
-      background:
-        radial-gradient(circle at center, rgba(120,0,0,.35), transparent 35%),
-        linear-gradient(#080808, #160000);
-      color: white;
-      text-align: center;
-      overflow-x: hidden;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STRANGER THINGS CLICKER</title>
+<style>
+  :root{--red:#ff3131;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--magenta:#ff2fd0;--bg:#080808;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;min-height:100%;
+    background:radial-gradient(circle at center,rgba(120,0,0,.35),transparent 35%),linear-gradient(#080808,#160000);
+    font-family:'Consolas','Courier New',monospace;color:#fff;text-align:center;overflow-x:hidden;}
 
-    h1 {
-      margin: 18px 0 4px;
-      color: #ff3131;
-      letter-spacing: 3px;
-      text-shadow: 0 0 8px #ff0000, 0 0 20px #770000;
-      font-size: clamp(28px, 6vw, 54px);
-    }
+  /* ── Header ── */
+  h1{margin:18px 0 4px;color:var(--red);letter-spacing:4px;
+    text-shadow:0 0 8px #ff0000,0 0 22px #770000;font-size:clamp(22px,5vw,48px);}
+  .subtitle{color:#bbb;margin-bottom:6px;letter-spacing:2px;font-size:13px;}
 
-    .subtitle {
-      color: #bbb;
-      margin-bottom: 14px;
-    }
+  /* ── Mode toggle ── */
+  .mode-toggle{display:inline-flex;align-items:center;gap:10px;margin-bottom:16px;
+    background:rgba(15,15,15,.8);border:1px solid #5b2020;border-radius:999px;
+    padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;color:#ccc;
+    box-shadow:0 0 14px rgba(255,0,0,.1);}
+  .mode-toggle input{display:none;}
+  .mode-toggle .pill{width:38px;height:20px;border-radius:10px;background:#333;position:relative;transition:background .2s;flex-shrink:0;}
+  .mode-toggle .pill.on{background:#ff3131;}
+  .mode-toggle .pill::after{content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s;}
+  .mode-toggle .pill.on::after{left:21px;}
 
-    .wrap {
-      width: min(900px, 94vw);
-      margin: auto;
-      display: grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 18px;
-      padding-bottom: 30px;
-    }
+  /* ── Layout ── */
+  .wrap{width:min(900px,94vw);margin:auto;display:grid;grid-template-columns:1.2fr .8fr;gap:18px;padding-bottom:36px;}
 
-    .panel {
-      background: rgba(15,15,15,.9);
-      border: 2px solid #541111;
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 0 20px rgba(255,0,0,.12);
-    }
+  /* ── Panel ── */
+  .panel{background:rgba(12,12,12,.92);border:2px solid #541111;border-radius:14px;padding:20px;
+    box-shadow:0 0 24px rgba(255,0,0,.1),inset 0 0 40px rgba(0,0,0,.4);}
+  .panel h2{font-size:16px;letter-spacing:4px;color:var(--red);margin:0 0 14px;
+    text-shadow:0 0 8px rgba(255,0,0,.4);}
 
-    .score {
-      font-size: 30px;
-      font-weight: bold;
-      margin: 8px;
-    }
+  /* ── Score ── */
+  .score{font-size:28px;font-weight:bold;margin:6px;color:#fff;letter-spacing:2px;
+    text-shadow:0 0 10px rgba(255,49,49,.5);}
+  .small{color:#999;font-size:13px;letter-spacing:1px;}
 
-    .small {
-      color: #bbb;
-      font-size: 14px;
-    }
+  /* ── Click button ── */
+  #clickBtn{
+    width:220px;height:220px;border-radius:50%;
+    border:4px solid #b52020;
+    background:radial-gradient(circle,rgba(255,40,40,.85) 0 5%,rgba(120,0,0,.65) 8%,transparent 17%),
+      repeating-conic-gradient(from 10deg,rgba(255,40,40,.22) 0deg 4deg,transparent 4deg 12deg),
+      radial-gradient(ellipse at center,#250000 0 28%,#090000 58%,#020202 100%);
+    color:white;font-size:68px;cursor:pointer;
+    box-shadow:0 0 28px #7d0000,inset 0 0 30px #ff1616,0 0 0 1px rgba(255,49,49,.2);
+    transition:transform .07s,box-shadow .15s;margin:18px 0;user-select:none;
+    display:flex;align-items:center;justify-content:center;margin:18px auto;}
+  #clickBtn:active{transform:scale(.92);box-shadow:0 0 70px #ff2020,inset 0 0 50px #ff2020;}
 
-    #clickBtn {
-      width: 230px;
-      height: 230px;
-      border-radius: 50%;
-      border: 5px solid #b52020;
-      background:
-        radial-gradient(circle, rgba(255,40,40,.85) 0 5%, rgba(120,0,0,.65) 8%, transparent 17%),
-        repeating-conic-gradient(from 10deg, rgba(255,40,40,.22) 0deg 4deg, transparent 4deg 12deg),
-        radial-gradient(ellipse at center, #250000 0 28%, #090000 58%, #020202 100%);
-      color: white;
-      font-size: 72px;
-      cursor: pointer;
-      box-shadow: 0 0 25px #7d0000, inset 0 0 30px #ff1616;
-      transition: transform .06s, box-shadow .15s;
-      position: relative;
-      margin: 20px 0;
-      user-select: none;
-    }
+  .gate-note{margin:-4px auto 10px;max-width:340px;color:#d85a5a;font-size:12px;letter-spacing:1px;}
 
-    #clickBtn:active {
-      transform: scale(.93);
-      box-shadow: 0 0 65px #ff2020, inset 0 0 45px #ff2020;
-    }
+  /* ── Upgrades ── */
+  .upgrade{width:100%;text-align:left;margin:8px 0;background:rgba(20,20,20,.8);
+    color:white;border:1px solid #3a3a3a;border-radius:10px;padding:12px 14px;
+    cursor:pointer;transition:.15s;font-family:inherit;}
+  .upgrade:hover{background:rgba(40,20,20,.9);border-color:#7a2020;}
+  .upgrade:disabled{opacity:.38;cursor:not-allowed;}
+  .upgrade strong{color:#ff5555;display:block;margin-bottom:3px;font-size:13px;letter-spacing:1px;}
+  .upgrade .cost{color:var(--yellow);font-size:12px;float:right;margin-top:2px;}
+  .upgrade .desc{font-size:11px;color:#888;margin-top:2px;}
 
-    .gateNote {
-      margin: -4px auto 8px;
-      max-width: 360px;
-      color: #d85a5a;
-      font-size: 13px;
-      letter-spacing: 1px;
-    }
+  /* ── Messages ── */
+  #message{min-height:26px;color:#ff8c8c;font-weight:bold;margin-top:8px;font-size:13px;letter-spacing:1px;}
 
-    .upgrade {
-      width: 100%;
-      text-align: left;
-      margin: 10px 0;
-      background: #1c1c1c;
-      color: white;
-      border: 1px solid #4b4b4b;
-      border-radius: 12px;
-      padding: 12px;
-      cursor: pointer;
-      transition: .15s;
-    }
+  /* ── Boss box ── */
+  .boss-box{display:none;margin-top:14px;padding:14px;border:2px solid #9f1616;
+    border-radius:10px;background:rgba(30,0,0,.7);box-shadow:0 0 20px rgba(255,0,0,.15);}
+  .boss-box strong{font-size:15px;letter-spacing:2px;color:var(--red);}
+  .bar{height:16px;border-radius:8px;overflow:hidden;background:#1a1a1a;margin-top:10px;
+    border:1px solid #3a0000;}
+  .bar-fill{height:100%;width:100%;background:linear-gradient(90deg,#ff2d2d,#800000);transition:width .15s;}
 
-    .upgrade:hover { background: #292929; }
-    .upgrade:disabled { opacity: .45; cursor: not-allowed; }
+  /* ── Floating text ── */
+  .floating{position:fixed;pointer-events:none;font-weight:bold;color:#ff5656;font-size:20px;
+    animation:floatUp .8s forwards;font-family:'Consolas','Courier New',monospace;}
+  @keyframes floatUp{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(-70px);}}
 
-    .upgrade strong {
-      color: #ff5555;
-      display: block;
-      margin-bottom: 3px;
-    }
+  /* ── Danger flash ── */
+  .danger{animation:dangerFlash .4s infinite alternate;}
+  @keyframes dangerFlash{from{background-color:rgba(30,0,0,.2);}to{background-color:rgba(100,0,0,.5);}}
 
-    #message {
-      min-height: 28px;
-      color: #ff8c8c;
-      font-weight: bold;
-      margin-top: 8px;
-    }
+  /* ── Footer ── */
+  #back{display:inline-block;margin:8px 0 24px;color:var(--cyan);text-decoration:none;
+    border:1px solid var(--cyan);padding:7px 14px;font-size:12px;letter-spacing:2px;border-radius:4px;}
+  #back:hover{background:var(--cyan);color:#000;}
 
-    .danger {
-      animation: flash .4s infinite alternate;
-    }
+  /* ── Stats panel ── */
+  .stat-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;}
+  .stat-row:last-child{border:none;}
+  .stat-label{color:#777;letter-spacing:1px;}
+  .stat-val{color:var(--yellow);font-weight:bold;}
 
-    @keyframes flash {
-      from { background-color: rgba(30,0,0,.2); }
-      to { background-color: rgba(100,0,0,.55); }
-    }
+  /* ── Reset ── */
+  .reset{margin-top:12px;background:none;color:#555;border:0;cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:1px;}
+  .reset:hover{color:#ff5555;}
 
-    .floating {
-      position: fixed;
-      pointer-events: none;
-      font-weight: bold;
-      color: #ff5656;
-      font-size: 22px;
-      animation: floatUp .8s forwards;
-    }
-
-    @keyframes floatUp {
-      from { opacity: 1; transform: translateY(0); }
-      to { opacity: 0; transform: translateY(-80px); }
-    }
-
-    .bossBox {
-      display: none;
-      margin-top: 15px;
-      padding: 12px;
-      border: 2px solid #9f1616;
-      border-radius: 12px;
-      background: #210000;
-    }
-
-    .bar {
-      height: 18px;
-      border-radius: 10px;
-      overflow: hidden;
-      background: #333;
-      margin-top: 8px;
-    }
-
-    .barFill {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #ff2d2d, #800000);
-      transition: width .15s;
-    }
-
-    .reset {
-      margin-top: 14px;
-      background: none;
-      color: #777;
-      border: 0;
-      cursor: pointer;
-    }
-
-    @media (max-width: 720px) {
-      .wrap { grid-template-columns: 1fr; }
-      #clickBtn { width: 190px; height: 190px; font-size: 58px; }
-    }
-  </style>
+  @media(max-width:680px){
+    .wrap{grid-template-columns:1fr;}
+    #clickBtn{width:180px;height:180px;font-size:54px;}
+  }
+</style>
 </head>
 <body>
-  <h1>STRANGER THINGS CLICKER</h1>
-  <div class="subtitle" id="subtitle">Collect Hawkins Energy. Survive the Upside Down.</div>
-  <label style="display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;background:#171717;border:1px solid #5b2020;border-radius:999px;padding:8px 14px;cursor:pointer;">
-    <input type="checkbox" id="talesToggle">
-    <span>❄️ Tales From ’85 Mode</span>
-  </label>
+<h1 id="mainTitle">STRANGER THINGS CLICKER</h1>
+<div class="subtitle" id="subtitle">Collect Hawkins Energy · Survive the Upside Down</div>
 
-  <div class="wrap">
-    <div class="panel" id="mainPanel">
-      <div class="score">⚡ <span id="energy">0</span> Energy</div>
-      <div class="small">Per click: <span id="perClick">1</span> • Per second: <span id="perSecond">0</span></div>
+<label class="mode-toggle" id="modeLabel">
+  <div class="pill" id="modePill"></div>
+  <span id="modeText">❄️ Tales From '85 Mode</span>
+</label>
 
-      <button id="clickBtn" title="Click the Gate!">🩸</button>
-      <div>The Gate</div>
-      <div class="gateNote">A living tear into the Upside Down</div>
-      <div id="message"></div>
+<div class="wrap">
+  <!-- Left panel -->
+  <div class="panel" id="mainPanel">
+    <div class="score">⚡ <span id="energy">0</span></div>
+    <div class="small">Per click: <span id="perClick">1</span> &nbsp;·&nbsp; Per second: <span id="perSecond">0</span></div>
 
-      <div class="bossBox" id="bossBox">
-        <strong id="bossName">👾 DEMOGORGON ATTACK!</strong>
-        <div id="bossDesc">Click the Gate to fight it!</div>
-        <div class="bar"><div class="barFill" id="bossBar"></div></div>
-        <div class="small"><span id="bossHp">0</span> HP • <span id="bossTimer">20</span>s</div>
-      </div>
-    </div>
+    <button id="clickBtn" title="Click the Gate!">🩸</button>
+    <div id="gateLabel" style="letter-spacing:2px;font-size:14px;color:#ccc;">The Gate</div>
+    <div class="gate-note">A living tear into the Upside Down</div>
+    <div id="message"></div>
 
-    <div class="panel">
-      <h2>🛒 Upgrades</h2>
-
-      <button class="upgrade" id="u1">
-        <strong>🍟 Scoops Ahoy Snack</strong>
-        +1 energy per click<br>
-        Cost: <span id="c1">25</span>
-      </button>
-
-      <button class="upgrade" id="u2">
-        <strong>📻 Walkie-Talkie Crew</strong>
-        +1 energy per second<br>
-        Cost: <span id="c2">50</span>
-      </button>
-
-      <button class="upgrade" id="u3">
-        <strong>🚲 Hawkins Bike Squad</strong>
-        +5 energy per second<br>
-        Cost: <span id="c3">200</span>
-      </button>
-
-      <button class="upgrade" id="u4">
-        <strong>🧇 Eleven's Waffles</strong>
-        Double click power<br>
-        Cost: <span id="c4">500</span>
-      </button>
-
-      <button class="upgrade" id="u5">
-        <strong>🌀 Close the Gate</strong>
-        +25 energy per second<br>
-        Cost: <span id="c5">1500</span>
-      </button>
-
-      <button class="reset" onclick="resetGame()">Reset save</button>
+    <div class="boss-box" id="bossBox">
+      <strong id="bossName">👾 DEMOGORGON ATTACK!</strong>
+      <div id="bossDesc" style="font-size:12px;color:#ccc;margin-top:4px;"></div>
+      <div class="bar"><div class="bar-fill" id="bossBar"></div></div>
+      <div class="small" style="margin-top:6px"><span id="bossHp">0</span> HP &nbsp;·&nbsp; <span id="bossTimer">20</span>s remaining</div>
     </div>
   </div>
 
+  <!-- Right panel -->
+  <div class="panel">
+    <h2>🛒 UPGRADES</h2>
+
+    <button class="upgrade" id="u1">
+      <strong>🍟 Scoops Ahoy Snack</strong>
+      <span class="cost">💰 <span id="c1">60</span></span>
+      <div class="desc">+1 energy per click</div>
+    </button>
+    <button class="upgrade" id="u2">
+      <strong>📻 Walkie-Talkie Crew</strong>
+      <span class="cost">💰 <span id="c2">150</span></span>
+      <div class="desc">+1 energy per second</div>
+    </button>
+    <button class="upgrade" id="u3">
+      <strong>🚲 Hawkins Bike Squad</strong>
+      <span class="cost">💰 <span id="c3">600</span></span>
+      <div class="desc">+5 energy per second</div>
+    </button>
+    <button class="upgrade" id="u4">
+      <strong>🧇 Eleven's Waffles</strong>
+      <span class="cost">💰 <span id="c4">1800</span></span>
+      <div class="desc">Double click power</div>
+    </button>
+    <button class="upgrade" id="u5">
+      <strong>🌀 Close the Gate</strong>
+      <span class="cost">💰 <span id="c5">6000</span></span>
+      <div class="desc">+25 energy per second</div>
+    </button>
+
+    <div style="margin-top:16px;">
+      <h2>📊 STATS</h2>
+      <div class="stat-row"><span class="stat-label">TOTAL CLICKS</span><span class="stat-val" id="statClicks">0</span></div>
+      <div class="stat-row"><span class="stat-label">BOSSES BEATEN</span><span class="stat-val" id="statBosses">0</span></div>
+      <div class="stat-row"><span class="stat-label">ALL TIME ENERGY</span><span class="stat-val" id="statTotal">0</span></div>
+    </div>
+
+    <button class="reset" onclick="resetGame()">↺ Reset save</button>
+  </div>
+</div>
+
+<a id="back" href="index.html">◄ GAME HUB</a>
+
 <script>
-let energy = Number(localStorage.stEnergy || 0);
-let perClick = Number(localStorage.stPerClick || 1);
-let perSecond = Number(localStorage.stPerSecond || 0);
+(function(){
+let energy=Number(localStorage.stEnergy||0);
+let perClick=Number(localStorage.stPerClick||1);
+let perSecond=Number(localStorage.stPerSecond||0);
+let totalClicks=Number(localStorage.stClicks||0);
+let totalBosses=Number(localStorage.stBosses||0);
+let totalEnergy=Number(localStorage.stTotal||0);
+let costs=JSON.parse(localStorage.stCosts||'{"u1":60,"u2":150,"u3":600,"u4":1800,"u5":6000}');
+let talesMode=localStorage.stTalesMode==="true";
 
-let costs = JSON.parse(localStorage.stCosts || '{"u1":60,"u2":150,"u3":600,"u4":1800,"u5":6000}');
+let bossActive=false,bossHp=0,bossMax=0,bossTime=0,currentBoss=null;
 
-let bossActive = false;
-let bossHp = 0;
-let bossMax = 0;
-let bossTime = 0;
-let currentBoss = null;
-let talesMode = localStorage.stTalesMode === "true";
-
-const normalBosses = [
-  { name: "👾 DEMOGORGON", desc: "The monster is breaking through!", hp: 1.0, reward: 1.8 },
-  { name: "🕷️ MIND FLAYER", desc: "The shadow monster has entered Hawkins!", hp: 2.6, reward: 2.2 },
-  { name: "🕴️ VECNA", desc: "Vecna is pulling you into his mind!", hp: 4.2, reward: 2.8 },
-  { name: "👹 DEMOGORGON ALPHA", desc: "A much bigger creature emerges from the Gate!", hp: 6.5, reward: 3.5 }
+const normalBosses=[
+  {name:"👾 DEMOGORGON",desc:"The monster is breaking through!",hp:1.0,reward:1.8},
+  {name:"🕷️ MIND FLAYER",desc:"The shadow monster has entered Hawkins!",hp:2.6,reward:2.2},
+  {name:"🕴️ VECNA",desc:"Vecna is pulling you into his mind!",hp:4.2,reward:2.8},
+  {name:"👹 DEMOGORGON ALPHA",desc:"A much bigger creature emerges from the Gate!",hp:6.5,reward:3.5}
+];
+const talesBosses=[
+  {name:"🦈 SNOW STALKER",desc:"Something is moving beneath the frozen snow!",hp:2.0,reward:2.0},
+  {name:"🧪 SPORE CREATURE",desc:"Strange glowing spores are spreading through Hawkins!",hp:2.8,reward:2.3},
+  {name:"👑 HORDE QUEEN",desc:"The Queen is gathering a monstrous swarm!",hp:6.8,reward:3.8},
+  {name:"👻 GHOSTLY TERROR",desc:"A paranormal presence has appeared in Hawkins!",hp:7.5,reward:4.2}
 ];
 
-const talesBosses = [
-  { name: "🦈 SNOW STALKER", desc: "Something is moving beneath the frozen snow!", hp: 2.0, reward: 2.0 },
-  { name: "🧪 SPORE CREATURE", desc: "Strange glowing spores are spreading through Hawkins!", hp: 2.8, reward: 2.3 },
-  { name: "👑 HORDE QUEEN", desc: "The Queen is gathering a monstrous swarm!", hp: 6.8, reward: 3.8 },
-  { name: "👻 GHOSTLY TERROR", desc: "A paranormal presence has appeared in Hawkins!", hp: 7.5, reward: 4.2 }
-];
+const els={
+  energy:document.getElementById('energy'),
+  perClick:document.getElementById('perClick'),
+  perSecond:document.getElementById('perSecond'),
+  clickBtn:document.getElementById('clickBtn'),
+  msg:document.getElementById('message'),
+  bossBox:document.getElementById('bossBox'),
+  bossHp:document.getElementById('bossHp'),
+  bossBar:document.getElementById('bossBar'),
+  bossTimer:document.getElementById('bossTimer'),
+  bossName:document.getElementById('bossName'),
+  bossDesc:document.getElementById('bossDesc'),
+  modePill:document.getElementById('modePill'),
+  mainPanel:document.getElementById('mainPanel'),
+  statClicks:document.getElementById('statClicks'),
+  statBosses:document.getElementById('statBosses'),
+  statTotal:document.getElementById('statTotal')
+};
 
-const bosses = normalBosses;
-
-const energyEl = document.getElementById("energy");
-const perClickEl = document.getElementById("perClick");
-const perSecondEl = document.getElementById("perSecond");
-const clickBtn = document.getElementById("clickBtn");
-const msg = document.getElementById("message");
-const bossBox = document.getElementById("bossBox");
-const bossHpEl = document.getElementById("bossHp");
-const bossBar = document.getElementById("bossBar");
-const bossTimerEl = document.getElementById("bossTimer");
-const bossNameEl = document.getElementById("bossName");
-const bossDescEl = document.getElementById("bossDesc");
-const talesToggle = document.getElementById("talesToggle");
-const subtitleEl = document.getElementById("subtitle");
-const mainPanel = document.getElementById("mainPanel");
-
-function save() {
-  localStorage.stEnergy = energy;
-  localStorage.stPerClick = perClick;
-  localStorage.stPerSecond = perSecond;
-  localStorage.stCosts = JSON.stringify(costs);
+function save(){
+  localStorage.stEnergy=energy;localStorage.stPerClick=perClick;localStorage.stPerSecond=perSecond;
+  localStorage.stCosts=JSON.stringify(costs);localStorage.stTalesMode=talesMode;
+  localStorage.stClicks=totalClicks;localStorage.stBosses=totalBosses;localStorage.stTotal=totalEnergy;
 }
 
-function update() {
-  energyEl.textContent = Math.floor(energy);
-  perClickEl.textContent = perClick;
-  perSecondEl.textContent = perSecond;
-
-  ["u1","u2","u3","u4","u5"].forEach(id => {
-    document.getElementById(id).disabled = energy < costs[id];
-    document.getElementById("c" + id.substring(1)).textContent = costs[id];
+function update(){
+  els.energy.textContent=Math.floor(energy).toLocaleString();
+  els.perClick.textContent=perClick;els.perSecond.textContent=perSecond;
+  ['u1','u2','u3','u4','u5'].forEach(id=>{
+    document.getElementById(id).disabled=energy<costs[id];
+    document.getElementById('c'+id.substring(1)).textContent=costs[id].toLocaleString();
   });
-
-  if (bossActive) {
-    bossHpEl.textContent = Math.max(0, Math.ceil(bossHp));
-    bossTimerEl.textContent = bossTime;
-    bossBar.style.width = Math.max(0, bossHp / bossMax * 100) + "%";
+  if(bossActive){
+    els.bossHp.textContent=Math.max(0,Math.ceil(bossHp)).toLocaleString();
+    els.bossTimer.textContent=bossTime;
+    els.bossBar.style.width=Math.max(0,bossHp/bossMax*100)+'%';
   }
+  els.statClicks.textContent=totalClicks.toLocaleString();
+  els.statBosses.textContent=totalBosses;
+  els.statTotal.textContent=Math.floor(totalEnergy).toLocaleString();
 }
 
-function floatText(text, x, y) {
-  const el = document.createElement("div");
-  el.className = "floating";
-  el.textContent = text;
-  el.style.left = x + "px";
-  el.style.top = y + "px";
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 800);
+function floatText(text,ex,ey){
+  const el=document.createElement('div');el.className='floating';
+  el.textContent=text;el.style.left=ex+'px';el.style.top=ey+'px';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),800);
 }
 
-clickBtn.addEventListener("click", e => {
-  if (bossActive) {
-    bossHp -= perClick;
-    floatText("-" + perClick, e.clientX, e.clientY);
-    if (bossHp <= 0) beatBoss();
-  } else {
-    energy += perClick;
-    floatText("+" + perClick, e.clientX, e.clientY);
-    if (Math.random() < 0.005 && energy >= 250) startBoss();
+function flash(txt,dur=1200){
+  els.msg.textContent=txt;clearTimeout(flash._t);
+  flash._t=setTimeout(()=>els.msg.textContent='',dur);
+}
+
+els.clickBtn.addEventListener('click',e=>{
+  if(bossActive){
+    bossHp-=perClick;
+    floatText('-'+perClick,e.clientX,e.clientY);
+    if(bossHp<=0)beatBoss();
+  }else{
+    energy+=perClick;totalEnergy+=perClick;totalClicks++;
+    floatText('+'+perClick,e.clientX,e.clientY);
+    if(Math.random()<0.005&&energy>=250)startBoss();
   }
-  update();
-  save();
+  update();save();
 });
 
-function buy(id, clickAdd = 0, secAdd = 0, doubleClick = false) {
-  if (energy < costs[id]) return;
-  energy -= costs[id];
+function buy(id,clickAdd=0,secAdd=0,doubleClick=false){
+  if(energy<costs[id])return;
+  energy-=costs[id];
+  if(doubleClick)perClick*=2;
+  else{perClick+=clickAdd;perSecond+=secAdd;}
+  costs[id]=Math.ceil(costs[id]*2.05);
+  flash('Upgrade purchased!');update();save();
+}
+document.getElementById('u1').onclick=()=>buy('u1',1,0);
+document.getElementById('u2').onclick=()=>buy('u2',0,1);
+document.getElementById('u3').onclick=()=>buy('u3',0,5);
+document.getElementById('u4').onclick=()=>buy('u4',0,0,true);
+document.getElementById('u5').onclick=()=>buy('u5',0,25);
 
-  if (doubleClick) perClick *= 2;
-  else {
-    perClick += clickAdd;
-    perSecond += secAdd;
-  }
-
-  costs[id] = Math.ceil(costs[id] * 2.05);
-  msg.textContent = "Upgrade bought!";
-  setTimeout(() => msg.textContent = "", 900);
-  update();
-  save();
+function startBoss(){
+  bossActive=true;bossTime=20;
+  const pool=talesMode?talesBosses:normalBosses;
+  currentBoss=pool[Math.floor(Math.random()*pool.length)];
+  let difficulty=currentBoss.hp;
+  if(energy>5000)difficulty*=1.25;if(energy>20000)difficulty*=1.5;
+  bossMax=Math.max(250,Math.floor((perClick*90+perSecond*45+energy*0.08)*difficulty));
+  bossHp=bossMax;
+  els.bossName.textContent=currentBoss.name+' ATTACK!';
+  els.bossDesc.textContent=currentBoss.desc;
+  els.bossBox.style.display='block';
+  els.mainPanel.classList.add('danger');
+  flash('THE UPSIDE DOWN IS OPEN!',99999);update();
 }
 
-document.getElementById("u1").onclick = () => buy("u1", 1, 0);
-document.getElementById("u2").onclick = () => buy("u2", 0, 1);
-document.getElementById("u3").onclick = () => buy("u3", 0, 5);
-document.getElementById("u4").onclick = () => buy("u4", 0, 0, true);
-document.getElementById("u5").onclick = () => buy("u5", 0, 25);
-
-function startBoss() {
-  bossActive = true;
-  bossTime = 20;
-  const bossPool = talesMode ? talesBosses : normalBosses;
-  currentBoss = bossPool[Math.floor(Math.random() * bossPool.length)];
-
-  // Stronger bosses become possible as your Energy grows.
-  let difficulty = currentBoss.hp;
-  if (energy > 5000) difficulty *= 1.25;
-  if (energy > 20000) difficulty *= 1.5;
-
-  bossMax = Math.max(250, Math.floor((perClick * 90 + perSecond * 45 + energy * 0.08) * difficulty));
-  bossHp = bossMax;
-
-  bossNameEl.textContent = currentBoss.name + " ATTACK!";
-  bossDescEl.textContent = currentBoss.desc;
-  bossBox.style.display = "block";
-  mainPanel.classList.add("danger");
-  msg.textContent = "THE UPSIDE DOWN IS OPEN!";
-  update();
+function beatBoss(){
+  bossActive=false;totalBosses++;
+  const reward=Math.ceil(bossMax*currentBoss.reward);
+  energy+=reward;totalEnergy+=reward;
+  els.bossBox.style.display='none';els.mainPanel.classList.remove('danger');
+  flash(currentBoss.name+' defeated! +'+reward.toLocaleString()+' energy!',2000);save();
 }
 
-function beatBoss() {
-  bossActive = false;
-  const reward = Math.ceil(bossMax * currentBoss.reward);
-  energy += reward;
-  bossBox.style.display = "none";
-  mainPanel.classList.remove("danger");
-  msg.textContent = currentBoss.name + " defeated! +" + reward + " energy!";
-  setTimeout(() => msg.textContent = "", 1800);
-  save();
-}
+setInterval(()=>{
+  if(!bossActive){energy+=perSecond;totalEnergy+=perSecond;}
+  else{bossTime--;if(bossTime<=0){
+    const loss=Math.min(Math.floor(energy*0.35),10000);
+    energy-=loss;bossActive=false;
+    els.bossBox.style.display='none';els.mainPanel.classList.remove('danger');
+    flash('The Gate overwhelmed Hawkins! -'+loss.toLocaleString()+' energy.',2200);
+  }}
+  update();save();
+},1000);
 
-setInterval(() => {
-  if (!bossActive) {
-    energy += perSecond;
-  } else {
-    bossTime--;
-    if (bossTime <= 0) {
-      const loss = Math.min(Math.floor(energy * 0.35), 10000);
-      energy -= loss;
-      bossActive = false;
-      bossBox.style.display = "none";
-      mainPanel.classList.remove("danger");
-      msg.textContent = "The Gate overwhelmed Hawkins! -" + loss + " energy.";
-      setTimeout(() => msg.textContent = "", 2200);
-    }
+function applyMode(){
+  els.modePill.classList.toggle('on',talesMode);
+  if(talesMode){
+    document.getElementById('mainTitle').textContent='STRANGER THINGS: TALES FROM \'85 CLICKER';
+    document.getElementById('subtitle').textContent='❄️ Winter 1985 — Hawkins Investigators Club';
+    els.clickBtn.textContent='❄️';
+    document.getElementById('gateLabel').textContent='Investigate Hawkins!';
+  }else{
+    document.getElementById('mainTitle').textContent='STRANGER THINGS CLICKER';
+    document.getElementById('subtitle').textContent='Collect Hawkins Energy · Survive the Upside Down';
+    els.clickBtn.textContent='🩸';
+    document.getElementById('gateLabel').textContent='The Gate';
   }
   update();
-  save();
-}, 1000);
+}
 
-function resetGame() {
-  if (!confirm("Reset all progress?")) return;
-  localStorage.removeItem("stEnergy");
-  localStorage.removeItem("stPerClick");
-  localStorage.removeItem("stPerSecond");
-  localStorage.removeItem("stCosts");
+document.getElementById('modeLabel').addEventListener('click',()=>{
+  talesMode=!talesMode;applyMode();
+  flash(talesMode?'TALES FROM \'85 MODE ACTIVATED!':'Classic Hawkins mode activated!');save();
+});
+
+window.resetGame=function(){
+  if(!confirm('Reset all progress?'))return;
+  ['stEnergy','stPerClick','stPerSecond','stCosts','stTalesMode','stClicks','stBosses','stTotal'].forEach(k=>localStorage.removeItem(k));
   location.reload();
-}
+};
 
-
-function applyMode() {
-  talesMode = talesToggle.checked;
-  localStorage.stTalesMode = talesMode;
-  if (talesMode) {
-    document.querySelector("h1").textContent = "STRANGER THINGS: TALES FROM ’85 CLICKER";
-    subtitleEl.textContent = "❄️ Winter 1985 — Hawkins Investigators Club";
-    clickBtn.textContent = "❄️";
-    document.querySelector("#mainPanel > div:nth-of-type(2)").textContent = "Investigate Hawkins!";
-    msg.textContent = "TALES FROM ’85 MODE ACTIVATED!";
-  } else {
-    document.querySelector("h1").textContent = "STRANGER THINGS CLICKER";
-    subtitleEl.textContent = "Collect Hawkins Energy. Survive the Upside Down.";
-    clickBtn.textContent = "🩸";
-    document.querySelector("#mainPanel > div:nth-of-type(2)").textContent = "The Gate";
-    msg.textContent = "Classic Hawkins mode activated!";
-  }
-  setTimeout(() => msg.textContent = "", 1200);
-  update();
-  save();
-}
-
-talesToggle.checked = talesMode;
-talesToggle.addEventListener("change", applyMode);
-
-update();
+applyMode();update();
+})();
 </script>
 </body>
 </html>
