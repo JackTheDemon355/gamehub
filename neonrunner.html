@@ -8,26 +8,20 @@
   :root{
     --bg:#04040c;--solid-bg:#0d2b12;--solid-border:#39ff14;--plat:#00fff2;
     --spike:#ff003c;--saw:#ff003c;--drone:#ff6a00;--gem:#ffe600;--exit:#ff2fd0;
-    --player:#00fff2;--particle1:#ff003c;--particle2:#ffe600;
-    --hud-lbl:#ff2fd0;--hud-val:#ffe600;--hud-fg:#39ff14;
+    --player:#00fff2;--hud-lbl:#ff2fd0;--hud-val:#ffe600;--hud-fg:#39ff14;
     --link-c:#00fff2;--btn-c:#ffe600;--canvas-border:#39ff14;
     --shadow-player:#00fff2;--shadow-solid:#39ff14;--shadow-saw:#ff003c;
     --shadow-drone:#ff6a00;--shadow-gem:#ffe600;--shadow-exit:#ff2fd0;
-    --grid-line:rgba(57,255,20,0.05);
-    --overlay-bg:rgba(2,2,8,.86);
-    --glow:1;
+    --grid-line:rgba(57,255,20,0.05);--overlay-bg:rgba(2,2,8,.86);
   }
   .retro{
     --bg:#1a1a1a;--solid-bg:#333;--solid-border:#aaa;--plat:#888;
     --spike:#e00;--saw:#e00;--drone:#c60;--gem:#fc0;--exit:#c0c;
-    --player:#fff;--particle1:#e00;--particle2:#fc0;
-    --hud-lbl:#ccc;--hud-val:#fc0;--hud-fg:#fff;
+    --player:#fff;--hud-lbl:#ccc;--hud-val:#fc0;--hud-fg:#fff;
     --link-c:#aef;--btn-c:#fc0;--canvas-border:#888;
     --shadow-player:transparent;--shadow-solid:transparent;--shadow-saw:transparent;
     --shadow-drone:transparent;--shadow-gem:transparent;--shadow-exit:transparent;
-    --grid-line:rgba(200,200,200,0.06);
-    --overlay-bg:rgba(0,0,0,.82);
-    --glow:0;
+    --grid-line:rgba(200,200,200,0.06);--overlay-bg:rgba(0,0,0,.82);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;
@@ -39,14 +33,13 @@
   .retro canvas{box-shadow:0 0 10px rgba(150,150,150,.2);}
   #hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;
     padding:12px 26px;font-size:15px;letter-spacing:2px;pointer-events:none;}
-  .lbl{color:var(--hud-lbl);} .val{color:var(--hud-val);font-weight:bold;}
+  .lbl{color:var(--hud-lbl);}.val{color:var(--hud-val);font-weight:bold;}
   #hud .box{display:flex;gap:16px;}
   #back{position:absolute;bottom:14px;left:18px;z-index:5;color:var(--link-c);text-decoration:none;
     border:1px solid var(--link-c);padding:7px 14px;font-size:12px;letter-spacing:2px;border-radius:4px;}
   #back:hover{background:var(--link-c);color:#000;}
   #pauseBtn{position:absolute;bottom:14px;right:18px;z-index:5;color:var(--hud-fg);cursor:pointer;
-    border:1px solid var(--hud-fg);padding:7px 14px;font-size:12px;letter-spacing:2px;border-radius:4px;
-    background:transparent;}
+    border:1px solid var(--hud-fg);padding:7px 14px;font-size:12px;letter-spacing:2px;border-radius:4px;background:transparent;}
   #pauseBtn:hover{background:var(--hud-fg);color:#000;}
   #overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
     justify-content:center;text-align:center;background:var(--overlay-bg);z-index:10;padding:20px;}
@@ -61,7 +54,6 @@
   .hidden{display:none!important;}
   #banner{position:absolute;top:34%;left:50%;transform:translate(-50%,-50%);font-size:34px;
     color:var(--hud-val);letter-spacing:6px;opacity:0;transition:opacity .35s;pointer-events:none;z-index:3;}
-  /* Settings panel */
   #settings{position:absolute;inset:0;background:var(--overlay-bg);z-index:20;
     display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;}
   #settings h2{font-size:28px;letter-spacing:6px;color:var(--hud-fg);margin:0 0 22px;}
@@ -88,7 +80,7 @@
 <div id="wrap">
   <canvas id="c" width="900" height="600"></canvas>
   <div id="hud">
-    <div class="box"><span class="lbl">LEVEL</span><span class="val" id="lvl">1</span>/<span id="maxLvl">20</span></div>
+    <div class="box"><span class="lbl">LEVEL</span><span class="val" id="lvl">1</span>/<span id="maxLvl">25</span></div>
     <div class="box">
       <span class="lbl">GEMS</span><span class="val" id="gems">0</span>
       <span class="lbl">DEATHS</span><span class="val" id="deaths">0</span>
@@ -99,7 +91,6 @@
   <a id="back" href="index.html">◄ HUB</a>
   <button id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
 
-  <!-- Main overlay (start/win/gameover) -->
   <div id="overlay">
     <h1>NEON RUNNER</h1>
     <h2>25 LEVELS OF PRECISION</h2>
@@ -110,8 +101,7 @@
     <button class="obtn sec" onclick="openSettings()">⚙ SETTINGS</button>
   </div>
 
-  <!-- Pause overlay -->
-  <div id="pauseOverlay" class="hidden">
+  <div id="pauseOverlay" class="hidden" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:11;background:rgba(0,0,0,.5);">
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
       background:var(--overlay-bg);padding:40px 50px;border-radius:12px;border:2px solid var(--hud-fg);">
       <h2 style="font-size:28px;letter-spacing:6px;color:var(--hud-fg);margin:0 0 22px;">PAUSED</h2>
@@ -122,8 +112,7 @@
     </div>
   </div>
 
-  <!-- Settings panel -->
-  <div id="settings" class="hidden">
+  <div id="settings" class="hidden" style="position:absolute;inset:0;z-index:20;">
     <h2>⚙ SETTINGS</h2>
     <div class="tog" onclick="toggle('retro')">
       <span>RETRO MODE (No Neon)</span><div class="pill" id="t-retro"></div>
@@ -153,15 +142,28 @@ const lvlEl=document.getElementById('lvl'),gemsEl=document.getElementById('gems'
       maxLvlEl=document.getElementById('maxLvl'),
       pauseOverlay=document.getElementById('pauseOverlay'),
       settingsEl=document.getElementById('settings');
-const MAX=25;maxLvlEl.textContent=MAX;
+const MAX=25; maxLvlEl.textContent=MAX;
 
-// ---- Settings ----
 const cfg={retro:false,lowmotion:false,access:false};
+// Cached CSS variable values (refreshed when theme changes)
+let CV={bg:'#04040c',solidBg:'#0d2b12',solidBorder:'#39ff14',plat:'#00fff2',
+  spike:'#ff003c',saw:'#ff003c',drone:'#ff6a00',gem:'#ffe600',exit:'#ff2fd0',
+  player:'#00fff2',shadowSolid:'#39ff14',shadowSaw:'#ff003c',shadowDrone:'#ff6a00',
+  shadowGem:'#ffe600',shadowExit:'#ff2fd0',shadowPlayer:'#00fff2',gridLine:'rgba(57,255,20,0.05)'};
+function refreshCV(){
+  const s=getComputedStyle(document.documentElement);
+  function g(v){return s.getPropertyValue(v).trim();}
+  CV={bg:g('--bg'),solidBg:g('--solid-bg'),solidBorder:g('--solid-border'),plat:g('--plat'),
+    spike:g('--spike'),saw:g('--saw'),drone:g('--drone'),gem:g('--gem'),exit:g('--exit'),
+    player:g('--player'),shadowSolid:g('--shadow-solid'),shadowSaw:g('--shadow-saw'),
+    shadowDrone:g('--shadow-drone'),shadowGem:g('--shadow-gem'),shadowExit:g('--shadow-exit'),
+    shadowPlayer:g('--shadow-player'),gridLine:g('--grid-line')};
+}
 let fromPause=false;
 function toggle(k){
   cfg[k]=!cfg[k];
   document.getElementById('t-'+k).classList.toggle('on',cfg[k]);
-  if(k==='retro')document.body.classList.toggle('retro',cfg[k]);
+  if(k==='retro'){document.body.classList.toggle('retro',cfg[k]);refreshCV();}
 }
 function openSettings(frPause){
   fromPause=!!frPause;
@@ -175,7 +177,6 @@ document.getElementById('closeSettings').onclick=()=>{
 window.openSettings=openSettings;
 window.toggle=toggle;
 
-// ---- Pause ----
 let paused=false,running=false;
 function togglePause(){
   if(!running)return;
@@ -192,7 +193,6 @@ function restartFromPause(){
 }
 window.restartFromPause=restartFromPause;
 
-// ---- Input ----
 const keys={};
 addEventListener('keydown',e=>{
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();
@@ -212,8 +212,9 @@ function bindT(id,k){const el=document.getElementById(id);
   el.addEventListener('touchend',e=>{e.preventDefault();keys[k]=false;});}
 bindT('lBtn','arrowleft');bindT('rBtn','arrowright');bindT('jBtn','jump');
 
-// ---- Level data ----
+// ---- LEVEL DATA (25 levels, clean array) ----
 const LEVELS=[
+// 1
 ["......................",
  "......................",
  "......................",
@@ -229,6 +230,7 @@ const LEVELS=[
  ".P....................",
  "####..................",
  "######################"],
+// 2
 ["......................",
  "......................",
  "......................",
@@ -244,6 +246,7 @@ const LEVELS=[
  "#####.................",
  "......................",
  "######################"],
+// 3
 ["......................",
  "......................",
  "......................",
@@ -259,6 +262,7 @@ const LEVELS=[
  "###...^......^........",
  "######################",
  "######################"],
+// 4
 ["......................",
  "..................E...",
  "................####..",
@@ -274,6 +278,7 @@ const LEVELS=[
  ".P....................",
  "####..................",
  "######################"],
+// 5
 ["......................",
  "......................",
  "......................",
@@ -289,6 +294,7 @@ const LEVELS=[
  "####..................",
  "......................",
  "######################"],
+// 6
 ["......................",
  "......................",
  "..........*...........",
@@ -304,6 +310,7 @@ const LEVELS=[
  "####..................",
  "......^^^^^^^^........",
  "######################"],
+// 7
 ["......................",
  "......................",
  "......................",
@@ -319,6 +326,7 @@ const LEVELS=[
  "####.........^^^......",
  "......................",
  "######################"],
+// 8
 ["......................",
  "...E..................",
  "####..................",
@@ -334,6 +342,7 @@ const LEVELS=[
  "..........P...........",
  "......................",
  "######################"],
+// 9
 ["......................",
  "......................",
  "..............*.....E.",
@@ -349,6 +358,7 @@ const LEVELS=[
  "###...................",
  "......^^^^^^^^^^^^^^^.",
  "######################"],
+// 10
 ["......................",
  "......................",
  "...........*..........",
@@ -364,6 +374,7 @@ const LEVELS=[
  "####..^^^^^^^^^^..####",
  "......................",
  "######################"],
+// 11
 ["......................",
  "...............*....E.",
  "..................####",
@@ -379,6 +390,7 @@ const LEVELS=[
  "#####............#####",
  "......^^^^^^^^^^......",
  "######################"],
+// 12
 ["......................",
  "......................",
  "..#####...............",
@@ -394,6 +406,7 @@ const LEVELS=[
  "......................",
  "......................",
  "######################"],
+// 13
 ["......................",
  ".P....................",
  "####..................",
@@ -409,6 +422,7 @@ const LEVELS=[
  "......................",
  "......^^^...^^^.......",
  "######################"],
+// 14
 ["......................",
  "......................",
  "..........*...........",
@@ -424,6 +438,7 @@ const LEVELS=[
  "####..............####",
  "......^^^...^^^.......",
  "######################"],
+// 15
 ["......................",
  ".P....................",
  "#####.................",
@@ -439,6 +454,7 @@ const LEVELS=[
  "...............#######",
  "..^^^^^^..............",
  "######################"],
+// 16
 ["......................",
  "..................E...",
  "...............#######",
@@ -454,6 +470,7 @@ const LEVELS=[
  "####..................",
  "......^^^...^^^.......",
  "######################"],
+// 17
 ["......................",
  "......................",
  "..#######......#####..",
@@ -469,12 +486,13 @@ const LEVELS=[
  "####..............####",
  "....^^^^^^^..^^^^^....",
  "######################"],
+// 18
 ["......................",
  "....................E.",
  "..................####",
  "......................",
  "..#.#.#.#.#.#.#.#.#...",
- "...*.*..*.*..*..*.*...",
+ "..*.*..*.*..*..*.*....",
  "..#.#.#.#.#.#.#.#.#...",
  "......................",
  "..#.#.#.#.#.#.#.#.#...",
@@ -484,6 +502,7 @@ const LEVELS=[
  "######################",
  "......................",
  "######################"],
+// 19
 ["......................",
  ".P.................E..",
  "####..............####",
@@ -499,6 +518,7 @@ const LEVELS=[
  "...####.....####......",
  "..^^^^^^^^^^^^^^^^^^..",
  "######################"],
+// 20
 ["......................",
  "..........*...........",
  "......................",
@@ -513,10 +533,89 @@ const LEVELS=[
  "..####.......####.....",
  ".P.................E..",
  "###.^^^^^^^^^^^.###...",
+ "######################"],
+// 21 - triple shaft
+["......................",
+ "...E..................",
+ "####..................",
+ "......................",
+ "...#...#...#..........",
+ "...#...*...#..........",
+ "...#.......#..........",
+ "...#...D...#..........",
+ "...#.......#..........",
+ "...#...*...#..........",
+ "...#.......#..........",
+ "...#.......#..........",
+ "..........P...........",
+ "......................",
+ "######################"],
+// 22 - speed run
+["......................",
+ "......................",
+ "P.......*.........E..",
+ "####...####.......###.",
+ "......................",
+ ".......*..............",
+ ".....####.............",
+ "......................",
+ "..........S...........",
+ "......................",
+ "...............*......",
+ "..............####....",
+ "......................",
+ "......^^^^^^^^^^^^^^^^",
+ "######################"],
+// 23 - precision
+["......................",
+ "..................E...",
+ "..................####",
+ "......................",
+ ".....#...#...#...#....",
+ ".....#...#...#...#....",
+ ".....*...*...*...*....",
+ "......................",
+ ".....V...V...V...V....",
+ "......................",
+ "......................",
+ "......................",
+ ".P....................",
+ "###...................",
+ "######################"],
+// 24 - the gauntlet
+["......................",
+ "......................",
+ "..####..####..####....",
+ "....S.....D....S......",
+ "......*......*........",
+ "......................",
+ "..####..####..####....",
+ "....V.....S....V......",
+ "......................",
+ "......*......*........",
+ "..####............####",
+ "......................",
+ ".P.................E..",
+ "###.^^^^^^^^^^^.###...",
+ "######################"],
+// 25 - final challenge
+["......................",
+ "...E..................",
+ "####..................",
+ "...#..........*.......",
+ "...#........####......",
+ "...#..S...............",
+ "...####...............",
+ "........#.........*...",
+ "...*....#.....#####...",
+ "..####..#.............",
+ "........#....V........",
+ "..#######..#######....",
+ ".P....................",
+ "...^^^..D..D..^^^.....",
  "######################"]
 ];
 
-// ---- State ----
 let level=0,gems=0,deaths=0,startTime=0,elapsed=0;
 let grid=[],hazards=[],gemList=[],exitPos={x:0,y:0},spawn={x:0,y:0},particles=[];
 const P={x:0,y:0,w:24,h:32,vx:0,vy:0,onGround:false,jumps:0,face:1,
@@ -555,7 +654,6 @@ function solidAt(px,py){
 }
 function spikeAt(px,py){return solidAt(px,py)===3;}
 
-// ---- Physics (easier: higher jump, lighter gravity) ----
 const GRAV=1200,MAXFALL=620,ACC=1800,FRIC=1600,MAXSPD=290,JUMP=-615,WALLJUMP=-535;
 
 function update(dt){
@@ -607,12 +705,9 @@ function update(dt){
   }
   if(P.onGround)P.wallSlide=false;
 
-  // spikes
   for(const ox of[-hw+4,0,hw-4])for(const oy of[-hh+4,hh-2])if(spikeAt(P.x+ox,P.y+oy)){killPlayer();return;}
   if(P.y>H+80){killPlayer();return;}
 
-  // hazards
-  const spdScale=cfg.access?0.45:1;
   for(const hz of hazards){
     hz.t+=dt*hz.spd;
     const off=Math.sin(hz.t)*hz.range;
@@ -622,7 +717,6 @@ function update(dt){
     if(Math.abs(dx)<hz.r+hw-4&&Math.abs(dy)<hz.r+hh-6){killPlayer();return;}
   }
 
-  // gems
   for(const g of gemList){
     g.t+=dt*3;if(g.got)continue;
     if(Math.abs(g.x-P.x)<22&&Math.abs(g.y-P.y)<24){
@@ -631,7 +725,6 @@ function update(dt){
     }
   }
 
-  // exit
   if(Math.abs(exitPos.x-P.x)<26&&Math.abs(exitPos.y-P.y)<30){
     if(level+1>=MAX){winGame();}else{loadLevel(level+1);}return;
   }
@@ -651,128 +744,41 @@ function killPlayer(){
   }
 }
 
-// ---- Draw helpers (read CSS vars for colour) ----
 function cssv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
 
 function draw(){
-  // background
-  x.fillStyle=cssv('--bg');x.fillRect(0,0,W,H);
-
-  // grid lines
-  x.strokeStyle=cssv('--grid-line');x.lineWidth=1;
+  x.fillStyle=CV.bg;x.fillRect(0,0,W,H);
+  x.strokeStyle=CV.gridLine;x.lineWidth=1;
   for(let i=0;i<W;i+=T){x.beginPath();x.moveTo(i,0);x.lineTo(i,H);x.stroke();}
   for(let j=0;j<H;j+=T){x.beginPath();x.moveTo(0,j);x.lineTo(W,j);x.stroke();}
 
   const glow=!cfg.retro;
 
-  // tiles
   for(let r=0;r<grid.length;r++){
     for(let cN=0;cN<grid[r].length;cN++){
-      const t=grid[r][cN,
-// 21 - bonus: triple shaft
-["......................",
- "...E..................",
- "####..................",
- "......................",
- "...#...#...#...........",
- "...#...*...#...........",
- "...#.......#...........",
- "...#...D...#...........",
- "...#.......#...........",
- "...#...*...#...........",
- "...#.......#...........",
- "...#.......#...........",
- "..........P...........",
- "......................",
- "######################"],
-// 22 - speed run
-["......................",
- "......................",
- "P.......*.........E..",
- "####...####.......###.",
- ".......................",
- ".......*..............",
- ".....####..............",
- "......................",
- "..........S...........",
- "......................",
- "...............*......",
- "..............####....",
- "......................",
- "......^^^^^^^^^^^^^^^^",
- "######################"],
-// 23 - precision
-["......................",
- "..................E...",
- "..................####",
- "......................",
- ".....#...#...#...#....",
- ".....#...#...#...#....",
- ".....*...*...*...*....",
- "......................",
- ".....V...V...V...V....",
- "......................",
- "......................",
- "......................",
- ".P....................",
- "###...................",
- "######################"],
-// 24 - the gauntlet
-["......................",
- "......................",
- "..####..####..####....",
- "....S.....D....S......",
- "......*......*........",
- "......................",
- "..####..####..####....",
- "....V.....S....V......",
- "......................",
- "......*......*........",
- "..####............####",
- "......................",
- ".P.................E..",
- "###.^^^^^^^^^^^.###...",
- "######################"],
-// 25 - final challenge
-["......................",
- "...E..................",
- "####..................",
- "...#..........*.......  ",
- "...#........####......",
- "...#..S..............",
- "...####...............",
- "........#.........*...",
- "...*....#.....#####...",
- "..####..#.............",
- "........#....V........",
- "..#######..#######....",
- ".P....................",
- "...^^^..D..D..^^^.....",
- "######################"]
-];if(!t)continue;
+      const t=grid[r][cN];if(!t)continue;
       const px=cN*T,py=r*T;
       if(t===1){
-        x.fillStyle=cssv('--solid-bg');x.fillRect(px,py,T,T);
-        x.strokeStyle=cssv('--solid-border');x.lineWidth=2;
-        if(glow){x.shadowColor=cssv('--shadow-solid');x.shadowBlur=8;}
+        x.fillStyle=CV.solidBg;x.fillRect(px,py,T,T);
+        x.strokeStyle=CV.solidBorder;x.lineWidth=2;
+        if(glow){x.shadowColor=CV.shadowSolid;x.shadowBlur=8;}
         x.strokeRect(px+1,py+1,T-2,T-2);x.shadowBlur=0;
       }else if(t===2){
-        x.fillStyle=cssv('--plat');
-        if(glow){x.shadowColor=cssv('--plat');x.shadowBlur=10;}
+        x.fillStyle=CV.plat;
+        if(glow){x.shadowColor=CV.plat;x.shadowBlur=10;}
         x.fillRect(px+2,py+4,T-4,6);x.shadowBlur=0;
       }else if(t===3){
-        x.fillStyle=cssv('--spike');
-        if(glow){x.shadowColor=cssv('--spike');x.shadowBlur=10;}
+        x.fillStyle=CV.spike;
+        if(glow){x.shadowColor=CV.spike;x.shadowBlur=10;}
         for(let k=0;k<4;k++){x.beginPath();x.moveTo(px+k*10,py+T);x.lineTo(px+k*10+5,py+T-16);x.lineTo(px+k*10+10,py+T);x.closePath();x.fill();}
         x.shadowBlur=0;
       }
     }
   }
 
-  // exit portal
   const pt=performance.now()/300;
   x.save();x.translate(exitPos.x,exitPos.y);
-  if(glow){x.shadowColor=cssv('--shadow-exit');x.shadowBlur=24;}
+  if(glow){x.shadowColor=CV.shadowExit;x.shadowBlur=24;}
   for(let i=3;i>0;i--){
     x.strokeStyle='rgba(255,47,208,'+(0.35*i/3+0.25)+')';x.lineWidth=3;
     x.beginPath();x.ellipse(0,0,10+i*5+Math.sin(pt+i)*3,18+i*4,0,0,Math.PI*2);x.stroke();
@@ -780,64 +786,59 @@ function draw(){
   x.fillStyle='rgba(255,47,208,.35)';x.beginPath();x.ellipse(0,0,10,18,0,0,Math.PI*2);x.fill();
   x.restore();x.shadowBlur=0;
 
-  // gems
   for(const g of gemList){
     if(g.got)continue;
     const bob=cfg.lowmotion?0:Math.sin(g.t)*4;
     x.save();x.translate(g.x,g.y+bob);
     if(!cfg.lowmotion)x.rotate(g.t*0.5);
-    if(glow){x.shadowColor=cssv('--shadow-gem');x.shadowBlur=14;}
-    x.fillStyle=cssv('--gem');
+    if(glow){x.shadowColor=CV.shadowGem;x.shadowBlur=14;}
+    x.fillStyle=CV.gem;
     x.beginPath();x.moveTo(0,-9);x.lineTo(7,0);x.lineTo(0,9);x.lineTo(-7,0);x.closePath();x.fill();
     x.restore();x.shadowBlur=0;
   }
 
-  // hazards
   for(const hz of hazards){
     x.save();x.translate(hz.x,hz.y);
     if(hz.type==='saw'){
       if(!cfg.lowmotion)x.rotate(performance.now()/90);
-      if(glow){x.shadowColor=cssv('--shadow-saw');x.shadowBlur=16;}
-      x.fillStyle=cssv('--saw');
+      if(glow){x.shadowColor=CV.shadowSaw;x.shadowBlur=16;}
+      x.fillStyle=CV.saw;
       x.beginPath();
       for(let i=0;i<10;i++){const a=i/10*Math.PI*2,rr=(i%2===0)?hz.r:hz.r*0.55;x[i?'lineTo':'moveTo'](Math.cos(a)*rr,Math.sin(a)*rr);}
       x.closePath();x.fill();x.fillStyle='#220008';x.beginPath();x.arc(0,0,4,0,Math.PI*2);x.fill();
     }else{
-      if(glow){x.shadowColor=cssv('--shadow-drone');x.shadowBlur=16;}
-      x.fillStyle=cssv('--drone');
+      if(glow){x.shadowColor=CV.shadowDrone;x.shadowBlur=16;}
+      x.fillStyle=CV.drone;
       x.beginPath();x.ellipse(0,0,hz.r,hz.r*0.7,0,0,Math.PI*2);x.fill();
       x.fillStyle='#fff';x.beginPath();x.arc(0,-2,4,0,Math.PI*2);x.fill();
     }
     x.restore();x.shadowBlur=0;
   }
 
-  // particles
   for(const p of particles){
     x.globalAlpha=Math.max(0,p.life*1.6);
     x.fillStyle=p.color;x.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);
   }
   x.globalAlpha=1;
 
-  // player
   if(!P.dead){
     x.save();x.translate(P.x,P.y);
-    if(glow){x.shadowColor=cssv('--shadow-player');x.shadowBlur=16;}
-    x.fillStyle=cssv('--player');x.fillRect(-P.w/2,-P.h/2,P.w,P.h);
-    x.shadowBlur=0;x.fillStyle=cssv('--bg');
+    if(glow){x.shadowColor=CV.shadowPlayer;x.shadowBlur=16;}
+    x.fillStyle=CV.player;x.fillRect(-P.w/2,-P.h/2,P.w,P.h);
+    x.shadowBlur=0;x.fillStyle=CV.bg;
     x.fillRect(-P.w/2+(P.face>0?8:2),-P.h/2+6,14,7);
     if(Math.abs(P.vx)>180&&!cfg.lowmotion){
-      x.globalAlpha=.3;x.fillStyle=cssv('--player');
+      x.globalAlpha=.3;x.fillStyle=CV.player;
       x.fillRect(-P.w/2-P.face*12,-P.h/2+4,P.w,P.h-8);x.globalAlpha=1;
     }
     if(P.wallSlide&&!cfg.lowmotion){
-      x.fillStyle=cssv('--gem');
+      x.fillStyle=CV.gem;
       for(let i=0;i<3;i++)x.fillRect(P.wallDir*P.w/2,-P.h/2+i*10+Math.random()*6,3,4);
     }
     x.restore();
   }
 }
 
-// ---- Loop ----
 let last=0;
 function loop(ts){
   if(!last)last=ts;let dt=(ts-last)/1000;last=ts;dt=Math.min(dt,0.033);
@@ -862,6 +863,7 @@ function winGame(){
   };
 }
 
+refreshCV();
 document.getElementById('startBtn').onclick=()=>{
   overlay.classList.add('hidden');
   gems=0;deaths=0;gemsEl.textContent=0;deathsEl.textContent=0;
