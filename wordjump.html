@@ -38,6 +38,7 @@ html,body{margin:0;min-height:100%;background:#03030c;font-family:'Consolas','Co
 #ov h2{font-size:15px;margin:9px 0;color:#ff2fd0;}
 #ov p{color:#9fb0ba;font-size:12px;margin:3px 0;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.7;}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
 .wbtn{cursor:pointer;background:transparent;color:#ffe600;border:2px solid #ffe600;padding:11px 24px;font-family:inherit;font-size:14px;letter-spacing:3px;margin:5px;border-radius:4px;}
 .wbtn:hover{background:#ffe600;color:#000;}
 .wbtn.s{color:#00fff2;border-color:#00fff2;}.wbtn.s:hover{background:#00fff2;color:#000;}
@@ -262,7 +263,7 @@ function startRound(customWord,customClue){
 
   guesses=[];current='';keyState={};running=true;
   buildGrid();buildKB();updateCurrentRow();
-  clueEl.textContent=clueText?'💡 '+clueText:'';
+  clueEl.textContent=(clueText?'💡 '+clueText:'')+' ('+wordLen+' letters)';
   msgEl.textContent='';lfEl.textContent=MAX_GUESSES;
   rnEl.textContent=round;
 }
@@ -306,7 +307,9 @@ function submit(){
   },wordLen*80+120);
 }
 
-function flash(txt,col,dur=1200){msgEl.textContent=txt;msgEl.style.color=col;clearTimeout(flash._t);flash._t=setTimeout(()=>msgEl.textContent='',dur);}
+function flash(txt,col,dur=1200){
+  if(col==='#ff003c'){attGrid.style.animation='shake .3s';setTimeout(()=>attGrid.style.animation='',300);}
+  msgEl.textContent=txt;msgEl.style.color=col;clearTimeout(flash._t);flash._t=setTimeout(()=>msgEl.textContent='',dur);}
 
 function roundWin(){
   running=false;streak++;
