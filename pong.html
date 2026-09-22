@@ -108,7 +108,7 @@ const p1={x:28,y:H/2,h:PAD_H_BASE,eff:null,effT:0};
 const p2={x:W-28-PAD_W,y:H/2,h:PAD_H_BASE,eff:null,effT:0};
 let ball={x:W/2,y:H/2,vx:0,vy:0,ghost:false,ghostT:0,trail:[]};
 let powerups=[],particles=[],running=false;
-let p1score=0,p2score=0;
+let p1score=0,p2score=0,p1wins=0,p2wins=0;
 let serving=false,serveT=0;
 let puTimer=8; // first PU after 8s
 
@@ -175,6 +175,12 @@ function applyPU(type,hitter){
 }
 
 function update(dt){
+  // Serve direction arrow
+  if(serving){
+    const arrowX=ball.vx>0?W*.65:W*.35;
+    ctx.fillStyle='rgba(255,230,0,.35)';ctx.font='18px monospace';ctx.textAlign='center';
+    ctx.fillText(ball.vx>0?'→ ▸':'◂ ←',arrowX,H/2+60);
+  }
   if(serving){serveT-=dt;if(serveT<=0)serving=false;return;}
 
   // P1 movement (human always for left)
@@ -267,12 +273,12 @@ function update(dt){
   // Scoring
   if(ball.x<-20){
     p2score++;s2El.textContent=p2score;popParticles(0,ball.y,'#ff2fd0',24);
-    if(p2score>=WIN){endGame(false);return;}
+    if(p2score>=WIN){p2wins++;endGame(false);return;}
     popMsg('POINT!','#ff2fd0');resetPads();powerups=[];serving=true;serveT=1.2;serve(true);
   }
   if(ball.x>W+20){
     p1score++;s1El.textContent=p1score;popParticles(W,ball.y,'#00fff2',24);
-    if(p1score>=WIN){endGame(true);return;}
+    if(p1score>=WIN){p1wins++;endGame(true);return;}
     popMsg('POINT!','#00fff2');resetPads();powerups=[];serving=true;serveT=1.2;serve(false);
   }
 
@@ -286,7 +292,7 @@ function endGame(p1wins){
   const winner=p1wins?(mode==='2p'?'PLAYER 1':'YOU'):'PLAYER 2';
   const col=p1wins?'#00fff2':'#ff2fd0';
   overlay.innerHTML=`<h1 style="color:${col};text-shadow:0 0 20px ${col}">${winner} WINS!</h1>
-    <h2>${p1score} — ${p2score}</h2>
+    <h2>${p1score} — ${p2score}</h2><p style='color:#667;font-size:11px;letter-spacing:2px'>SERIES: YOU ${p1wins} — ${p2wins} ${mode==='2p'?'P2':'CPU'}</p>
     <button class="pbtn" id="rb">↻ REMATCH</button>
     <button class="pbtn sec" id="mb">⚙ MENU</button>
     <p style="margin-top:10px"><a href="index.html" style="color:var(--cyan)">◄ HUB</a></p>`;
