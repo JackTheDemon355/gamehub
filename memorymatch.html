@@ -23,6 +23,10 @@ html,body{margin:0;min-height:100%;background:#03030c;font-family:'Consolas','Co
 .card.matched .back{box-shadow:0 0 30px var(--cc,#39ff14);border-color:var(--cc,#39ff14);background:rgba(57,255,20,.07);}
 /* Overlays */
 #ov,#winOv{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(2,2,8,.94);z-index:10;padding:20px;}
+#cdOverlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.75);z-index:15;pointer-events:none;}
+#cdNum{font-size:90px;font-weight:bold;color:#00fff2;text-shadow:0 0 30px #00fff2,0 0 60px #00fff2;letter-spacing:4px;animation:cdPop .9s ease-out forwards;}
+#cdLabel{font-size:18px;letter-spacing:4px;color:#ffe600;margin-top:10px;}
+@keyframes cdPop{0%{transform:scale(1.8);opacity:.4;}60%{transform:scale(1);opacity:1;}100%{transform:scale(.85);opacity:.2;}}
 #ov h1{font-size:clamp(28px,7vw,54px);margin:0;color:#00fff2;letter-spacing:8px;text-shadow:0 0 16px #00fff2,0 0 40px #00fff2;animation:pulse 1.4s infinite;}
 #ov h2,#winOv h2{font-size:16px;margin:10px 0;color:#ff2fd0;}
 #ov p,#winOv p{color:#9fb0ba;font-size:13px;margin:4px 0;}
@@ -85,6 +89,10 @@ html,body{margin:0;min-height:100%;background:#03030c;font-family:'Consolas','Co
   <p style="margin-top:10px"><a href="index.html" style="color:#00fff2">◄ HUB</a></p>
 </div>
 
+<div id="cdOverlay" style="display:none">
+  <div id="cdNum">3</div>
+  <div id="cdLabel">MEMORISE!</div>
+</div>
 <script>
 (function(){
 'use strict';
@@ -122,39 +130,43 @@ function updateBestDisplay(){
   bestEl.textContent=bestScores[k]?bestScores[k]+'pts':'—';
 }
 
+// Audio feedback
+function beep(freq,dur,type='sine'){
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator();const g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.type=type;o.frequency.value=freq;
+    g.gain.setValueAtTime(.15,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+dur);
+    o.start();o.stop(ac.currentTime+dur);
+  }catch(e){}
+}
+
 function startGame(){
   clearInterval(tInt);running=true;
   const {c,r}=SIZES[sz];const pairs=(c*r)/2;
   const pool=[...THEMES[theme]].slice(0,pairs);
-  if(pool.length<pairs){
-    // fill with extra unique symbols if needed
-    const extra=['A','B','C','D','E','F','G','H','I','J','K','L'];
-    while(pool.length<pairs)pool.push(extra[pool.length-THEMES[theme].length]||'★');
-  }
+  while(pool.length<pairs){const extra=['A','B','C','D','E','F','G','H','I','J','K','L'];pool.push(extra[pool.length-THEMES[theme].length]||'★');}
   const deck=[...pool,...pool].sort(()=>Math.random()-.5);
-  flipped=[];matchCount=0;moves=0;timerSec=0;locked=false;
+  flipped=[];matchCount=0;moves=0;timerSec=0;locked=true;
   movEl.textContent=0;prEl.textContent=0;timerEl.textContent='0:00';
   updateBestDisplay();
 
-  // responsive card size
   const maxW=Math.floor((window.innerWidth*.92-c*10)/c);
   const maxH=Math.floor((window.innerHeight*.78-r*10)/r);
   const cs=Math.min(74,Math.max(48,Math.min(maxW,maxH)));
-
   gridEl.style.gridTemplateColumns=`repeat(${c},${cs}px)`;
   gridEl.innerHTML='';
   cards=deck.map((symbol,i)=>{
     const colIdx=i%CARD_COLORS.length;const col=CARD_COLORS[colIdx];
     const div=document.createElement('div');
     div.className='card';div.style.width=cs+'px';div.style.height=cs+'px';
-    // Use textContent for reliability instead of innerHTML emoji
     const inner=document.createElement('div');inner.className='inner';
     const front=document.createElement('div');front.className='front';
     const back=document.createElement('div');back.className='back';
     back.style.setProperty('--cc',col);
-    back.style.fontSize=Math.round(cs*.46)+'px';
-    back.style.lineHeight='1';
-    // Set text content directly — avoids encoding issues
+    back.style.fontSize=Math.round(cs*.46)+'px';back.style.lineHeight='1';
     back.textContent=symbol;
     inner.appendChild(front);inner.appendChild(back);div.appendChild(inner);
     div.addEventListener('click',()=>flip(div,i));
@@ -162,24 +174,47 @@ function startGame(){
     return{div,symbol,matched:false};
   });
 
-  tInt=setInterval(()=>{
-    if(!running)return;timerSec++;
-    const m=Math.floor(timerSec/60),s=timerSec%60;
-    timerEl.textContent=m+':'+String(s).padStart(2,'0');
+  // Show all cards for 3 seconds then hide
+  cards.forEach(card=>card.div.classList.add('flipped'));
+  const cdOv=document.getElementById('cdOverlay');
+  const cdNum=document.getElementById('cdNum');
+  cdOv.style.display='flex';
+  let count=3;
+  function tick(){
+    cdNum.style.animation='none';void cdNum.offsetWidth;
+    cdNum.style.animation='cdPop .9s ease-out forwards';
+    cdNum.textContent=count;
+  }
+  tick();
+  const cdInt=setInterval(()=>{
+    count--;
+    if(count<=0){
+      clearInterval(cdInt);cdOv.style.display='none';
+      cards.forEach(card=>{if(!card.matched)card.div.classList.remove('flipped');});
+      locked=false;
+      tInt=setInterval(()=>{
+        if(!running)return;timerSec++;
+        const m=Math.floor(timerSec/60),s=timerSec%60;
+        timerEl.textContent=m+':'+String(s).padStart(2,'0');
+      },1000);
+      return;
+    }
+    tick();
   },1000);
 }
+
 
 function flip(div,idx){
   if(!running||locked)return;
   const card=cards[idx];
   if(card.matched||flipped.includes(idx))return;
-  div.classList.add('flipped');flipped.push(idx);
+  div.classList.add('flipped');flipped.push(idx);beep(440,.06);
   if(flipped.length===2){
     locked=true;moves++;movEl.textContent=moves;
     const [a,b]=flipped;
     if(cards[a].symbol===cards[b].symbol){
       cards[a].matched=true;cards[b].matched=true;
-      cards[a].div.classList.add('matched');cards[b].div.classList.add('matched');
+      cards[a].div.classList.add('matched');cards[b].div.classList.add('matched');beep(880,.12);
       matchCount++;prEl.textContent=matchCount;flipped=[];locked=false;
       const {c,r}=SIZES[sz];
       if(matchCount===(c*r)/2)win();
@@ -201,6 +236,7 @@ function win(){
   if(!bestScores[k]||score>bestScores[k]){bestScores[k]=score;try{localStorage.setItem('mm_best',JSON.stringify(bestScores));}catch(e){}}
   document.getElementById('winSub').textContent=sz.replace('x','×')+' — '+theme.toUpperCase();
   document.getElementById('winStats').textContent='Moves: '+moves+' · Time: '+timerEl.textContent;
+  beep(660,.1);setTimeout(()=>beep(880,.1),110);setTimeout(()=>beep(1100,.2),220);
   document.getElementById('winScore').textContent='Score: '+score+(bestScores[k]===score?' ⭐ NEW BEST!':'');
   winOv.style.display='flex';
 }
