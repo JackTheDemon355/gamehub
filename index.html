@@ -43,6 +43,18 @@
   .flt{cursor:pointer;background:transparent;border:1px solid #333;color:#666;
     padding:5px 12px;font-family:inherit;font-size:10px;letter-spacing:2px;border-radius:20px;transition:.2s;}
   .flt:hover,.flt.active{border-color:var(--yellow);color:var(--yellow);}
+  
+  /* Lock Screen Overlay */
+  #lockScreen{
+    position:fixed;inset:0;z-index:9999;
+    background:#05050f;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;padding:20px;
+  }
+  #lockScreen h1{font-size:clamp(32px,6vw,60px);color:var(--red);letter-spacing:8px;margin-bottom:12px;text-shadow:0 0 20px var(--red);}
+  #lockScreen p{color:var(--sub);letter-spacing:3px;font-size:14px;max-width:400px;line-height:1.6;}
+  #lockScreen .lock-icon{font-size:64px;margin-bottom:20px;}
+
   /* Settings panel */
   #settingsPanel{position:fixed;top:0;right:-340px;width:320px;height:100vh;z-index:100;
     background:rgba(5,5,20,.97);border-left:2px solid rgba(0,255,242,.25);
@@ -106,6 +118,13 @@
 </style>
 </head>
 <body>
+
+<!-- Lock Overlay -->
+<div id="lockScreen" style="display:none;">
+  <div class="lock-icon">🔒</div>
+  <h1>ACCESS DENIED</h1>
+  <p>THIS GAME HUB IS CURRENTLY LOCKED BY THE ADMINISTRATOR.</p>
+</div>
 
 <div id="settingsOverlay" onclick="closeSettings()"></div>
 <div id="settingsPanel">
@@ -326,6 +345,16 @@
 </footer>
 
 <script>
+// ==========================================
+// LOCK SETTING: Set to true to lock, false to unlock
+// ==========================================
+const IS_LOCKED = true; 
+
+if (IS_LOCKED) {
+  document.getElementById('lockScreen').style.display = 'flex';
+  document.body.style.overflow = 'hidden'; // Prevents scrolling behind the screen
+}
+
 const S={neon:true,scan:true,glow:true,anim:true,retro:false};
 const html=document.documentElement;
 try{const s=JSON.parse(localStorage.getItem('hub_settings')||'null');if(s)Object.assign(S,s);}catch(e){}
