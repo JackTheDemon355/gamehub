@@ -35,6 +35,14 @@
 </style>
 </head>
 <body>
+
+  <!-- Lock Overlay -->
+<div id="lockScreen" style="display:none;">
+  <div class="lock-icon">🔒</div>
+  <h1>ACCESS DENIED</h1>
+  <p>THIS GAME HUB IS CURRENTLY LOCKED BY THE ADMINISTRATOR.</p>
+</div>
+  
 <div id="wrap">
   <div id="sidebar">
     <div class="panel">
@@ -74,6 +82,16 @@
   <button class="gbtn" id="startBtn" style="margin-top:18px">▶ START</button>
 </div>
 <script>
+// ==========================================
+// LOCK SETTING: Set to true to lock, false to unlock
+// ==========================================
+const IS_LOCKED = true; 
+
+if (IS_LOCKED) {
+  document.getElementById('lockScreen').style.display = 'flex';
+  document.body.style.overflow = 'hidden'; // Prevents scrolling behind the screen
+}
+  
 (function(){
 'use strict';
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
