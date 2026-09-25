@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZOMBIE APOCALYPSE</title>
+<style>
+:root{--green:#39ff14;--red:#ff003c;--yellow:#ffe600;--cyan:#00fff2;--mag:#ff2fd0;--orange:#ff6a00;--bg:#04080a;}
+html,body{margin:0;height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;overflow:hidden;user-select:none;color:var(--green);}
+#wrap{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
+canvas{border:2px solid rgba(57,255,20,.4);box-shadow:0 0 40px rgba(57,255,20,.2);display:block;}
+#hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 22px;font-size:13px;letter-spacing:2px;pointer-events:none;background:rgba(0,0,0,.5);}
+.lbl{color:var(--mag);}.val{color:var(--yellow);font-weight:bold;}
+#hud .box{display:flex;gap:14px;align-items:center;}
+#ammoBar{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);display:flex;gap:4px;pointer-events:none;}
+.bullet{width:8px;height:18px;background:var(--yellow);border-radius:2px;box-shadow:0 0 6px var(--yellow);}
+.bullet.empty{background:#222;box-shadow:none;}
+#reloadMsg{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);font-size:14px;letter-spacing:3px;color:var(--red);text-shadow:0 0 10px var(--red);opacity:0;transition:opacity .3s;}
+#ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(2,5,2,.94);z-index:10;padding:20px;}
+#ov h1{font-size:clamp(28px,6vw,52px);margin:0;color:var(--red);letter-spacing:8px;text-shadow:0 0 18px var(--red),0 0 40px var(--red);animation:pulse 1.4s infinite;}
+#ov h2{font-size:16px;margin:10px 0;color:var(--green);}
+#ov p{color:#8ab08a;font-size:12px;margin:4px 0;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.7;}}
+.zbtn{cursor:pointer;background:transparent;color:var(--yellow);border:2px solid var(--yellow);padding:11px 26px;font-family:inherit;font-size:15px;letter-spacing:3px;margin:5px;border-radius:4px;}
+.zbtn:hover{background:var(--yellow);color:#000;}
+.zbtn.s{color:var(--green);border-color:var(--green);}.zbtn.s:hover{background:var(--green);color:#000;}
+#back{position:absolute;bottom:14px;left:18px;z-index:5;color:var(--cyan);text-decoration:none;border:1px solid var(--cyan);padding:7px 14px;font-size:12px;letter-spacing:2px;border-radius:4px;}
+#back:hover{background:var(--cyan);color:#000;}
+#sPanel{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(2,5,2,.96);z-index:20;padding:24px;gap:10px;}
+#sPanel h2{margin:0;font-size:18px;letter-spacing:5px;color:var(--green);}
+.tog{display:flex;justify-content:space-between;align-items:center;width:300px;max-width:88vw;border:1px solid rgba(57,255,20,.15);border-radius:7px;padding:11px 16px;background:rgba(57,255,20,.04);}
+.tog span{font-size:12px;letter-spacing:2px;color:#ccc;}
+.pill{width:42px;height:22px;border-radius:11px;background:#222;position:relative;cursor:pointer;transition:background .2s;}
+.pill.on{background:var(--green);}
+.pill::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s;}
+.pill.on::after{left:23px;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" width="880" height="620"></canvas>
+  <div id="hud">
+    <div class="box"><span class="lbl">WAVE</span><span class="val" id="wvEl">1</span>
+      <span class="lbl">KILLS</span><span class="val" id="killEl">0</span>
+      <span class="lbl">HI</span><span class="val" id="hiEl">0</span></div>
+    <div class="box"><span class="lbl">HP</span><span class="val" id="hpEl">100</span>
+      <span class="lbl">XP</span><span class="val" id="xpEl">0</span>
+      <span class="lbl">LVL</span><span class="val" id="lvlEl">1</span></div>
+  </div>
+  <div id="ammoBar"></div>
+  <div id="reloadMsg">RELOADING…</div>
+  <a id="back" href="index.html">◄ HUB</a>
+  <div id="ov">
+    <h1>ZOMBIE APOCALYPSE</h1>
+    <h2>SURVIVE THE HORDE</h2>
+    <p>WASD / Arrow Keys — move &nbsp;·&nbsp; Mouse — aim &nbsp;·&nbsp; Click / Space — shoot</p>
+    <p>R — reload &nbsp;·&nbsp; Barricades slow zombies &nbsp;·&nbsp; Collect XP orbs to level up</p>
+    <p style="margin-top:8px;font-size:11px;color:#445">Zombie waves get larger and faster. Bosses every 5 waves.</p>
+    <button class="zbtn" id="startBtn" style="margin-top:16px">▶ SURVIVE</button>
+    <button class="zbtn s" onclick="openS()">⚙ SETTINGS</button>
+  </div>
+  <div id="sPanel" style="display:none">
+    <h2>⚙ SETTINGS</h2>
+    <div class="tog"><span>NEON GLOW</span><div class="pill on" id="tGlow" onclick="togS('glow',this)"></div></div>
+    <div class="tog"><span>PARTICLES</span><div class="pill on" id="tPart" onclick="togS('part',this)"></div></div>
+    <div class="tog"><span>SCREEN SHAKE</span><div class="pill on" id="tShake" onclick="togS('shake',this)"></div></div>
+    <div class="tog"><span>ZOMBIE SOUNDS (visual)</span><div class="pill on" id="tSound" onclick="togS('sound',this)"></div></div>
+    <button class="zbtn" style="margin-top:16px" onclick="closeS()">✓ DONE</button>
+  </div>
+</div>
+<script>
+// ── LOCK CHECK ──
+(function(){const P=['gamehub234','oscarmccumstie','user13579'];function chk(){fetch('lock.json?_='+Date.now()).then(r=>r.json()).then(d=>{if(d.locked===true)lock(d.message||'Locked.');}).catch(()=>{});}function lock(msg){var el=document.createElement('div');el.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:20px;';el.innerHTML='<div style="font-size:40px;color:#ff003c;letter-spacing:8px;text-shadow:0 0 16px #ff003c">LOCKED 🔒</div><div style="color:#888;font-size:13px;letter-spacing:2px;max-width:400px">'+msg+'</div><div style="color:#445;font-size:11px;letter-spacing:2px">Hold SHIFT + press any key · or tap 3× on mobile</div>';document.body.appendChild(el);document.body.style.overflow='hidden';var sh=false;function kd(e){if(e.key==='Shift'){sh=true;return;}if(sh){document.removeEventListener('keydown',kd);pw(el);}}document.addEventListener('keydown',kd);var t=0,tc=0;el.addEventListener('click',function(){var n=Date.now();if(n-t>700)tc=0;t=n;if(++tc>=3){tc=0;pw(el);}});}function pw(el){el.innerHTML='<div style="font-size:32px;color:#ffe600;letter-spacing:6px">PASSWORD 🔑</div><input id="lpi" type="password" style="background:rgba(0,0,0,.6);border:2px solid #00fff2;color:#fff;padding:12px 18px;font-family:Consolas,monospace;font-size:18px;border-radius:6px;outline:none;width:260px;text-align:center;" placeholder="••••••••"><button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:10px 26px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;">UNLOCK</button><div id="lpe" style="color:#ff003c;font-size:12px;min-height:16px;"></div>';var i=document.getElementById('lpi'),b=document.getElementById('lpb'),e=document.getElementById('lpe');i.focus();function go(){if(P.map(x=>x.toLowerCase()).indexOf((i.value||'').trim().toLowerCase())>=0){el.remove();document.body.style.overflow='';}else{e.textContent='Wrong password';i.value='';i.focus();setTimeout(()=>e.textContent='',2000);}}b.addEventListener('click',go);i.addEventListener('keydown',function(e){if(e.key==='Enter')go();});}chk();})();
+// ── SETTINGS ──
+const cfg={glow:true,part:true,shake:true,sound:true};
+try{Object.assign(cfg,JSON.parse(localStorage.getItem('zombie_cfg')||'{}'));}catch(e){}
+function syncPills(){['glow','part','shake','sound'].forEach(k=>{var el=document.getElementById('t'+k.charAt(0).toUpperCase()+k.slice(1));if(el)el.classList.toggle('on',cfg[k]);});}
+syncPills();
+window.togS=function(k,p){cfg[k]=!cfg[k];p.classList.toggle('on',cfg[k]);try{localStorage.setItem('zombie_cfg',JSON.stringify(cfg));}catch(e){}};
+window.openS=function(){document.getElementById('sPanel').style.display='flex';};
+window.closeS=function(){document.getElementById('sPanel').style.display='none';};
+
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const wvEl=document.getElementById('wvEl'),killEl=document.getElementById('killEl'),
+      hiEl=document.getElementById('hiEl'),hpEl=document.getElementById('hpEl'),
+      xpEl=document.getElementById('xpEl'),lvlEl=document.getElementById('lvlEl'),
+      ammoBar=document.getElementById('ammoBar'),reloadMsg=document.getElementById('reloadMsg'),
+      ov=document.getElementById('ov');
+
+let hi=0;try{hi=parseInt(localStorage.getItem('zombie_hi')||'0')||0;}catch(e){}
+hiEl.textContent=hi;
+
+// Game state — safe defaults so draw() works before start
+let player=null,zombies=[],bullets=[],xpOrbs=[],particles=[],barricades=[];
+let wave=1,kills=0,hp=100,xp=0,pLevel=1,xpNext=100;
+let running=false,paused=false,reloading=false;
+let ammo=8,maxAmmo=8,reloadTime=0;
+let mouseX=W/2,mouseY=H/2,shootCd=0;
+let shakeX=0,shakeY=0,shakeT=0;
+let waveTimer=0,waveActive=false,spawnQueue=[],spawnTimer=0;
+
+const GUNS=[
+  {name:'PISTOL',ammo:8,reload:1.4,dmg:25,rate:.35,spread:.05,pellets:1,color:'#ffe600'},
+  {name:'SHOTGUN',ammo:6,reload:1.8,dmg:18,rate:.7,spread:.22,pellets:5,color:'#ff6a00'},
+  {name:'SMG',ammo:20,reload:1.2,dmg:14,rate:.12,spread:.1,pellets:1,color:'#00fff2'},
+  {name:'RIFLE',ammo:5,reload:2.0,dmg:60,rate:.6,spread:.02,pellets:1,color:'#ff2fd0'},
+];
+let gunIdx=0;
+function gun(){return GUNS[gunIdx];}
+
+cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();mouseX=e.clientX-r.left;mouseY=e.clientY-r.top;});
+cv.addEventListener('click',()=>shoot());
+document.addEventListener('keydown',e=>{
+  if(!running)return;
+  if(e.key==='r'||e.key==='R')startReload();
+  if(e.key==='p'||e.key==='P')paused=!paused;
+  if(e.key===' ')shoot();
+  if(e.key==='1')switchGun(0);if(e.key==='2')switchGun(1);if(e.key==='3')switchGun(2);if(e.key==='4')switchGun(3);
+  if(e.key==='b'||e.key==='B')placeBarricade();
+});
+const keys={};
+document.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
+document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+
+function switchGun(i){if(i>=GUNS.length)return;gunIdx=i;const g=gun();ammo=g.ammo;maxAmmo=g.maxAmmo||g.ammo;updateAmmoBar();}
+function updateAmmoBar(){ammoBar.innerHTML='';for(let i=0;i<maxAmmo;i++){const d=document.createElement('div');d.className='bullet'+(i>=ammo?' empty':'');ammoBar.appendChild(d);}}
+function startReload(){if(reloading||ammo===maxAmmo)return;reloading=true;reloadTime=gun().reload;reloadMsg.style.opacity='1';}
+function finishReload(){reloading=false;ammo=maxAmmo;reloadMsg.style.opacity='0';updateAmmoBar();}
+
+function makePlayer(){return{x:W/2,y:H/2,r:16,spd:180,angle:0,invuln:0};}
+function makeZombie(wave){
+  const side=Math.floor(Math.random()*4);
+  let x,y;
+  if(side===0){x=Math.random()*W;y=-20;}
+  else if(side===1){x=W+20;y=Math.random()*H;}
+  else if(side===2){x=Math.random()*W;y=H+20;}
+  else{x=-20;y=Math.random()*H;}
+  const isBoss=wave%5===0&&Math.random()<.15;
+  const spd=(60+wave*8+Math.random()*30)*(isBoss?.6:1);
+  const hp2=isBoss?300+wave*40:30+wave*12+Math.random()*20;
+  return{x,y,hp:hp2,maxHp:hp2,spd,r:isBoss?24:12,boss:isBoss,color:isBoss?'#ff003c':'#39ff14',dmg:isBoss?18:8,alive:true,angle:0,t:Math.random()*10};
+}
+
+function startWave(w){
+  wave=w;waveActive=true;spawnQueue=[];spawnTimer=0;
+  const count=8+w*5;
+  for(let i=0;i<count;i++)spawnQueue.push({delay:i*(0.5-Math.min(0.38,w*.02)),type:'normal'});
+  if(w%5===0)for(let i=0;i<3;i++)spawnQueue.push({delay:2+i*.8,type:'boss'});
+  wvEl.textContent=w;
+}
+
+function startGame(){
+  player=makePlayer();zombies=[];bullets=[];xpOrbs=[];particles=[];barricades=[];
+  wave=1;kills=0;hp=100;xp=0;pLevel=1;xpNext=100;
+  gunIdx=0;ammo=maxAmmo=8;running=true;paused=false;reloading=false;shootCd=0;
+  killEl.textContent=0;hpEl.textContent=100;xpEl.textContent=0;lvlEl.textContent=1;
+  updateAmmoBar();startWave(1);
+}
+
+function shoot(){
+  if(!running||paused||reloading)return;
+  if(ammo<=0){startReload();return;}
+  if(shootCd>0)return;
+  const g=gun();shootCd=g.rate;ammo--;updateAmmoBar();
+  if(cfg.shake){shakeX=(Math.random()-.5)*6;shakeY=(Math.random()-.5)*6;shakeT=.08;}
+  const ang=Math.atan2(mouseY-player.y,mouseX-player.x);
+  for(let i=0;i<g.pellets;i++){
+    const spread=(Math.random()-.5)*g.spread;
+    const a=ang+spread;
+    bullets.push({x:player.x,y:player.y,vx:Math.cos(a)*520,vy:Math.sin(a)*520,dmg:g.dmg,alive:true,color:g.color,life:1.2});
+  }
+  if(ammo===0&&!reloading)startReload();
+}
+
+function placeBarricade(){
+  if(barricades.length>=6)return;
+  const ang=Math.atan2(mouseY-player.y,mouseX-player.x);
+  barricades.push({x:player.x+Math.cos(ang)*60,y:player.y+Math.sin(ang)*60,hp:3,maxHp:3});
+}
+
+function pop(x2,y2,col,n){
+  if(!cfg.part)return;
+  for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,sp=30+Math.random()*120;
+    particles.push({x:x2,y:y2,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:.6,color:col,sz:2+Math.random()*3});}
+}
+
+function levelUp(){pLevel++;xpNext=Math.floor(xpNext*1.4+50);lvlEl.textContent=pLevel;
+  // heal and expand gun options
+  hp=Math.min(100,hp+20);hpEl.textContent=hp;
+  if(pLevel===3&&GUNS.length>1)switchGun(1);
+  if(pLevel===5&&GUNS.length>2)switchGun(2);
+  if(pLevel===8&&GUNS.length>3)switchGun(3);
+  pop(player.x,player.y,'#ffe600',30);
+}
+
+function update(dt){
+  if(shakeT>0){shakeT-=dt;if(shakeT<=0){shakeX=0;shakeY=0;}}
+  else{shakeX*=.8;shakeY*=.8;}
+
+  // Player move
+  let dx=0,dy=0;
+  if(keys['w']||keys['arrowup'])dy-=1;
+  if(keys['s']||keys['arrowdown'])dy+=1;
+  if(keys['a']||keys['arrowleft'])dx-=1;
+  if(keys['d']||keys['arrowright'])dx+=1;
+  if(dx||dy){const len=Math.hypot(dx,dy);player.x+=dx/len*player.spd*dt;player.y+=dy/len*player.spd*dt;}
+  player.x=Math.max(player.r,Math.min(W-player.r,player.x));
+  player.y=Math.max(player.r,Math.min(H-player.r,player.y));
+  player.angle=Math.atan2(mouseY-player.y,mouseX-player.x);
+  if(player.invuln>0)player.invuln-=dt;
+
+  if(shootCd>0)shootCd-=dt;
+  if(reloading){reloadTime-=dt;if(reloadTime<=0)finishReload();}
+
+  // Spawn
+  if(spawnQueue.length){
+    spawnTimer+=dt;
+    while(spawnQueue.length&&spawnQueue[0].delay<=spawnTimer){const q=spawnQueue.shift();zombies.push(makeZombie(wave));}
+  }
+
+  // Zombies
+  for(const z of zombies){
+    if(!z.alive)continue;
+    z.t+=dt;
+    const ang=Math.atan2(player.y-z.y,player.x-z.x);
+    let spd=z.spd;
+    // Barricade slow
+    for(const b of barricades){if(Math.hypot(b.x-z.x,b.y-z.y)<40){spd*=.4;}}
+    z.x+=Math.cos(ang)*spd*dt;z.y+=Math.sin(ang)*spd*dt;
+    z.angle=ang;
+    // Hit player
+    if(player.invuln<=0&&Math.hypot(z.x-player.x,z.y-player.y)<player.r+z.r){
+      hp-=z.dmg*dt*3;player.invuln=.4;hpEl.textContent=Math.max(0,Math.floor(hp));
+      if(hp<=0){gameOver();return;}
+    }
+    // Hit barricades
+    for(const b of barricades){if(Math.hypot(b.x-z.x,b.y-z.y)<z.r+20){b.hp-=z.dmg*dt*.5;}}
+  }
+
+  // Bullets vs zombies
+  for(const b of bullets){
+    if(!b.alive)continue;
+    b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
+    if(b.x<0||b.x>W||b.y<0||b.y>H||b.life<=0){b.alive=false;continue;}
+    for(const z of zombies){
+      if(!z.alive)continue;
+      if(Math.hypot(b.x-z.x,b.y-z.y)<z.r){
+        z.hp-=b.dmg;b.alive=false;pop(b.x,b.y,b.color,5);
+        if(z.hp<=0){z.alive=false;kills++;killEl.textContent=kills;
+          pop(z.x,z.y,z.color,z.boss?30:12);
+          xpOrbs.push({x:z.x,y:z.y,val:z.boss?25:5,r:8,t:0});
+          if(kills>hi){hi=kills;hiEl.textContent=hi;try{localStorage.setItem('zombie_hi',String(hi));}catch(e){}}}
+        break;
+      }
+    }
+  }
+  bullets=bullets.filter(b=>b.alive);
+  zombies=zombies.filter(z=>z.alive);
+  barricades=barricades.filter(b=>b.hp>0);
+
+  // XP orbs
+  for(const o of xpOrbs){
+    o.t+=dt;const dx2=player.x-o.x,dy2=player.y-o.y,d=Math.hypot(dx2,dy2);
+    if(d<120){o.x+=dx2/d*200*dt;o.y+=dy2/d*200*dt;}
+    if(d<player.r+o.r){xp+=o.val;xpEl.textContent=xp;o.r=0;if(xp>=xpNext)levelUp();}
+  }
+  xpOrbs=xpOrbs.filter(o=>o.r>0);
+
+  // Particles
+  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;p.vx*=.92;p.vy*=.92;}
+  particles=particles.filter(p=>p.life>0);
+
+  // Wave clear
+  if(waveActive&&spawnQueue.length===0&&zombies.length===0){
+    waveActive=false;
+    setTimeout(()=>startWave(wave+1),2000);
+  }
+}
+
+function gameOver(){
+  running=false;
+  ov.innerHTML='<h1 style="color:#ff003c;text-shadow:0 0 16px #ff003c">YOU DIED</h1>'
+    +'<h2>Wave '+wave+' · '+kills+' kills</h2>'
+    +'<p>Level '+pLevel+' · Hi: '+hi+'</p>'
+    +'<button class="zbtn" id="rb">↻ TRY AGAIN</button>'
+    +'<button class="zbtn s" onclick="openS()">⚙ SETTINGS</button>'
+    +'<p style="margin-top:10px"><a href="index.html" style="color:var(--cyan)">◄ HUB</a></p>';
+  ov.style.display='flex';
+  document.getElementById('rb').onclick=()=>{ov.style.display='none';startGame();};
+}
+
+function draw(){
+  ctx.save();if(cfg.shake&&(shakeX||shakeY))ctx.translate(shakeX,shakeY);
+  ctx.fillStyle='#04080a';ctx.fillRect(0,0,W,H);
+  // Grid
+  ctx.strokeStyle='rgba(57,255,20,.04)';ctx.lineWidth=1;
+  for(let i=0;i<W;i+=50){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,H);ctx.stroke();}
+  for(let j=0;j<H;j+=50){ctx.beginPath();ctx.moveTo(0,j);ctx.lineTo(W,j);ctx.stroke();}
+
+  // Barricades
+  for(const b of barricades){
+    const pct=b.hp/b.maxHp;
+    ctx.fillStyle=`rgba(100,60,0,${.4+pct*.4})`;ctx.strokeStyle='#ff6a00';ctx.lineWidth=2;
+    if(cfg.glow){ctx.shadowColor='#ff6a00';ctx.shadowBlur=8;}
+    ctx.fillRect(b.x-20,b.y-10,40,20);ctx.strokeRect(b.x-20,b.y-10,40,20);ctx.shadowBlur=0;
+    // HP bar
+    ctx.fillStyle='#222';ctx.fillRect(b.x-20,b.y-16,40,5);
+    ctx.fillStyle='#ff6a00';ctx.fillRect(b.x-20,b.y-16,40*pct,5);
+  }
+
+  // XP orbs
+  for(const o of xpOrbs){
+    const bob=Math.sin(o.t*4)*3;
+    ctx.fillStyle='#ffe600';if(cfg.glow){ctx.shadowColor='#ffe600';ctx.shadowBlur=12;}
+    ctx.beginPath();ctx.arc(o.x,o.y+bob,o.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  }
+
+  // Zombies
+  for(const z of zombies){
+    if(!z.alive)continue;
+    ctx.save();ctx.translate(z.x,z.y);ctx.rotate(z.angle+Math.PI/2);
+    if(cfg.glow){ctx.shadowColor=z.color;ctx.shadowBlur=z.boss?18:10;}
+    ctx.fillStyle=z.boss?'#440000':z.color+'22';
+    ctx.beginPath();ctx.ellipse(0,0,z.r,z.r*.7,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=z.color;ctx.font=(z.boss?'22px':'16px')+' monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(z.boss?'💀':'🧟',0,0);
+    ctx.restore();ctx.shadowBlur=0;
+    // HP bar
+    if(z.hp<z.maxHp){const pct=z.hp/z.maxHp;ctx.fillStyle='#222';ctx.fillRect(z.x-z.r,z.y-z.r-8,z.r*2,5);ctx.fillStyle=pct>.5?'#39ff14':'#ff003c';ctx.fillRect(z.x-z.r,z.y-z.r-8,z.r*2*pct,5);}
+  }
+
+  // Bullets
+  for(const b of bullets){
+    ctx.fillStyle=b.color;if(cfg.glow){ctx.shadowColor=b.color;ctx.shadowBlur=8;}
+    ctx.beginPath();ctx.arc(b.x,b.y,4,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  }
+
+  // Particles
+  for(const p of particles){ctx.globalAlpha=Math.max(0,p.life*1.6);ctx.fillStyle=p.color;ctx.fillRect(p.x-p.sz/2,p.y-p.sz/2,p.sz,p.sz);}
+  ctx.globalAlpha=1;
+
+  // Player
+  if(player&&running){
+    const fl=player.invuln>0&&Math.floor(performance.now()/80)%2===0;
+    if(!fl){
+      ctx.save();ctx.translate(player.x,player.y);ctx.rotate(player.angle+Math.PI/2);
+      if(cfg.glow){ctx.shadowColor='#00fff2';ctx.shadowBlur=16;}
+      ctx.fillStyle='#00fff2';
+      ctx.beginPath();ctx.moveTo(0,-player.r);ctx.lineTo(-10,player.r);ctx.lineTo(0,player.r-6);ctx.lineTo(10,player.r);ctx.closePath();ctx.fill();
+      // Gun
+      const gc=gun().color;ctx.fillStyle=gc;if(cfg.glow){ctx.shadowColor=gc;ctx.shadowBlur=8;}
+      ctx.fillRect(6,-4,16,6);ctx.restore();ctx.shadowBlur=0;
+    }
+    // HP bar
+    ctx.fillStyle='#222';ctx.fillRect(player.x-24,player.y-player.r-14,48,7);
+    ctx.fillStyle=hp>50?'#39ff14':hp>25?'#ffe600':'#ff003c';
+    ctx.fillRect(player.x-24,player.y-player.r-14,48*(hp/100),7);
+    // XP bar
+    ctx.fillStyle='#111';ctx.fillRect(player.x-24,player.y-player.r-6,48,4);
+    ctx.fillStyle='#ffe600';ctx.fillRect(player.x-24,player.y-player.r-6,48*(xp/xpNext),4);
+  }
+
+  // Pause
+  if(paused&&running){ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#39ff14';ctx.font='bold 24px monospace';ctx.textAlign='center';ctx.fillText('PAUSED — P to resume · B place barricade · 1-4 switch gun',W/2,H/2);}
+  ctx.restore();
+}
+
+let last=0;
+function loop(ts){if(!last)last=ts;const dt=Math.min((ts-last)/1000,.033);last=ts;if(running&&!paused)update(dt);draw();requestAnimationFrame(loop);}
+document.getElementById('startBtn').onclick=()=>{ov.style.display='none';startGame();};
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
