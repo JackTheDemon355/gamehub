@@ -5,7 +5,7 @@
 A neon-styled arcade collection of self-contained browser games — no installs, no servers, no frameworks. Just open `index.html` and play.
 
 ![Version](https://img.shields.io/badge/version-2.1-00fff2?style=flat-square)
-![Games](https://img.shields.io/badge/games-11%20live-39ff14?style=flat-square)
+![Games](https://img.shields.io/badge/games-12%20live-39ff14?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-ff2fd0?style=flat-square)
 ![HTML](https://img.shields.io/badge/built%20with-HTML%20%2B%20JS-ffe600?style=flat-square)
 
