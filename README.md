@@ -26,6 +26,7 @@ A neon-styled arcade collection of self-contained browser games — no installs,
 | 9 | 🔤 **Word Jump** | `wordjump.html` | Word | Neon Wordle — 4/5/6 letters, clues, custom word mode, streaks |
 | 10 | 🔦 **Stranger Things Clicker** | `strangerthingsclicker.html` | Idle | Click the Gate, upgrades, boss fights, Tales From '85 mode. By a friend! |
 | 11 | 🗼 **Tower Defense** | `towerdefense.html` | Strategy | 30 waves, 4 tower types (Gun/Cannon/Laser/Frost), upgrade to level 3 |
+| 12 | 🧟 **Zombie Survival** | `zombieapocalypse.html` | Action | Top-down zombie waves, weapons, barricades. Suggested by Oscar |
 
 ---
 
@@ -33,7 +34,6 @@ A neon-styled arcade collection of self-contained browser games — no installs,
 
 | Game | Description | Credit |
 |------|-------------|--------|
-| 🧟 **Zombie Survival** | Top-down zombie waves, weapons, barricades | Oscar |
 | 🤖 **Mech Defender** | Giant mech vs alien planet invasion | Kiko |
 | 🏀 **Hoop Shot** | Moving basket shooting game | Edison |
 | ⚽ **Ball Course** | Ball obstacle course | Peter |
@@ -73,8 +73,11 @@ gamehub/
 ├── wordjump.html                 ← Word Jump
 ├── strangerthingsclicker.html    ← Stranger Things Clicker
 ├── towerdefense.html             ← Tower Defense
+├── zombieapocalypse.html         ← Zombie Survival (Apocalypse)
 ├── README.md                     ← This file
-└── Game_Hub-modified.png         ← Logo
+├── Game_Hub-modified.png         ← Logo
+└── | Archive
+    ├── pong.html                 ← Skill Tester - pong.html
 ```
 
 ---
