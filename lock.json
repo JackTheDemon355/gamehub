@@ -1,0 +1,7 @@
+{
+  "locked": false,
+  "school_hours_lock": false,
+  "school_hours_note": "When school_hours_lock is true, games auto-lock Mon-Fri 8:15am-3:15pm AWST (UTC+8). This is checked client-side.",
+  "message": "Games are locked during school hours (8:15am - 3:15pm AWST, Mon-Fri). Enter password to override.",
+  "admin_note": "Set locked to true to manually lock all games regardless of time. Set school_hours_lock to false to disable the time-based lock."
+}
