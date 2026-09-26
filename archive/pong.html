@@ -336,5 +336,97 @@ document.getElementById('startBtn').onclick=()=>{overlay.style.display='none';ru
 requestAnimationFrame(loop);
 })();
 </script>
+  <script>
+  // ── GAME HUB LOCK SYSTEM v2 (AWST school hours + manual lock) ──
+(function(){
+  var PASSWORDS=['gamehub234','oscarmccumstie','user13579'];
+  function isSchoolHours(){
+    // AWST = UTC+8
+    var now=new Date();
+    var awst=new Date(now.getTime()+8*3600*1000);
+    var day=awst.getUTCDay(); // 0=Sun,6=Sat
+    if(day===0||day===6)return false; // weekend
+    var h=awst.getUTCHours(),m=awst.getUTCMinutes();
+    var mins=h*60+m;
+    return mins>=495&&mins<915; // 8:15=495, 15:15=915
+  }
+  function checkLock(){
+    fetch('lock.json?_='+Date.now())
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var locked=d.locked===true;
+        var schoolLock=d.school_hours_lock===true&&isSchoolHours();
+        if(locked||schoolLock){
+          var msg=d.message||'Games are currently locked.';
+          showLockScreen(msg,!locked&&schoolLock);
+        }
+      })
+      .catch(function(){
+        // No lock.json found — check school hours anyway with default message
+        if(isSchoolHours()){
+          showLockScreen('Games are locked during school hours (8:15am - 3:15pm AWST, Mon-Fri). Enter password to override.',true);
+        }
+      });
+  }
+  function showLockScreen(msg,isTimeLock){
+    var div=document.createElement('div');
+    div.id='lockScreen';
+    div.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:24px;';
+    var timeStr='';
+    if(isTimeLock){
+      var now=new Date();
+      var awst=new Date(now.getTime()+8*3600*1000);
+      var h=awst.getUTCHours(),m=awst.getUTCMinutes();
+      var ampm=h>=12?'PM':'AM';
+      var h12=h%12||12;
+      timeStr='<div style="font-size:11px;color:#39ff14;letter-spacing:2px;margin-top:4px">Current AWST time: '+h12+':'+(m<10?'0':'')+m+' '+ampm+'</div>';
+    }
+    div.innerHTML=
+      '<div style="font-size:clamp(26px,6vw,48px);color:#ff003c;letter-spacing:6px;text-shadow:0 0 16px #ff003c;font-weight:bold">LOCKED 🔒</div>'+
+      '<div style="font-size:13px;letter-spacing:2px;color:#888;max-width:460px;line-height:1.7">'+msg+'</div>'+
+      timeStr+
+      '<div style="font-size:11px;color:#334;letter-spacing:2px;margin-top:6px">Hold <span style="color:#00fff2">SHIFT</span> then press any key &nbsp;·&nbsp; Mobile: tap 3× quickly</div>';
+    document.body.appendChild(div);
+    document.body.style.overflow='hidden';
+    var shiftHeld=false;
+    function kd(e){
+      if(e.key==='Shift'){shiftHeld=true;return;}
+      if(shiftHeld){document.removeEventListener('keydown',kd);document.removeEventListener('keyup',ku);promptPassword(div);}
+    }
+    function ku(e){if(e.key==='Shift')shiftHeld=false;}
+    document.addEventListener('keydown',kd);
+    document.addEventListener('keyup',ku);
+    var tapCount=0,lastTap=0;
+    div.addEventListener('click',function(){
+      var now2=Date.now();if(now2-lastTap>700)tapCount=0;lastTap=now2;
+      if(++tapCount>=3){tapCount=0;promptPassword(div);}
+    });
+  }
+  function promptPassword(lockDiv){
+    lockDiv.innerHTML=
+      '<div style="font-size:clamp(22px,5vw,38px);color:#ffe600;letter-spacing:6px;text-shadow:0 0 14px #ffe600;font-weight:bold">PASSWORD 🔑</div>'+
+      '<div style="font-size:11px;color:#667;letter-spacing:2px">Admin or user password (case insensitive)</div>'+
+      '<input id="lpi" type="password" autocomplete="off" spellcheck="false" style="background:rgba(0,0,0,.65);border:2px solid rgba(0,255,242,.4);color:#fff;padding:13px 20px;font-family:Consolas,monospace;font-size:20px;letter-spacing:6px;border-radius:6px;outline:none;width:280px;text-align:center;" placeholder="••••••••">'+
+      '<button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:11px 30px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:2px;">▶ UNLOCK</button>'+
+      '<div id="lpe" style="color:#ff003c;font-size:12px;letter-spacing:2px;min-height:18px;"></div>';
+    var inp=document.getElementById('lpi'),btn=document.getElementById('lpb'),err=document.getElementById('lpe');
+    inp.focus();
+    function attempt(){
+      var val=(inp.value||'').trim().toLowerCase();
+      if(PASSWORDS.map(function(p){return p.toLowerCase();}).indexOf(val)>=0){
+        lockDiv.remove();document.body.style.overflow='';
+      }else{
+        err.textContent='Incorrect password — try again';
+        inp.value='';inp.focus();
+        setTimeout(function(){err.textContent='';},2200);
+      }
+    }
+    btn.addEventListener('click',attempt);
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter')attempt();});
+  }
+  checkLock();
+})();
+// ── END LOCK SYSTEM ──
+</script>
 </body>
 </html>
