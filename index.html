@@ -2,6 +2,9 @@
 <html lang="en" data-theme="neon">
 <head>
 <meta charset="UTF-8">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="https://raw.githubusercontent.com/JackTheDemon355/gamehub/5cce1d534df4800695e2094643fe2bd60420cfd1/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="https://uploads.onecompiler.io/44md3ywr8/1790746237660/favicon%20(1).ico" type="image/x-icon">
   <meta name="google-site-verification" content="1rNDahd3JgJCYe4UGAdNJqAAZM_oOawfSZ-I2i2_mPs" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GAME HUB</title>
@@ -134,12 +137,24 @@
   <div style="margin-top:24px;font-size:10px;letter-spacing:2px;color:#445;line-height:2;">
     Settings saved in your browser.<br>Each game has its own settings too.
   </div>
+  <div style="margin-top:20px;background:rgba(157,78,221,.1);border:1px solid rgba(157,78,221,.3);border-radius:8px;padding:14px;font-size:11px;letter-spacing:1px;color:#ccc;line-height:2;">
+    <div style="color:#ffe600;font-weight:bold;font-size:13px;letter-spacing:3px;margin-bottom:6px">⭐ PRO — $2.99/mo</div>
+    Unlimited game saves · Member badge<br>Early access to new games · No ads ever<br>
+    <a href="https://buy.stripe.com/28E4gycp97Qm5Qq0lq18c09" target="_blank" style="color:#9d4edd;text-decoration:none;letter-spacing:2px;">▶ UPGRADE TO PRO</a>
+  </div>
   <button class="close-settings" onclick="closeSettings()">✓ DONE</button>
 </div>
 
 <header>
   <h1>GAME HUB</h1>
   <p>◄ SELECT YOUR GAME ►</p>
+  <div style="margin-top:10px;">
+    <a href="login.html" id="authBadge" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(0,255,242,.2);border-radius:999px;padding:7px 16px;text-decoration:none;font-size:11px;letter-spacing:2px;color:var(--sub);transition:.2s;" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='rgba(0,255,242,.2)'">
+      <span id="authIcon">👤</span><span id="authLabel">SIGN IN / REGISTER</span>
+    </a>
+    &nbsp;
+    <a href="https://buy.stripe.com/28E4gycp97Qm5Qq0lq18c09" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:rgba(157,78,221,.12);border:1px solid rgba(157,78,221,.4);border-radius:999px;padding:7px 16px;text-decoration:none;font-size:11px;letter-spacing:2px;color:#9d4edd;transition:.2s;" onmouseover="this.style.background='rgba(157,78,221,.25)'" onmouseout="this.style.background='rgba(157,78,221,.12)'">⭐ PRO — $2.99/mo</a>
+  </div>
 </header>
 
 <div id="toolbar">
@@ -165,7 +180,7 @@
   <div id="nlMsg">✓ You're subscribed! We'll email you when new games are added.</div>
 </div>
 
-<div class="sec-lbl" id="secLbl">— 14 GAMES AVAILABLE —</div>
+<div class="sec-lbl" id="secLbl">— 15 GAMES AVAILABLE —</div>
 <div id="grid">
 
   <a class="card" href="neonrunner.html" style="--c:var(--green)" data-cat="action" data-name="neon runner platformer jump wall">
@@ -277,7 +292,7 @@
     <br><span class="play">▶ PLAY</span>
   </a>
 
-  <a class="card new-card" href="zombie.html" style="--c:var(--red)" data-cat="action" data-name="zombie survival apocalypse horde shooter">
+  <a class="card new-card" href="zombieapocalypse.html" style="--c:var(--red)" data-cat="action" data-name="zombie survival apocalypse horde shooter">
     <span class="tag">NEW</span><span class="icon">🧟</span>
     <h2>ZOMBIE APOCALYPSE</h2>
     <p>Top-down survival. Waves of zombies, weapon upgrades, barricades. From Oscar.</p>
@@ -319,12 +334,13 @@
     <span class="badge">COMING SOON</span><br><span class="play">▶ PLAY</span>
   </div>
 
-  <div class="card" style="--c:var(--blue);opacity:.3;pointer-events:none;border-style:dashed" data-cat="puzzle">
-    <span class="tag">SOON</span><span class="icon">🪐</span>
+  <a class="card new-card" href="planetmaker.html" style="--c:var(--blue)" data-cat="puzzle" data-name="planet maker build world gravity atmosphere rings moons">
+    <span class="tag">NEW</span><span class="icon">🪐</span>
     <h2>PLANET MAKER</h2>
-    <p>Adjust size, gravity, atmosphere — watch your planet update live.</p>
-    <span class="badge">COMING SOON</span><br><span class="play">▶ PLAY</span>
-  </div>
+    <p>Build your own world. Adjust size, mass, water, temperature, atmosphere, rings and moons. Live canvas. 10 presets.</p>
+    <span class="badge">10 PRESETS</span><span class="badge">RINGS</span><span class="badge">HABITABLE?</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
 
 </div>
 
@@ -337,6 +353,99 @@
 </footer>
 
 <script>
+// ── GAME HUB LOCK SYSTEM v3 ──────────────────────────────
+(function(){
+  var PASSWORDS=['gamehub234','oscarmccumstie','user13579'];
+
+  function isSchoolHours(){
+    var now=new Date();
+    var awstOffset=8*60*60*1000;
+    var awst=new Date(now.getTime()+awstOffset);
+    var day=awst.getUTCDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+    if(day===0||day===6)return false; // Weekend - never locked
+    var h=awst.getUTCHours(),m=awst.getUTCMinutes();
+    var totalMins=h*60+m;
+    return totalMins>=495&&totalMins<915; // 8:15am=495mins, 3:15pm=915mins
+  }
+
+  function getAWSTString(){
+    var now=new Date();
+    var awst=new Date(now.getTime()+8*60*60*1000);
+    var h=awst.getUTCHours(),m=awst.getUTCMinutes();
+    var ampm=h>=12?'PM':'AM';var h12=h%12||12;
+    var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    return days[awst.getUTCDay()]+' '+h12+':'+(m<10?'0':'')+m+' '+ampm+' AWST';
+  }
+
+  function checkLock(){
+    fetch('lock.json?nc='+Date.now())
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.locked===true){
+          showLockScreen(d.message||'Games are locked by admin.',false);
+        } else if(d.school_hours_lock===true&&isSchoolHours()){
+          showLockScreen(d.message||'Games are locked during school hours (8:15am\u20133:15pm AWST, Mon\u2013Fri).',true);
+        }
+      })
+      .catch(function(){
+        // Cannot reach lock.json (file:// protocol or no server) - do NOT lock
+        // Only lock if we can confirm school hours AND a lock is intended
+      });
+  }
+
+  function showLockScreen(msg,isTime){
+    var div=document.createElement('div');
+    div.id='lockScreen';
+    div.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:24px;';
+    div.innerHTML=
+      '<div style="font-size:clamp(24px,6vw,48px);color:#ff003c;letter-spacing:6px;font-weight:bold;text-shadow:0 0 16px #ff003c">LOCKED \uD83D\uDD12</div>'+
+      '<div style="font-size:13px;letter-spacing:2px;color:#888;max-width:460px;line-height:1.7">'+msg+'</div>'+
+      (isTime?'<div style="font-size:11px;color:#39ff14;letter-spacing:2px">'+getAWSTString()+'</div>':'')+
+      '<div style="font-size:11px;color:#334;letter-spacing:2px;margin-top:6px">Hold <span style="color:#00fff2">SHIFT</span> then press any key \u00B7 Mobile: tap 3\xD7 quickly</div>';
+    document.body.appendChild(div);
+    document.body.style.overflow='hidden';
+    var shiftHeld=false;
+    function kd(e){
+      if(e.key==='Shift'){shiftHeld=true;return;}
+      if(shiftHeld){document.removeEventListener('keydown',kd);document.removeEventListener('keyup',ku);promptPassword(div);}
+    }
+    function ku(e){if(e.key==='Shift')shiftHeld=false;}
+    document.addEventListener('keydown',kd);
+    document.addEventListener('keyup',ku);
+    var tapCount=0,lastTap=0;
+    div.addEventListener('click',function(){
+      var n=Date.now();if(n-lastTap>700)tapCount=0;lastTap=n;
+      if(++tapCount>=3){tapCount=0;promptPassword(div);}
+    });
+  }
+
+  function promptPassword(lockDiv){
+    lockDiv.innerHTML=
+      '<div style="font-size:clamp(20px,5vw,36px);color:#ffe600;letter-spacing:6px;font-weight:bold;text-shadow:0 0 14px #ffe600">PASSWORD \uD83D\uDD11</div>'+
+      '<div style="font-size:11px;color:#667;letter-spacing:2px">Admin or user password (case insensitive)</div>'+
+      '<input id="lpi" type="password" autocomplete="off" spellcheck="false" style="background:rgba(0,0,0,.65);border:2px solid rgba(0,255,242,.4);color:#fff;padding:13px 20px;font-family:Consolas,monospace;font-size:20px;letter-spacing:6px;border-radius:6px;outline:none;width:280px;text-align:center;" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022">'+
+      '<button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:11px 30px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:2px;">\u25BA UNLOCK</button>'+
+      '<div id="lpe" style="color:#ff003c;font-size:12px;letter-spacing:2px;min-height:18px;"></div>';
+    var inp=document.getElementById('lpi'),btn=document.getElementById('lpb'),err=document.getElementById('lpe');
+    inp.focus();
+    function attempt(){
+      var val=(inp.value||'').trim().toLowerCase();
+      if(PASSWORDS.map(function(p){return p.toLowerCase();}).indexOf(val)>=0){
+        lockDiv.remove();document.body.style.overflow='';
+      }else{
+        err.textContent='Incorrect password \u2014 try again';
+        inp.value='';inp.focus();
+        setTimeout(function(){err.textContent='';},2200);
+      }
+    }
+    btn.addEventListener('click',attempt);
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter')attempt();});
+  }
+
+  checkLock();
+})();
+// ── END LOCK SYSTEM ──────────────────────────────────────
+
 const S={neon:true,scan:true,glow:true,anim:true,retro:false};
 const html=document.documentElement;
 try{const s=JSON.parse(localStorage.getItem('hub_settings')||'null');if(s)Object.assign(S,s);}catch(e){}
@@ -389,14 +498,19 @@ window.subscribeNL=function(){
   fetch('https://formspree.io/f/xaennwkb',{method:'POST',body:JSON.stringify({email,subject:'Newsletter Subscription',message:'New Game Hub newsletter subscriber: '+email}),headers:{'Content-Type':'application/json','Accept':'application/json'}}).catch(()=>{});
 };
 // Auth badge
-(async function(){
+(function(){
   try{
-    let cached=null;try{cached=JSON.parse(localStorage.getItem('gh_user'));}catch(e){}
-    const btn=document.getElementById('loginBtn');
+    var cached=null;try{cached=JSON.parse(localStorage.getItem('gh_user'));}catch(e){}
+    var icon=document.getElementById('authIcon');
+    var label=document.getElementById('authLabel');
+    var badge=document.getElementById('authBadge');
+    var loginBtn=document.getElementById('loginBtn');
     if(cached&&cached.name){
-      btn.textContent=(cached.isPro?'⭐ ':'👤 ')+cached.name.toUpperCase().slice(0,10);
-      btn.style.color=cached.isPro?'var(--yellow)':'var(--cyan)';
-      btn.style.borderColor=cached.isPro?'var(--yellow)':'var(--cyan)';
+      var name=cached.name.toUpperCase().slice(0,12);
+      if(icon)icon.textContent=cached.isPro?'⭐':'👤';
+      if(label)label.textContent=name+(cached.isPro?' · PRO':'');
+      if(badge&&cached.isPro){badge.style.borderColor='rgba(255,230,0,.5)';badge.style.color='var(--yellow)';}
+      if(loginBtn){loginBtn.textContent=(cached.isPro?'⭐ ':'👤 ')+name;loginBtn.style.color=cached.isPro?'var(--yellow)':'var(--cyan)';}
     }
   }catch(e){}
 })();
