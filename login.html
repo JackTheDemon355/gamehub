@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="https://raw.githubusercontent.com/JackTheDemon355/gamehub/5cce1d534df4800695e2094643fe2bd60420cfd1/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="https://uploads.onecompiler.io/44md3ywr8/1790746237660/favicon%20(1).ico" type="image/x-icon">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google-site-verification" content="1rNDahd3JgJCYe4UGAdNJqAAZM_oOawfSZ-I2i2_mPs" />
 <title>LOGIN — GAME HUB</title>
@@ -183,7 +186,14 @@ const SUPABASE_URL='https://rxdkdylcfspmiljicwdd.supabase.co';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4ZGtkeWxjZnNwbWlsamljd2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNjQxMDAsImV4cCI6MjEwNTk0MDEwMH0.ifhyyUye28DlGEOcScRDz5lpFW_1soXjzPaS1PrMxmU';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
-const REDIRECT=window.location.origin+'/login.html';
+// Auto-detect subdirectory (GitHub Pages serves from /gamehub/ not /)
+// e.g. https://jackthedemon355.github.io/gamehub/login.html
+const _path=window.location.pathname;
+const _base=_path.substring(0,_path.lastIndexOf('/')+1);
+const REDIRECT=window.location.origin+_base+'login.html';
+// ↑ Make sure Supabase Dashboard > Auth > URL Config has:
+//   Site URL:      https://jackthedemon355.github.io/gamehub
+//   Redirect URLs: https://jackthedemon355.github.io/gamehub/login.html
 const GAMES=['neonrunner','galaxia','snake','brickbreaker','blockfall','pong','asteroids','memorymatch','wordjump','strangerthingsclicker','towerdefense','zombie','hoopshot'];
 
 function msg(txt,type='info'){const el=document.getElementById('msg');el.textContent=txt;el.className=type;}
