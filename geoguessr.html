@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEOGUESSR CLONE — GAME HUB</title>
+<style>
+:root{--bg:#03030a;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;color:#fff;overflow:hidden;user-select:none;}
+#wrap{position:relative;width:100vw;height:100vh;}
+/* Panorama / image area */
+#sceneWrap{position:absolute;inset:0;background:#0a0a0f;overflow:hidden;cursor:crosshair;}
+#sceneImg{width:100%;height:100%;object-fit:cover;transition:opacity .4s;}
+#scenePan{position:absolute;inset:0;background:linear-gradient(135deg,#0a1020 0%,#0a1510 50%,#100a1a 100%);}
+/* Drag-to-pan hint */
+#panHint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.35);pointer-events:none;}
+/* HUD top */
+#hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;
+  padding:12px 20px;background:linear-gradient(#000,transparent);pointer-events:none;z-index:10;}
+#hud .left{font-size:13px;letter-spacing:2px;}
+.lbl{color:var(--mag);}.val{color:var(--yellow);font-weight:bold;}
+#roundInfo{font-size:13px;letter-spacing:2px;color:var(--cyan);}
+#timerBar{position:absolute;top:0;left:0;height:3px;background:var(--cyan);transition:width 1s linear;z-index:11;}
+/* Map panel (bottom right) */
+#mapPanel{position:absolute;bottom:20px;right:20px;z-index:20;
+  width:clamp(220px,28vw,340px);background:rgba(3,3,15,.9);
+  border:2px solid rgba(0,255,242,.25);border-radius:12px;overflow:hidden;
+  box-shadow:0 0 30px rgba(0,255,242,.12);transition:width .3s,height .3s;}
+#mapPanel.expanded{width:clamp(300px,45vw,580px);}
+#mapHeader{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;
+  background:rgba(0,255,242,.06);border-bottom:1px solid rgba(0,255,242,.12);cursor:pointer;}
+#mapHeader span{font-size:10px;letter-spacing:3px;color:var(--cyan);}
+#mapExpandBtn{font-size:10px;color:var(--sub);letter-spacing:2px;}
+#mapCanvas{width:100%;display:block;cursor:crosshair;}
+#mapHint{font-size:10px;letter-spacing:2px;color:#445;text-align:center;padding:6px;background:rgba(0,0,0,.4);}
+#guessBtn{width:100%;padding:11px;background:var(--cyan);color:#000;font-family:inherit;
+  font-size:13px;letter-spacing:3px;font-weight:bold;border:none;cursor:pointer;transition:.15s;}
+#guessBtn:hover{background:#00e6da;}
+#guessBtn:disabled{background:#1a4a4a;color:#555;cursor:not-allowed;}
+/* Result overlay */
+#resultOv{position:absolute;inset:0;background:rgba(0,0,0,.88);z-index:30;
+  display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;}
+#resultOv h2{font-size:clamp(20px,5vw,40px);letter-spacing:6px;margin-bottom:8px;}
+#resultOv .pts{font-size:clamp(28px,7vw,56px);font-weight:bold;color:var(--yellow);
+  text-shadow:0 0 20px var(--yellow);margin:12px 0;}
+#resultOv .dist{font-size:14px;letter-spacing:3px;color:var(--sub);}
+#resultMap{width:min(520px,90vw);height:280px;border:2px solid rgba(0,255,242,.3);border-radius:8px;margin:16px auto;}
+.rbtn{cursor:pointer;background:transparent;border:2px solid var(--yellow);color:var(--yellow);
+  padding:11px 26px;font-family:inherit;font-size:14px;letter-spacing:3px;border-radius:4px;margin:6px;}
+.rbtn:hover{background:var(--yellow);color:#000;}
+.rbtn.s{border-color:var(--cyan);color:var(--cyan);}
+.rbtn.s:hover{background:var(--cyan);color:#000;}
+/* Start overlay */
+#startOv{position:absolute;inset:0;background:rgba(3,3,15,.96);z-index:40;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;}
+#startOv h1{font-size:clamp(28px,7vw,60px);letter-spacing:10px;color:var(--cyan);
+  text-shadow:0 0 14px var(--cyan),0 0 36px rgba(0,255,242,.5);animation:flicker 4s infinite;}
+@keyframes flicker{0%,19%,21%,23%,25%,54%,56%,100%{opacity:1;}20%,22%,24%,55%{opacity:.7;}}
+#startOv h2{font-size:16px;letter-spacing:4px;color:var(--mag);margin:10px 0;}
+#startOv p{color:var(--sub);font-size:12px;margin:4px 0;max-width:480px;}
+.sbtn{cursor:pointer;background:transparent;border:2px solid var(--cyan);color:var(--cyan);
+  padding:13px 30px;font-family:inherit;font-size:15px;letter-spacing:4px;border-radius:4px;margin:8px;}
+.sbtn:hover{background:var(--cyan);color:#000;}
+/* Back link */
+#back{position:absolute;top:14px;left:18px;z-index:50;color:var(--cyan);text-decoration:none;
+  border:1px solid var(--cyan);padding:7px 14px;font-size:12px;letter-spacing:2px;border-radius:4px;background:rgba(0,0,0,.5);}
+#back:hover{background:var(--cyan);color:#000;}
+#scoreTotal{position:absolute;top:14px;right:18px;z-index:50;font-size:13px;letter-spacing:2px;
+  background:rgba(0,0,0,.6);padding:8px 14px;border-radius:6px;border:1px solid rgba(0,255,242,.15);}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="timerBar"></div>
+  <div id="sceneWrap">
+    <canvas id="scenePan"></canvas>
+    <div id="panHint">← Drag to look around →</div>
+  </div>
+  <div id="hud">
+    <div class="left"><span class="lbl">ROUND </span><span class="val" id="roundEl">1</span><span class="lbl"> / 5</span></div>
+    <div id="roundInfo">FIND THE LOCATION</div>
+  </div>
+  <div id="scoreTotal"><span class="lbl">TOTAL </span><span class="val" id="totalEl">0</span><span class="lbl"> PTS</span></div>
+  <a id="back" href="index.html">◄ HUB</a>
+
+  <!-- Map panel -->
+  <div id="mapPanel">
+    <div id="mapHeader" onclick="toggleMap()">
+      <span>🗺 CLICK TO PLACE GUESS</span>
+      <span id="mapExpandBtn">⤢ EXPAND</span>
+    </div>
+    <canvas id="mapCanvas" height="200"></canvas>
+    <div id="mapHint">Click anywhere on the map to pin your guess</div>
+    <button id="guessBtn" onclick="submitGuess()" disabled>📍 SUBMIT GUESS</button>
+  </div>
+
+  <!-- Result overlay -->
+  <div id="resultOv">
+    <h2 id="resultTitle" style="color:var(--cyan)">ROUND RESULT</h2>
+    <div class="dist" id="resultDist"></div>
+    <div class="pts" id="resultPts"></div>
+    <canvas id="resultMap" width="520" height="280"></canvas>
+    <div id="resultLoc" style="font-size:12px;color:var(--sub);letter-spacing:2px;margin-top:4px;"></div>
+    <div>
+      <button class="rbtn s" id="nextRoundBtn" onclick="nextRound()">▶ NEXT ROUND</button>
+    </div>
+  </div>
+
+  <!-- Start overlay -->
+  <div id="startOv">
+    <h1>GEOGUESSR</h1>
+    <h2>◄ FIND YOUR LOCATION ►</h2>
+    <p>You'll see a generated world scene. Click the map to drop your guess. Closer = more points!</p>
+    <p style="margin-top:8px;font-size:11px;color:#445">5 rounds · 60 seconds per round · 5000 points max each</p>
+    <button class="sbtn" id="startBtn">▶ START GAME</button>
+    <p style="margin-top:16px;font-size:11px;color:#334">
+      Note: Uses landmark images from Wikipedia. Real Street View requires a Google Maps API key (paid).<br>
+      You can add your own images — see README.
+    </p>
+    <a href="index.html" style="color:var(--cyan);font-size:11px;letter-spacing:2px;margin-top:12px;text-decoration:none;">◄ BACK TO HUB</a>
+  </div>
+</div>
+
+<script>
+// ── LOCK CHECK ──
+(function(){var P=['gamehub234','oscarmccumstie','user13579'];function isSchool(){var n=new Date(),a=new Date(n.getTime()+8*3600*1000),d=a.getUTCDay();if(d===0||d===6)return false;var m=a.getUTCHours()*60+a.getUTCMinutes();return m>=495&&m<915;}function chk(){fetch('lock.json?_='+Date.now()).then(r=>r.json()).then(d=>{if(d.locked===true||d.school_hours_lock===true&&isSchool())lock(d.message||'Locked.');}).catch(()=>{if(isSchool())lock('Locked during school hours.');});}function lock(msg){var el=document.createElement('div');el.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:20px;';el.innerHTML='<div style="font-size:40px;color:#ff003c;letter-spacing:8px;text-shadow:0 0 16px #ff003c">LOCKED 🔒</div><div style="color:#888;font-size:13px;max-width:400px">'+msg+'</div><div style="color:#445;font-size:11px">Hold SHIFT + press any key</div>';document.body.appendChild(el);document.body.style.overflow='hidden';var sh=false;document.addEventListener('keydown',function kd(e){if(e.key==='Shift'){sh=true;return;}if(sh){document.removeEventListener('keydown',kd);pw(el);}});var t=0,tc=0;el.addEventListener('click',function(){var n=Date.now();if(n-t>700)tc=0;t=n;if(++tc>=3){tc=0;pw(el);}});}function pw(el){el.innerHTML='<div style="font-size:30px;color:#ffe600;letter-spacing:6px">PASSWORD 🔑</div><input id="lpi" type="password" style="background:rgba(0,0,0,.6);border:2px solid #00fff2;color:#fff;padding:12px 18px;font-family:Consolas,monospace;font-size:18px;border-radius:6px;outline:none;width:260px;text-align:center;" placeholder="••••••••"><button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:10px 26px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:4px;">UNLOCK</button><div id="lpe" style="color:#ff003c;font-size:12px;min-height:16px;"></div>';var i=document.getElementById('lpi'),b=document.getElementById('lpb'),e=document.getElementById('lpe');i.focus();function go(){if(P.map(x=>x.toLowerCase()).indexOf((i.value||'').trim().toLowerCase())>=0){el.remove();document.body.style.overflow='';}else{e.textContent='Wrong password';i.value='';i.focus();setTimeout(()=>e.textContent='',2000);}}b.addEventListener('click',go);i.addEventListener('keydown',ev=>{if(ev.key==='Enter')go();});}chk();})();
+
+// ── GAME DATA ──
+// 20 real-world landmarks with Wikipedia image URLs + coordinates
+const LOCATIONS=[
+  {name:'Eiffel Tower, Paris',lat:48.858,lon:2.294,hint:'City of Light',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Tour_Eiffel_Wikimedia_Commons.jpg/800px-Tour_Eiffel_Wikimedia_Commons.jpg'},
+  {name:'Machu Picchu, Peru',lat:-13.163,lon:-72.545,hint:'Lost City of the Incas',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Machu_Picchu%2C_Peru.jpg/800px-Machu_Picchu%2C_Peru.jpg'},
+  {name:'Colosseum, Rome',lat:41.890,lon:12.492,hint:'Ancient Roman amphitheatre',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/800px-Colosseo_2020.jpg'},
+  {name:'Sydney Opera House',lat:-33.857,lon:151.215,hint:'Iconic Australian landmark',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Sydney_Australia._%2821339175489%29.jpg/800px-Sydney_Australia._%2821339175489%29.jpg'},
+  {name:'Taj Mahal, India',lat:27.175,lon:78.042,hint:'Marble mausoleum in Agra',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Taj_Mahal%2C_Agra%2C_India_edit3.jpg/800px-Taj_Mahal%2C_Agra%2C_India_edit3.jpg'},
+  {name:'Santorini, Greece',lat:36.461,lon:25.376,hint:'Blue domed island',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Sunset_at_Oia%2C_Santorini%2C_Greece.jpg/800px-Sunset_at_Oia%2C_Santorini%2C_Greece.jpg'},
+  {name:'Angkor Wat, Cambodia',lat:13.412,lon:103.867,hint:'Ancient temple complex',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Angkor_Wat%2C_Camboya%2C_2013-08-16%2C_DD_31.jpg/800px-Angkor_Wat%2C_Camboya%2C_2013-08-16%2C_DD_31.jpg'},
+  {name:'Pyramids of Giza, Egypt',lat:29.979,lon:31.134,hint:'Ancient wonder of the world',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Kheops-Pyramid.jpg/800px-Kheops-Pyramid.jpg'},
+  {name:'Niagara Falls, Canada/USA',lat:43.083,lon:-79.072,hint:'Famous waterfall border',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/All_three_Niagara_Falls.jpg/800px-All_three_Niagara_Falls.jpg'},
+  {name:'Mount Fuji, Japan',lat:35.361,lon:138.727,hint:'Japan\'s iconic volcano',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Fuji_from_Shinkansen_2004.jpg/800px-Fuji_from_Shinkansen_2004.jpg'},
+  {name:'Burj Khalifa, Dubai',lat:25.197,lon:55.274,hint:'World\'s tallest building',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Burj_Khalifa.jpg/800px-Burj_Khalifa.jpg'},
+  {name:'Golden Gate Bridge, San Francisco',lat:37.819,lon:-122.479,hint:'Iconic red suspension bridge',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/GoldenGateBridge-001.jpg/800px-GoldenGateBridge-001.jpg'},
+  {name:'Petra, Jordan',lat:30.329,lon:35.444,hint:'Rose-red city carved in rock',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Khazneh_amman.jpg/800px-Khazneh_amman.jpg'},
+  {name:'Aurora Borealis, Iceland',lat:64.963,lon:-19.020,hint:'Northern lights over Iceland',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Northern_Lights_over_Jokulsarlon.jpg/800px-Northern_Lights_over_Jokulsarlon.jpg'},
+  {name:'Stonehenge, England',lat:51.180,lon:-1.826,hint:'Prehistoric stone circle',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Stonehenge2007_07_30.jpg/800px-Stonehenge2007_07_30.jpg'},
+  {name:'Christ the Redeemer, Rio',lat:-22.952,lon:-43.210,hint:'Jesus statue on Corcovado',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Statue_of_Christ_the_Redeemer.jpg/800px-Statue_of_Christ_the_Redeemer.jpg'},
+  {name:'Hagia Sophia, Istanbul',lat:41.009,lon:28.980,hint:'Byzantine cathedral turned mosque',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Hagia_Sophia_Mars_2013.jpg/800px-Hagia_Sophia_Mars_2013.jpg'},
+  {name:'Uluru, Australia',lat:-25.345,lon:131.036,hint:'Sacred red rock in the Outback',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Uluru%2C_helicopter_view.jpg/800px-Uluru%2C_helicopter_view.jpg'},
+  {name:'Banff National Park, Canada',lat:51.178,lon:-115.570,hint:'Rocky Mountain lakes',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Banff_NP_-_Icefields_Parkway_-_Bow_Lake_%282%29.jpg/800px-Banff_NP_-_Icefields_Parkway_-_Bow_Lake_%282%29.jpg'},
+  {name:'Acropolis, Athens',lat:37.971,lon:23.726,hint:'Ancient hilltop citadel',
+   img:'https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/The_Parthenon_in_Athens.jpg/800px-The_Parthenon_in_Athens.jpg'},
+];
+
+// ── WORLD MAP (equirectangular projection) ──
+const mapCv=document.getElementById('mapCanvas');
+const mapCtx=mapCv.getContext('2d');
+let mapExpanded=false;
+function toggleMap(){
+  mapExpanded=!mapExpanded;
+  document.getElementById('mapPanel').classList.toggle('expanded',mapExpanded);
+  document.getElementById('mapExpandBtn').textContent=mapExpanded?'⤡ SHRINK':'⤢ EXPAND';
+  setTimeout(drawMap,50);
+}
+function latLonToMap(lat,lon,W,H){
+  const x=(lon+180)/360*W;
+  const y=(90-lat)/180*H;
+  return{x,y};
+}
+function mapToLatLon(mx,my,W,H){
+  return{lat:90-my/H*180,lon:mx/W*360-180};
+}
+
+// Draw world map using simple country-boundary approximation (canvas rectangles = continents)
+const CONTINENTS=[
+  // [x%,y%,w%,h%,color,name]
+  [35,15,12,40,'#1a3a1a','Europe'],
+  [40,25,18,35,'#1a2a1a','Africa'],
+  [55,5,30,50,'#1a2a2a','Asia'],
+  [75,35,15,35,'#1a3a2a','Australia'],
+  [5,10,20,45,'#1a2a1a','Americas'],
+  [5,10,12,20,'#1a3a1a','N.America'],
+  [10,38,8,30,'#152a12','S.America'],
+];
+
+let worldImg=null;
+function drawMap(guess=null,answer=null){
+  const W=mapCv.offsetWidth||300,H=mapCv.height=Math.round(W*.52);
+  mapCv.width=W;
+  mapCtx.fillStyle='#050a14';mapCtx.fillRect(0,0,W,H);
+  // Ocean
+  mapCtx.fillStyle='#071428';mapCtx.fillRect(0,0,W,H);
+  // Grid
+  mapCtx.strokeStyle='rgba(0,255,242,.06)';mapCtx.lineWidth=1;
+  for(let i=0;i<=6;i++){const y=i/6*H;mapCtx.beginPath();mapCtx.moveTo(0,y);mapCtx.lineTo(W,y);mapCtx.stroke();}
+  for(let i=0;i<=12;i++){const x=i/12*W;mapCtx.beginPath();mapCtx.moveTo(x,0);mapCtx.lineTo(x,H);mapCtx.stroke();}
+  // Landmasses (approximate shapes)
+  const land=[
+    // North America
+    [[8,8],[20,8],[22,15],[24,25],[20,45],[14,50],[8,45],[6,30],[6,15]],
+    // South America
+    [[14,45],[20,45],[22,55],[18,75],[12,78],[9,60],[10,48]],
+    // Europe
+    [[36,10],[48,10],[50,20],[46,28],[38,28],[34,22],[34,14]],
+    // Africa
+    [[36,28],[50,28],[52,55],[46,80],[40,82],[34,60],[32,40]],
+    // Asia
+    [[50,5],[92,5],[94,35],[88,55],[72,58],[56,48],[50,30]],
+    // Australia
+    [[73,52],[88,52],[90,68],[80,75],[70,70],[68,58]],
+    // Greenland
+    [[20,4],[28,4],[28,16],[20,16]],
+    // Japan (approx)
+    [[88,22],[90,22],[90,32],[88,32]],
+    // UK
+    [[34,10],[36,10],[36,18],[34,18]],
+  ];
+  mapCtx.fillStyle='#1a3520';
+  for(const shape of land){
+    if(shape.length<3)continue;
+    mapCtx.beginPath();
+    mapCtx.moveTo(shape[0][0]/100*W,shape[0][1]/100*H);
+    for(let i=1;i<shape.length;i++)mapCtx.lineTo(shape[i][0]/100*W,shape[i][1]/100*H);
+    mapCtx.closePath();mapCtx.fill();
+  }
+  // Borders
+  mapCtx.strokeStyle='rgba(57,255,20,.15)';mapCtx.lineWidth=1;
+  for(const shape of land){if(shape.length<3)continue;mapCtx.beginPath();mapCtx.moveTo(shape[0][0]/100*W,shape[0][1]/100*H);for(let i=1;i<shape.length;i++)mapCtx.lineTo(shape[i][0]/100*W,shape[i][1]/100*H);mapCtx.closePath();mapCtx.stroke();}
+
+  // Draw line between guess and answer
+  if(guess&&answer){
+    const gp=latLonToMap(guess.lat,guess.lon,W,H);
+    const ap=latLonToMap(answer.lat,answer.lon,W,H);
+    mapCtx.strokeStyle='rgba(255,230,0,.5)';mapCtx.lineWidth=2;mapCtx.setLineDash([4,4]);
+    mapCtx.beginPath();mapCtx.moveTo(gp.x,gp.y);mapCtx.lineTo(ap.x,ap.y);mapCtx.stroke();mapCtx.setLineDash([]);
+    // Guess pin
+    mapCtx.fillStyle='#ff003c';mapCtx.shadowColor='#ff003c';mapCtx.shadowBlur=10;
+    mapCtx.beginPath();mapCtx.arc(gp.x,gp.y,7,0,Math.PI*2);mapCtx.fill();
+    // Answer pin
+    mapCtx.fillStyle='#39ff14';mapCtx.shadowColor='#39ff14';
+    mapCtx.beginPath();mapCtx.arc(ap.x,ap.y,7,0,Math.PI*2);mapCtx.fill();
+    mapCtx.shadowBlur=0;
+    // Labels
+    mapCtx.font='10px monospace';mapCtx.fillStyle='#ff003c';mapCtx.fillText('YOUR GUESS',gp.x+10,gp.y-4);
+    mapCtx.fillStyle='#39ff14';mapCtx.fillText('ACTUAL',ap.x+10,ap.y-4);
+  }else if(guessPin){
+    const gp=latLonToMap(guessPin.lat,guessPin.lon,W,H);
+    mapCtx.fillStyle='#ff2fd0';mapCtx.shadowColor='#ff2fd0';mapCtx.shadowBlur=12;
+    mapCtx.beginPath();mapCtx.arc(gp.x,gp.y,7,0,Math.PI*2);mapCtx.fill();
+    mapCtx.shadowBlur=0;
+  }
+}
+mapCv.addEventListener('click',e=>{
+  if(!gameRunning)return;
+  const r=mapCv.getBoundingClientRect();
+  const mx=e.clientX-r.left,my=e.clientY-r.top;
+  guessPin=mapToLatLon(mx,my,mapCv.width,mapCv.height);
+  document.getElementById('guessBtn').disabled=false;
+  drawMap();
+});
+
+// ── GAME STATE ──
+let round=0,totalScore=0,gameRunning=false,guessPin=null,timer=60,timerInt=null;
+let roundOrder=[],usedIdxs=[];
+
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+function startGame(){
+  document.getElementById('startOv').style.display='none';
+  totalScore=0;round=0;usedIdxs=[];
+  roundOrder=shuffle([...Array(LOCATIONS.length).keys()]).slice(0,5);
+  document.getElementById('totalEl').textContent=0;
+  nextRound();
+}
+
+function nextRound(){
+  document.getElementById('resultOv').style.display='none';
+  guessPin=null;
+  document.getElementById('guessBtn').disabled=true;
+  if(round>=5){gameEnd();return;}
+  const loc=LOCATIONS[roundOrder[round]];
+  round++;
+  document.getElementById('roundEl').textContent=round;
+  gameRunning=true;
+  // Load image
+  const img=new Image();img.crossOrigin='anonymous';
+  img.onload=function(){
+    const pv=document.getElementById('sceneWrap');
+    pv.style.backgroundImage='url('+loc.img+')';
+    pv.style.backgroundSize='cover';pv.style.backgroundPosition='center';
+    document.getElementById('scenePan').style.display='none';
+  };
+  img.onerror=function(){
+    document.getElementById('scenePan').style.display='block';
+    drawPlaceholder(loc);
+  };
+  img.src=loc.img;
+  drawMap();
+  startTimer();
+}
+
+function drawPlaceholder(loc){
+  const cv=document.getElementById('scenePan');
+  cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;
+  const ctx2=cv.getContext('2d');
+  ctx2.fillStyle='#050a10';ctx2.fillRect(0,0,cv.width,cv.height);
+  ctx2.fillStyle='rgba(0,255,242,.06)';
+  for(let i=0;i<cv.width;i+=60)for(let j=0;j<cv.height;j+=60){ctx2.fillRect(i,j,59,59);}
+  ctx2.fillStyle='#00fff2';ctx2.font='bold 28px Consolas';ctx2.textAlign='center';
+  ctx2.fillText('📍 '+loc.hint,cv.width/2,cv.height/2-20);
+  ctx2.font='14px Consolas';ctx2.fillStyle='#445';
+  ctx2.fillText('[Image unavailable — guess by the hint above]',cv.width/2,cv.height/2+20);
+}
+
+function startTimer(){
+  clearInterval(timerInt);timer=60;
+  const bar=document.getElementById('timerBar');bar.style.width='100%';
+  timerInt=setInterval(()=>{
+    timer--;bar.style.width=(timer/60*100)+'%';
+    if(timer<=0){clearInterval(timerInt);if(!guessPin)guessPin={lat:0,lon:0};submitGuess();}
+  },1000);
+}
+
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function submitGuess(){
+  if(!guessPin)guessPin={lat:0,lon:0};
+  clearInterval(timerInt);gameRunning=false;
+  const loc=LOCATIONS[roundOrder[round-1]];
+  const distKm=Math.round(haversine(guessPin.lat,guessPin.lon,loc.lat,loc.lon));
+  // Score: 5000 for <1km, linear falloff to 0 at 10000km
+  const pts=Math.max(0,Math.round(5000*Math.max(0,1-distKm/10000)));
+  totalScore+=pts;
+  document.getElementById('totalEl').textContent=totalScore;
+
+  // Show result
+  const ov=document.getElementById('resultOv');
+  ov.style.display='flex';
+  document.getElementById('resultTitle').textContent=round<5?'ROUND '+round+' RESULT':'FINAL ROUND!';
+  document.getElementById('resultPts').textContent='+'+pts.toLocaleString()+' pts';
+  document.getElementById('resultDist').textContent=distKm.toLocaleString()+' km from the answer';
+  document.getElementById('resultLoc').textContent='📍 '+loc.name;
+  document.getElementById('nextRoundBtn').textContent=round>=5?'🏆 SEE FINAL SCORE':'▶ NEXT ROUND';
+
+  // Draw result map
+  const rCv=document.getElementById('resultMap');
+  rCv.width=rCv.offsetWidth||520;rCv.height=280;
+  // Reuse drawMap but on result canvas
+  const tmpCv=mapCv;
+  setTimeout(()=>{
+    const W=rCv.width,H=rCv.height;
+    const ctx3=rCv.getContext('2d');
+    ctx3.drawImage(mapCv,0,0,W,H);
+  },50);
+  drawMap(guessPin,{lat:loc.lat,lon:loc.lon});
+  setTimeout(()=>{
+    const W=rCv.width,H=rCv.height;
+    rCv.getContext('2d').drawImage(mapCv,0,0,W,H);
+  },100);
+}
+
+function gameEnd(){
+  document.getElementById('resultOv').style.display='flex';
+  document.getElementById('resultTitle').textContent='🏆 GAME COMPLETE!';
+  document.getElementById('resultPts').textContent=totalScore.toLocaleString()+' / 25000';
+  const grade=totalScore>=22000?'WORLD EXPLORER 🌍':totalScore>=16000?'GLOBE TROTTER ✈️':totalScore>=10000?'TOURIST 🗺':totalScore>=5000?'LOST WANDERER 🧭':'ARMCHAIR TRAVELLER 🛋️';
+  document.getElementById('resultDist').textContent=grade;
+  document.getElementById('resultLoc').textContent='';
+  document.getElementById('resultMap').style.display='none';
+  document.getElementById('nextRoundBtn').textContent='↻ PLAY AGAIN';
+  document.getElementById('nextRoundBtn').onclick=()=>{document.getElementById('resultMap').style.display='block';startGame();};
+  // Save hi score
+  try{const hi=Math.max(totalScore,parseInt(localStorage.getItem('geo_hi')||'0'));localStorage.setItem('geo_hi',hi);}catch(e){}
+}
+
+document.getElementById('startBtn').onclick=startGame;
+drawMap();
+</script>
+</body>
+</html>
