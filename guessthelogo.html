@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="1rNDahd3JgJCYe4UGAdNJqAAZM_oOawfSZ-I2i2_mPs" />
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>GUESS THE LOGO — GAME HUB</title>
+<style>
+:root{--bg:#03030c;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--purple:#9d4edd;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;color:#fff;
+  background-image:radial-gradient(ellipse at 30% 0%,#0a0a1e,transparent 55%),radial-gradient(ellipse at 70% 100%,#0e0a1e,transparent 55%);}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,255,242,.025) 0,rgba(0,255,242,.025) 1px,transparent 1px,transparent 4px);}
+#wrap{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 16px 40px;}
+header{text-align:center;padding:24px 20px 10px;width:100%;}
+header h1{font-size:clamp(22px,5vw,44px);letter-spacing:8px;color:var(--yellow);text-shadow:0 0 12px var(--yellow),0 0 30px rgba(255,230,0,.4);animation:flicker 5s infinite;}
+@keyframes flicker{0%,90%,100%{opacity:1;}92%,96%{opacity:.7;}}
+header p{font-size:11px;letter-spacing:4px;color:var(--mag);margin-top:4px;}
+#back{position:absolute;top:18px;left:18px;color:var(--cyan);text-decoration:none;border:1px solid var(--cyan);padding:7px 14px;font-size:11px;letter-spacing:2px;border-radius:4px;background:rgba(0,0,0,.5);}
+#back:hover{background:var(--cyan);color:#000;}
+/* HUD */
+#hud{display:flex;gap:24px;padding:10px 20px;background:rgba(0,0,0,.4);border:1px solid rgba(0,255,242,.12);border-radius:8px;margin-bottom:16px;font-size:12px;letter-spacing:2px;flex-wrap:wrap;justify-content:center;}
+.lbl{color:var(--mag);}.val{color:var(--yellow);font-weight:bold;}
+/* Progress bar */
+#progressBar{width:min(600px,90vw);height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:20px;overflow:hidden;}
+#progressFill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--mag));transition:width .4s;}
+/* Logo display */
+#logoWrap{position:relative;width:min(380px,88vw);height:min(280px,55vw);border:2px solid rgba(0,255,242,.18);border-radius:14px;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;margin-bottom:20px;overflow:hidden;}
+#logoImg{max-width:85%;max-height:85%;object-fit:contain;filter:blur(var(--blur,0px)) grayscale(var(--grey,0)) brightness(var(--bright,1));transition:filter .6s;}
+#blurLabel{position:absolute;bottom:10px;right:12px;font-size:9px;letter-spacing:2px;color:#334;}
+#timerRing{position:absolute;top:10px;right:10px;font-size:11px;color:var(--yellow);letter-spacing:1px;}
+/* Hints */
+#hintBox{background:rgba(0,0,0,.4);border:1px solid rgba(0,255,242,.12);border-radius:8px;padding:12px 16px;margin-bottom:16px;min-height:44px;font-size:12px;letter-spacing:1px;color:var(--sub);width:min(600px,90vw);text-align:center;}
+#hintBtn{cursor:pointer;background:transparent;color:var(--purple);border:1px solid var(--purple);padding:7px 16px;font-family:inherit;font-size:11px;letter-spacing:2px;border-radius:4px;margin-bottom:12px;}
+#hintBtn:hover{background:var(--purple);color:#fff;}
+#hintBtn:disabled{opacity:.35;cursor:not-allowed;}
+/* Answer options */
+#answers{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(600px,90vw);margin-bottom:14px;}
+.ans-btn{cursor:pointer;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 16px;font-family:inherit;font-size:13px;letter-spacing:2px;color:#ccc;transition:.18s;text-align:center;}
+.ans-btn:hover:not(:disabled){background:rgba(0,255,242,.08);border-color:var(--cyan);color:var(--cyan);}
+.ans-btn:disabled{cursor:default;}
+.ans-btn.correct{background:rgba(57,255,20,.15);border-color:var(--green);color:var(--green);}
+.ans-btn.wrong{background:rgba(255,0,60,.1);border-color:var(--red);color:var(--red);}
+/* Feedback */
+#feedback{font-size:16px;letter-spacing:3px;min-height:24px;text-align:center;margin-bottom:10px;font-weight:bold;}
+#nextBtn{cursor:pointer;background:transparent;color:var(--yellow);border:2px solid var(--yellow);padding:11px 28px;font-family:inherit;font-size:14px;letter-spacing:3px;border-radius:4px;display:none;}
+#nextBtn:hover{background:var(--yellow);color:#000;}
+/* Difficulty */
+#diffRow{display:flex;gap:8px;margin-bottom:16px;justify-content:center;}
+.diff{cursor:pointer;background:transparent;border:1px solid #333;color:#666;padding:6px 14px;font-family:inherit;font-size:10px;letter-spacing:2px;border-radius:20px;transition:.15s;}
+.diff:hover,.diff.active{border-color:var(--yellow);color:var(--yellow);}
+/* Overlay */
+#ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(2,2,10,.95);z-index:20;padding:20px;}
+#ov h1{font-size:clamp(26px,6vw,50px);letter-spacing:8px;color:var(--yellow);text-shadow:0 0 16px var(--yellow);margin-bottom:8px;}
+#ov h2{font-size:16px;color:var(--cyan);letter-spacing:4px;margin-bottom:14px;}
+#ov p{color:var(--sub);font-size:12px;margin:4px 0;}
+.gbtn{cursor:pointer;background:transparent;color:var(--yellow);border:2px solid var(--yellow);padding:11px 26px;font-family:inherit;font-size:14px;letter-spacing:3px;border-radius:4px;margin:5px;}
+.gbtn:hover{background:var(--yellow);color:#000;}
+.gbtn.s{color:var(--cyan);border-color:var(--cyan);}.gbtn.s:hover{background:var(--cyan);color:#000;}
+#hiScore{font-size:12px;color:var(--purple);letter-spacing:2px;margin-top:8px;}
+/* Category chips */
+#catRow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;}
+.cat{cursor:pointer;background:rgba(255,255,255,.04);border:1px solid #333;color:#666;padding:5px 11px;font-size:10px;letter-spacing:2px;border-radius:16px;transition:.15s;}
+.cat:hover,.cat.active{background:rgba(255,230,0,.08);border-color:var(--yellow);color:var(--yellow);}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <h1>GUESS THE LOGO</h1>
+    <p>◄ BRAND RECOGNITION CHALLENGE ►</p>
+  </header>
+  <a id="back" href="index.html">◄ HUB</a>
+
+  <div id="hud">
+    <div><span class="lbl">SCORE </span><span class="val" id="scoreEl">0</span></div>
+    <div><span class="lbl">STREAK </span><span class="val" id="streakEl">0</span></div>
+    <div><span class="lbl">ROUND </span><span class="val" id="roundEl">1</span><span class="lbl"> / </span><span class="val" id="totalREl">10</span></div>
+    <div><span class="lbl">HI </span><span class="val" id="hiEl">0</span></div>
+  </div>
+  <div id="progressBar"><div id="progressFill" style="width:0%"></div></div>
+
+  <div id="catRow">
+    <div class="cat active" data-cat="all" onclick="setCat(this)">ALL</div>
+    <div class="cat" data-cat="tech" onclick="setCat(this)">TECH</div>
+    <div class="cat" data-cat="food" onclick="setCat(this)">FOOD</div>
+    <div class="cat" data-cat="sport" onclick="setCat(this)">SPORT</div>
+    <div class="cat" data-cat="auto" onclick="setCat(this)">AUTO</div>
+    <div class="cat" data-cat="media" onclick="setCat(this)">MEDIA</div>
+  </div>
+
+  <div id="diffRow">
+    <button class="diff" onclick="setDiff(this,'easy')">EASY (clear)</button>
+    <button class="diff active" onclick="setDiff(this,'med')">MEDIUM (blurred)</button>
+    <button class="diff" onclick="setDiff(this,'hard')">HARD (very blurry)</button>
+    <button class="diff" onclick="setDiff(this,'extreme')">EXTREME (B&W + blurred)</button>
+  </div>
+
+  <div id="logoWrap">
+    <img id="logoImg" src="" alt="logo" crossorigin="anonymous">
+    <div id="blurLabel">Loading...</div>
+    <div id="timerRing" id="timerEl">⏱ <span id="timerVal">15</span>s</div>
+  </div>
+
+  <div id="hintBox">Hint will appear here…</div>
+  <button id="hintBtn" onclick="showHint()">💡 USE HINT (–100 pts)</button>
+  <div id="feedback"></div>
+  <div id="answers"></div>
+  <button id="nextBtn" onclick="nextQ()">▶ NEXT LOGO</button>
+
+  <div id="ov">
+    <h1>GUESS THE LOGO</h1>
+    <h2>BRAND RECOGNITION CHALLENGE</h2>
+    <p>10 rounds · 4 options each · Blurred logos get clearer if you wait</p>
+    <p>Hints cost 100 pts · Faster answers = more points</p>
+    <button class="gbtn" id="startBtn">▶ START</button>
+    <div id="hiScore"></div>
+    <p style="margin-top:12px"><a href="index.html" style="color:var(--cyan);font-size:11px">◄ BACK TO HUB</a></p>
+  </div>
+</div>
+
+<script>
+// ── LOCK ──
+(function(){var P=['gamehub234','oscarmccumstie','user13579'];function isSH(){var n=new Date(),a=new Date(n.getTime()+28800000),d=a.getUTCDay();if(!d||d===6)return false;var m=a.getUTCHours()*60+a.getUTCMinutes();return m>=495&&m<915;}function chk(){fetch('lock.json?nc='+Date.now()).then(r=>r.json()).then(d=>{if(d.locked===true||d.school_hours_lock===true&&isSH())showL(d.message||'Locked.');}).catch(()=>{});}function showL(msg){var el=document.createElement('div');el.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:24px;';el.innerHTML='<div style="font-size:42px;color:#ff003c;letter-spacing:6px;font-weight:bold;text-shadow:0 0 16px #ff003c">LOCKED 🔒</div><div style="font-size:13px;color:#888;max-width:460px;line-height:1.7">'+msg+'</div><div style="font-size:11px;color:#334">Hold SHIFT + key · tap 3×</div>';document.body.appendChild(el);document.body.style.overflow='hidden';var sh=false;document.addEventListener('keydown',function kd(e){if(e.key==='Shift'){sh=true;return;}if(sh){document.removeEventListener('keydown',kd);pw(el);}});var t=0,tc=0;el.addEventListener('click',function(){var n=Date.now();if(n-t>700)tc=0;t=n;if(++tc>=3){tc=0;pw(el);}});}function pw(el){el.innerHTML='<div style="font-size:32px;color:#ffe600;letter-spacing:6px;font-weight:bold">PASSWORD 🔑</div><input id="lpi" type="password" autocomplete="off" style="background:rgba(0,0,0,.65);border:2px solid rgba(0,255,242,.4);color:#fff;padding:13px 20px;font-family:Consolas,monospace;font-size:20px;letter-spacing:6px;border-radius:6px;outline:none;width:280px;text-align:center;" placeholder="••••••••"><button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:11px 28px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:4px;">▶ UNLOCK</button><div id="lpe" style="color:#ff003c;font-size:12px;min-height:18px;"></div>';var i=document.getElementById('lpi'),b=document.getElementById('lpb'),e=document.getElementById('lpe');i.focus();function go(){if(P.map(p=>p.toLowerCase()).indexOf((i.value||'').trim().toLowerCase())>=0){el.remove();document.body.style.overflow='';}else{e.textContent='Incorrect';i.value='';i.focus();setTimeout(()=>e.textContent='',2200);}}b.addEventListener('click',go);i.addEventListener('keydown',ev=>{if(ev.key==='Enter')go();});}chk();})();
+
+// ── LOGO DATABASE ──
+// Uses logos from Wikipedia commons / brand kit (all publicly visible brand marks)
+var LOGOS=[
+  // TECH
+  {name:'Apple',cat:'tech',   hint:'Founded by Steve Jobs in a garage',   color:'#555',
+   img:'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg'},
+  {name:'Google',cat:'tech',  hint:'The world\'s most used search engine',color:'#4285f4',
+   img:'https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg'},
+  {name:'Microsoft',cat:'tech',hint:'Windows and Xbox maker',             color:'#00a4ef',
+   img:'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg'},
+  {name:'Amazon',cat:'tech',  hint:'Arrow from A to Z',                   color:'#ff9900',
+   img:'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg'},
+  {name:'Meta',cat:'tech',    hint:'Facebook\'s parent company',          color:'#1877f2',
+   img:'https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg'},
+  {name:'Samsung',cat:'tech', hint:'South Korean electronics giant',      color:'#1428a0',
+   img:'https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg'},
+  {name:'Intel',cat:'tech',   hint:'Inside every PC since the 80s',       color:'#0071c5',
+   img:'https://upload.wikimedia.org/wikipedia/commons/7/7d/Intel_logo_%282006-2020%29.svg'},
+  {name:'NVIDIA',cat:'tech',  hint:'Green GPU manufacturer',              color:'#76b900',
+   img:'https://upload.wikimedia.org/wikipedia/en/6/6d/Nvidia_image_logo.svg'},
+  {name:'Tesla',cat:'tech',   hint:'Elon Musk\'s electric car brand',    color:'#cc0000',
+   img:'https://upload.wikimedia.org/wikipedia/commons/b/bd/Tesla_Motors.svg'},
+  {name:'Spotify',cat:'tech', hint:'Green music streaming app',           color:'#1db954',
+   img:'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg'},
+  {name:'Netflix',cat:'tech', hint:'Red N for streaming',                 color:'#e50914',
+   img:'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg'},
+  {name:'Adobe',cat:'tech',   hint:'Red logo for creative software',      color:'#ff0000',
+   img:'https://upload.wikimedia.org/wikipedia/commons/8/8d/Adobe_Corporate_Logo.png'},
+  // FOOD
+  {name:'McDonald\'s',cat:'food',hint:'Golden arches, billions served',   color:'#ffbc0d',
+   img:'https://upload.wikimedia.org/wikipedia/commons/3/36/McDonald%27s_Golden_Arches.svg'},
+  {name:'Starbucks',cat:'food',  hint:'Mermaid logo coffee chain',        color:'#00704a',
+   img:'https://upload.wikimedia.org/wikipedia/en/d/d3/Starbucks_Corporation_Logo_2011.svg'},
+  {name:'Coca-Cola',cat:'food',  hint:'Classic red soda script',          color:'#f40009',
+   img:'https://upload.wikimedia.org/wikipedia/commons/c/ce/Coca-Cola_logo.svg'},
+  {name:'Pepsi',cat:'food',      hint:'Red, white and blue circle',       color:'#004b93',
+   img:'https://upload.wikimedia.org/wikipedia/commons/6/6a/Pepsi_logo_%282014%29.png'},
+  {name:'KFC',cat:'food',        hint:'The Colonel in a bucket',          color:'#f40027',
+   img:'https://upload.wikimedia.org/wikipedia/en/b/bf/KFC_logo.svg'},
+  {name:'Nike',cat:'sport',      hint:'Just Do It swoosh',                color:'#111',
+   img:'https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg'},
+  {name:'Adidas',cat:'sport',    hint:'Three stripes brand',              color:'#000',
+   img:'https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg'},
+  // SPORT
+  {name:'FIFA',cat:'sport',      hint:'World football governing body',    color:'#002f6c',
+   img:'https://upload.wikimedia.org/wikipedia/en/a/aa/FIFA_logo_without_slogan.svg'},
+  {name:'NBA',cat:'sport',       hint:'American basketball silhouette',   color:'#c9082a',
+   img:'https://upload.wikimedia.org/wikipedia/en/0/03/National_Basketball_Association_logo.svg'},
+  // AUTO
+  {name:'BMW',cat:'auto',        hint:'Blue and white propeller roundel', color:'#1c69d4',
+   img:'https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg'},
+  {name:'Mercedes',cat:'auto',   hint:'Three-pointed star',               color:'#aaa',
+   img:'https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg'},
+  {name:'Toyota',cat:'auto',     hint:'Three overlapping ovals',          color:'#eb0a1e',
+   img:'https://upload.wikimedia.org/wikipedia/commons/9/9d/Toyota_carlogo.svg'},
+  {name:'Ferrari',cat:'auto',    hint:'Prancing horse on yellow',         color:'#c00',
+   img:'https://upload.wikimedia.org/wikipedia/en/d/d1/Ferrari-Logo.svg'},
+  // MEDIA
+  {name:'YouTube',cat:'media',   hint:'Red play button',                  color:'#ff0000',
+   img:'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg'},
+  {name:'Discord',cat:'media',   hint:'Gaming chat with a ghost controller',color:'#5865f2',
+   img:'https://upload.wikimedia.org/wikipedia/fr/4/4f/Discord_Logo_sans_texte.svg'},
+  {name:'Reddit',cat:'media',    hint:'Orange alien on the front page',   color:'#ff4500',
+   img:'https://upload.wikimedia.org/wikipedia/en/5/58/Reddit_logo_new.svg'},
+  {name:'TikTok',cat:'media',    hint:'Musical note meets social video',  color:'#010101',
+   img:'https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg'},
+  {name:'Twitter / X',cat:'media',hint:'Formerly a blue bird',           color:'#000',
+   img:'https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023_%28white%29.png'},
+  {name:'Twitch',cat:'media',    hint:'Purple streaming for gamers',      color:'#9146ff',
+   img:'https://upload.wikimedia.org/wikipedia/commons/2/26/Twitch_logo.svg'},
+  {name:'GitHub',cat:'tech',     hint:'Octocat code hosting',             color:'#181717',
+   img:'https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg'},
+  {name:'Slack',cat:'tech',      hint:'Colourful work chat grid',         color:'#4a154b',
+   img:'https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg'},
+];
+
+var diff='med', activeCat='all';
+var queue=[], round=0, totalR=10, score=0, streak=0, hi=0;
+var timer=15, timerInt=null, answered=false, hintsLeft=2;
+var currentLogo=null;
+
+try{hi=parseInt(localStorage.getItem('logo_hi')||'0')||0;}catch(e){}
+
+function setDiff(el,d){diff=d;document.querySelectorAll('.diff').forEach(x=>x.classList.remove('active'));el.classList.add('active');}
+function setCat(el){activeCat=el.dataset.cat;document.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));el.classList.add('active');}
+window.setDiff=setDiff;window.setCat=setCat;
+
+function applyBlur(pct){
+  // pct 0=clear, 1=fully blurred
+  var blurLevel=diff==='easy'?0:diff==='med'?8:diff==='hard'?18:22;
+  var blur=blurLevel*(pct||0);
+  var grey=diff==='extreme'?100:0;
+  var bright=diff==='extreme'?0.9:1;
+  document.getElementById('logoImg').style.filter=
+    'blur('+blur+'px) grayscale('+grey+'%) brightness('+bright+')';
+}
+
+function getBlurClearLabel(pct){
+  if(diff==='easy')return 'Difficulty: EASY';
+  var pct2=Math.round((1-pct)*100);
+  return 'Clarity: '+pct2+'%';
+}
+
+function buildQueue(){
+  var pool=LOGOS.filter(l=>activeCat==='all'||l.cat===activeCat);
+  if(pool.length<4)pool=LOGOS;
+  pool=pool.slice().sort(()=>Math.random()-.5);
+  queue=pool.slice(0,totalR);
+}
+
+function buildAnswers(correct, allPool){
+  var pool=LOGOS.filter(l=>l.name!==correct.name);
+  pool=pool.sort(()=>Math.random()-.5).slice(0,3);
+  var options=[correct,...pool].sort(()=>Math.random()-.5);
+  var el=document.getElementById('answers');el.innerHTML='';
+  options.forEach(opt=>{
+    var b=document.createElement('button');b.className='ans-btn';
+    b.textContent=opt.name;b.dataset.name=opt.name;
+    b.onclick=function(){if(!answered)checkAnswer(opt.name,correct.name,b);};
+    el.appendChild(b);
+  });
+}
+
+function startGame(){
+  document.getElementById('ov').style.display='none';
+  score=0;streak=0;round=0;hintsLeft=2;
+  document.getElementById('scoreEl').textContent=0;
+  document.getElementById('streakEl').textContent=0;
+  document.getElementById('hiEl').textContent=hi;
+  buildQueue();
+  nextQ();
+}
+
+function nextQ(){
+  if(round>=totalR){gameOver();return;}
+  answered=false;hintsLeft=2;
+  document.getElementById('nextBtn').style.display='none';
+  document.getElementById('feedback').textContent='';
+  document.getElementById('feedback').style.color='';
+  document.getElementById('hintBox').textContent='Hint will appear here…';
+  document.getElementById('hintBtn').disabled=false;
+  document.getElementById('hintBtn').textContent='💡 USE HINT (–100 pts)';
+
+  currentLogo=queue[round];
+  round++;
+  document.getElementById('roundEl').textContent=round;
+  document.getElementById('progressFill').style.width=(round/totalR*100)+'%';
+
+  var img=document.getElementById('logoImg');
+  img.src='';
+  img.onload=null;
+  img.onerror=function(){document.getElementById('blurLabel').textContent='[Image unavailable]';};
+  img.onload=function(){applyBlur(1);document.getElementById('blurLabel').textContent=getBlurClearLabel(0);};
+  img.src=currentLogo.img;
+
+  buildAnswers(currentLogo,LOGOS);
+
+  // Timer + progressive reveal
+  clearInterval(timerInt);timer=15;
+  document.getElementById('timerVal').textContent=timer;
+  timerInt=setInterval(function(){
+    timer--;
+    document.getElementById('timerVal').textContent=timer;
+    // Logo gets clearer over time
+    var pct=timer/15;
+    applyBlur(diff==='easy'?0:Math.max(0,pct));
+    document.getElementById('blurLabel').textContent=getBlurClearLabel(pct);
+    if(timer<=0){clearInterval(timerInt);if(!answered)timeOut();}
+  },1000);
+}
+window.nextQ=nextQ;
+
+function checkAnswer(chosen,correct,btn){
+  if(answered)return;
+  answered=true;
+  clearInterval(timerInt);
+  document.querySelectorAll('.ans-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.name===correct)b.classList.add('correct');
+    else if(b===btn&&chosen!==correct)b.classList.add('wrong');
+  });
+  if(chosen===correct){
+    var pts=Math.max(50,100+timer*20-(hintsLeft<2?100:0));
+    score+=pts;streak++;
+    if(streak>=3)pts+=streak*20; // combo bonus
+    score=Math.max(0,score);
+    document.getElementById('scoreEl').textContent=score;
+    document.getElementById('streakEl').textContent=streak;
+    document.getElementById('feedback').textContent='✓ CORRECT! +'+pts+' pts'+(streak>=3?' COMBO x'+streak:'');
+    document.getElementById('feedback').style.color='var(--green)';
+    if(score>hi){hi=score;try{localStorage.setItem('logo_hi',String(hi));}catch(e){}document.getElementById('hiEl').textContent=hi;}
+  }else{
+    streak=0;document.getElementById('streakEl').textContent=0;
+    document.getElementById('feedback').textContent='✗ WRONG — '+correct;
+    document.getElementById('feedback').style.color='var(--red)';
+  }
+  // Reveal fully
+  applyBlur(0);
+  document.getElementById('nextBtn').style.display='inline-block';
+  document.getElementById('nextBtn').textContent=round>=totalR?'🏆 SEE RESULTS':'▶ NEXT LOGO';
+}
+
+function timeOut(){
+  answered=true;streak=0;document.getElementById('streakEl').textContent=0;
+  document.querySelectorAll('.ans-btn').forEach(b=>{b.disabled=true;if(b.dataset.name===currentLogo.name)b.classList.add('correct');});
+  document.getElementById('feedback').textContent='⏱ TIME\'S UP — '+currentLogo.name;
+  document.getElementById('feedback').style.color='var(--mag)';
+  applyBlur(0);
+  document.getElementById('nextBtn').style.display='inline-block';
+  document.getElementById('nextBtn').textContent=round>=totalR?'🏆 SEE RESULTS':'▶ NEXT LOGO';
+}
+
+window.showHint=function(){
+  if(!currentLogo||answered)return;
+  hintsLeft--;
+  score=Math.max(0,score-100);
+  document.getElementById('scoreEl').textContent=score;
+  document.getElementById('hintBox').textContent='💡 '+currentLogo.hint;
+  if(hintsLeft<=0){document.getElementById('hintBtn').disabled=true;document.getElementById('hintBtn').textContent='No hints left';}
+  else{document.getElementById('hintBtn').textContent='💡 HINT (–100 pts) · '+hintsLeft+' left';}
+};
+
+function gameOver(){
+  clearInterval(timerInt);
+  var grade=score>=2500?'BRAND GENIUS 🏆':score>=1800?'LOGO PRO ⭐':score>=1000?'BRAND AWARE 👍':'BRAND NEWBIE 😅';
+  var ov=document.getElementById('ov');
+  ov.style.display='flex';
+  ov.innerHTML='<h1 style="color:var(--yellow)">GAME OVER</h1>'
+    +'<h2>'+grade+'</h2>'
+    +'<div style="font-size:36px;color:var(--yellow);font-weight:bold;text-shadow:0 0 14px var(--yellow);margin:10px 0">'+score.toLocaleString()+' pts</div>'
+    +'<p style="color:var(--sub)">Best streak: '+streak+' · Hi: '+hi.toLocaleString()+'</p>'
+    +'<button class="gbtn" id="rb" style="margin-top:16px">↻ PLAY AGAIN</button>'
+    +'<p style="margin-top:10px"><a href="index.html" style="color:var(--cyan);font-size:11px;letter-spacing:2px">◄ GAME HUB</a></p>';
+  document.getElementById('rb').onclick=startGame;
+}
+
+// Start screen hi-score
+try{document.getElementById('hiScore').textContent='Best: '+hi+' pts';}catch(e){}
+document.getElementById('startBtn').onclick=startGame;
+</script>
+</body>
+</html>
