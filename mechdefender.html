@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="1rNDahd3JgJCYe4UGAdNJqAAZM_oOawfSZ-I2i2_mPs" />
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>MECH DEFENDER — GAME HUB</title>
+<style>
+:root{--bg:#020508;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--orange:#ff6a00;--blue:#4da6ff;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;overflow:hidden;user-select:none;color:#fff;}
+#wrap{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
+canvas{display:block;border:2px solid rgba(0,255,242,.2);box-shadow:0 0 40px rgba(0,255,242,.1);}
+#hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 20px;font-size:12px;letter-spacing:2px;pointer-events:none;background:linear-gradient(rgba(0,0,0,.7),transparent);}
+.lbl{color:var(--mag);}.val{color:var(--yellow);font-weight:bold;}
+#hud .box{display:flex;gap:14px;align-items:center;}
+/* Weapon bar */
+#weapBar{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);display:flex;gap:8px;pointer-events:none;}
+.weap{background:rgba(0,0,0,.6);border:1px solid #333;border-radius:6px;padding:5px 10px;font-size:10px;letter-spacing:2px;color:#555;transition:.2s;}
+.weap.active{border-color:var(--cyan);color:var(--cyan);}
+/* Shield bar */
+#shieldBarWrap{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);width:200px;}
+#shieldBar{height:6px;background:rgba(0,255,242,.15);border-radius:3px;overflow:hidden;}
+#shieldFill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--blue));width:100%;transition:width .2s;}
+#shieldLabel{text-align:center;font-size:9px;letter-spacing:2px;color:var(--cyan);margin-top:3px;}
+#back{position:absolute;bottom:14px;left:18px;z-index:5;color:var(--cyan);text-decoration:none;border:1px solid var(--cyan);padding:7px 14px;font-size:11px;letter-spacing:2px;border-radius:4px;background:rgba(0,0,0,.6);}
+#back:hover{background:var(--cyan);color:#000;}
+#ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(1,3,6,.95);z-index:10;padding:20px;}
+#ov h1{font-size:clamp(24px,6vw,52px);letter-spacing:8px;margin:0;color:var(--cyan);text-shadow:0 0 14px var(--cyan),0 0 40px rgba(0,255,242,.4);}
+#ov h2{font-size:16px;margin:10px 0;color:var(--yellow);}
+#ov p{color:var(--sub);font-size:12px;margin:3px 0;}
+.mbtn{cursor:pointer;background:transparent;color:var(--cyan);border:2px solid var(--cyan);padding:11px 26px;font-family:inherit;font-size:14px;letter-spacing:3px;margin:5px;border-radius:4px;}
+.mbtn:hover{background:var(--cyan);color:#000;}
+.mbtn.y{color:var(--yellow);border-color:var(--yellow);}.mbtn.y:hover{background:var(--yellow);color:#000;}
+#waveBanner{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);font-size:clamp(20px,5vw,36px);color:var(--cyan);letter-spacing:6px;opacity:0;pointer-events:none;text-shadow:0 0 20px var(--cyan);}
+/* Touch controls */
+#touch{position:absolute;bottom:0;left:0;right:0;display:none;justify-content:space-between;padding:0 16px 14px;pointer-events:none;z-index:6;}
+#touch .side{display:flex;gap:10px;}
+#touch button{pointer-events:auto;width:60px;height:60px;border-radius:50%;font-size:18px;background:rgba(0,255,242,.1);border:2px solid var(--cyan);color:var(--cyan);}
+#touch #fireBtn{background:rgba(255,0,60,.15);border-color:var(--red);color:var(--red);width:70px;height:70px;}
+@media(max-width:780px){#touch{display:flex;}}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" width="900" height="600"></canvas>
+  <div id="hud">
+    <div class="box"><span class="lbl">WAVE </span><span class="val" id="wvEl">1</span>
+      <span class="lbl">KILLS </span><span class="val" id="killEl">0</span>
+      <span class="lbl">HI </span><span class="val" id="hiEl">0</span></div>
+    <div class="box"><span class="lbl">HP </span><span class="val" id="hpEl">100</span>
+      <span class="lbl">ENERGY </span><span class="val" id="enEl">100</span>
+      <span class="lbl">SCORE </span><span class="val" id="scEl">0</span></div>
+  </div>
+  <div id="weapBar">
+    <div class="weap active" id="w0">1:CANNON</div>
+    <div class="weap" id="w1">2:LASER</div>
+    <div class="weap" id="w2">3:MISSILE</div>
+    <div class="weap" id="w3">4:SHIELD</div>
+  </div>
+  <div id="shieldBarWrap">
+    <div id="shieldBar"><div id="shieldFill"></div></div>
+    <div id="shieldLabel">SHIELD ENERGY</div>
+  </div>
+  <div id="waveBanner">WAVE 1</div>
+  <a id="back" href="index.html">◄ HUB</a>
+  <div id="ov">
+    <h1>MECH DEFENDER</h1>
+    <h2>⚡ DEFEND YOUR PLANET ⚡</h2>
+    <p>← → / A D — Move mech &nbsp;·&nbsp; Mouse — Aim &nbsp;·&nbsp; Click / Space — Fire</p>
+    <p>1: Cannon &nbsp;·&nbsp; 2: Laser &nbsp;·&nbsp; 3: Missiles &nbsp;·&nbsp; 4: Shield</p>
+    <p>Shift — Boost &nbsp;·&nbsp; P — Pause &nbsp;·&nbsp; Aliens attack from all directions!</p>
+    <button class="mbtn y" id="startBtn" style="margin-top:14px">▶ LAUNCH</button>
+  </div>
+</div>
+<div id="touch">
+  <div class="side"><button id="tL">◀</button><button id="tR">▶</button></div>
+  <div class="side"><button id="fireBtn">🔥</button><button id="tS">🛡</button></div>
+</div>
+<script>
+// ── LOCK ──
+(function(){var P=['gamehub234','oscarmccumstie','user13579'];function isSH(){var n=new Date(),a=new Date(n.getTime()+28800000),d=a.getUTCDay();if(!d||d===6)return false;var m=a.getUTCHours()*60+a.getUTCMinutes();return m>=495&&m<915;}function chk(){fetch('lock.json?nc='+Date.now()).then(r=>r.json()).then(d=>{if(d.locked===true||d.school_hours_lock===true&&isSH())showL(d.message||'Locked.');}).catch(()=>{});}function showL(msg){var el=document.createElement('div');el.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:24px;';el.innerHTML='<div style="font-size:42px;color:#ff003c;letter-spacing:6px;font-weight:bold;text-shadow:0 0 16px #ff003c">LOCKED 🔒</div><div style="font-size:13px;color:#888;max-width:460px;line-height:1.7">'+msg+'</div><div style="font-size:11px;color:#334">Hold SHIFT + key · tap 3×</div>';document.body.appendChild(el);document.body.style.overflow='hidden';var sh=false;document.addEventListener('keydown',function kd(e){if(e.key==='Shift'){sh=true;return;}if(sh){document.removeEventListener('keydown',kd);pw(el);}});var t=0,tc=0;el.addEventListener('click',function(){var n=Date.now();if(n-t>700)tc=0;t=n;if(++tc>=3){tc=0;pw(el);}});}function pw(el){el.innerHTML='<div style="font-size:32px;color:#ffe600;letter-spacing:6px;font-weight:bold">PASSWORD 🔑</div><input id="lpi" type="password" autocomplete="off" style="background:rgba(0,0,0,.65);border:2px solid rgba(0,255,242,.4);color:#fff;padding:13px 20px;font-family:Consolas,monospace;font-size:20px;letter-spacing:6px;border-radius:6px;outline:none;width:280px;text-align:center;" placeholder="••••••••"><button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:11px 28px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:4px;">▶ UNLOCK</button><div id="lpe" style="color:#ff003c;font-size:12px;min-height:18px;"></div>';var i=document.getElementById('lpi'),b=document.getElementById('lpb'),e=document.getElementById('lpe');i.focus();function go(){if(P.map(p=>p.toLowerCase()).indexOf((i.value||'').trim().toLowerCase())>=0){el.remove();document.body.style.overflow='';}else{e.textContent='Incorrect';i.value='';i.focus();setTimeout(()=>e.textContent='',2200);}}b.addEventListener('click',go);i.addEventListener('keydown',ev=>{if(ev.key==='Enter')go();});}chk();})();
+
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+
+// ── STATE ──
+let mech={x:W/2,y:H-80,w:52,h:64,hp:100,maxHp:100,energy:100,speed:260,angle:0};
+let wave=1,kills=0,score=0,hi=0,running=false,paused=false;
+let aliens=[],bullets=[],missiles=[],particles=[],laserBeam=null;
+let weapIdx=0,shootCd=0,shieldOn=false,shieldTimer=0;
+let waveTimer=0,waveActive=false,spawnQ=[],spawnT=0;
+let mouseX=W/2,mouseY=H/2;
+try{hi=parseInt(localStorage.getItem('mech_hi')||'0')||0;}catch(e){}
+document.getElementById('hiEl').textContent=hi;
+
+const WEAPS=[
+  {name:'CANNON', cd:.28, cost:0,   color:'#00fff2'},
+  {name:'LASER',  cd:0,   cost:8,   color:'#ff003c'},
+  {name:'MISSILE',cd:.8,  cost:20,  color:'#ffe600'},
+  {name:'SHIELD', cd:0,   cost:30,  color:'#4da6ff'},
+];
+
+const ALIEN_TYPES=[
+  {type:'scout',   r:12, hp:30,   spd:120, dmg:8,  color:'#ff003c', pts:50,  shoot:false},
+  {type:'fighter', r:16, hp:60,   spd:80,  dmg:15, color:'#ff6a00', pts:100, shoot:true, scd:2.5},
+  {type:'bomber',  r:20, hp:140,  spd:50,  dmg:30, color:'#9d4edd', pts:200, shoot:false},
+  {type:'boss',    r:36, hp:600,  spd:40,  dmg:40, color:'#ff2fd0', pts:800, shoot:true, scd:1.5},
+  {type:'swarm',   r:8,  hp:15,   spd:160, dmg:5,  color:'#39ff14', pts:25,  shoot:false},
+  {type:'carrier', r:28, hp:300,  spd:30,  dmg:20, color:'#4da6ff', pts:400, shoot:true, scd:3.0},
+];
+
+const keys={};
+addEventListener('keydown',e=>{
+  keys[e.key.toLowerCase()]=true;
+  if(['arrowleft','arrowright',' '].includes(e.key.toLowerCase()))e.preventDefault();
+  if(e.key>='1'&&e.key<='4'){setWeap(+e.key-1);}
+  if((e.key==='p'||e.key==='P')&&running)paused=!paused;
+  if(e.key===' '&&running&&!paused)fire();
+});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();mouseX=e.clientX-r.left;mouseY=e.clientY-r.top;});
+cv.addEventListener('click',()=>{if(running&&!paused)fire();});
+
+// Touch
+function bindT(id,k,fn){const el=document.getElementById(id);if(!el)return;
+  el.addEventListener('touchstart',e=>{e.preventDefault();if(fn)fn();else keys[k]=true;},{passive:false});
+  el.addEventListener('touchend',e=>{e.preventDefault();keys[k]=false;},{passive:false});}
+bindT('tL','arrowleft');bindT('tR','arrowright');
+bindT('fireBtn',null,()=>{if(running&&!paused)fire();});
+bindT('tS',null,()=>{if(running&&!paused){setWeap(3);fire();}});
+
+function setWeap(i){
+  weapIdx=i;
+  document.querySelectorAll('.weap').forEach((w,j)=>w.classList.toggle('active',j===i));
+}
+window.setWeap=setWeap;
+
+function makeAlien(wave){
+  const side=Math.floor(Math.random()*4);
+  let x,y;
+  if(side===0){x=Math.random()*W;y=-40;}
+  else if(side===1){x=W+40;y=Math.random()*H*.7;}
+  else if(side===2){x=-40;y=Math.random()*H*.7;}
+  else{x=Math.random()*W;y=-60;}
+
+  let typePool=['scout','fighter','swarm'];
+  if(wave>=3)typePool.push('bomber');
+  if(wave>=5)typePool.push('carrier');
+  const isBoss=wave%5===0&&Math.random()<.2;
+  const typeName=isBoss?'boss':typePool[Math.floor(Math.random()*typePool.length)];
+  const def=ALIEN_TYPES.find(a=>a.type===typeName);
+  const hpScale=1+wave*.15;
+  return{...def, x, y, hp:def.hp*hpScale, maxHp:def.hp*hpScale, alive:true, t:Math.random()*10, shootT:0, angle:0};
+}
+
+function startWave(w){
+  wave=w;waveActive=true;spawnQ=[];spawnT=0;
+  const count=6+w*4;
+  for(let i=0;i<count;i++)spawnQ.push({delay:i*(0.55-Math.min(0.4,w*.025))});
+  document.getElementById('wvEl').textContent=w;
+  const banner=document.getElementById('waveBanner');
+  banner.textContent='WAVE '+w;banner.style.opacity='1';banner.style.transition='opacity .3s';
+  setTimeout(()=>{banner.style.opacity='0';},1500);
+}
+
+function fire(){
+  const w=WEAPS[weapIdx];
+  if(shootCd>0)return;
+  if(weapIdx>0&&mech.energy<w.cost)return;
+  if(weapIdx===3){// Shield
+    shieldOn=true;shieldTimer=2.5;mech.energy=Math.max(0,mech.energy-w.cost);return;
+  }
+  mech.energy=Math.max(0,mech.energy-w.cost);
+  const ang=Math.atan2(mouseY-mech.y,mouseX-mech.x);
+  shootCd=w.cd;
+
+  if(weapIdx===0){// Cannon
+    bullets.push({x:mech.x,y:mech.y,vx:Math.cos(ang)*620,vy:Math.sin(ang)*620,r:6,dmg:25,color:w.color,life:1.5,alive:true});
+  }else if(weapIdx===1){// Laser
+    laserBeam={x1:mech.x,y1:mech.y,x2:mech.x+Math.cos(ang)*900,y2:mech.y+Math.sin(ang)*900,life:.15,dmg:4};
+    // Instant damage along beam
+    const steps=80;
+    for(let i=0;i<steps;i++){
+      const bx=mech.x+Math.cos(ang)*(i/steps)*900;
+      const by=mech.y+Math.sin(ang)*(i/steps)*900;
+      aliens.forEach(a=>{if(!a.alive)return;if(Math.hypot(bx-a.x,by-a.y)<a.r+3){a.hp-=laserBeam.dmg;if(a.hp<=0)killAlien(a);}});
+    }
+  }else if(weapIdx===2){// Missile - homing
+    const target=aliens.filter(a=>a.alive).sort((a,b)=>Math.hypot(a.x-mech.x,a.y-mech.y)-Math.hypot(b.x-mech.x,b.y-mech.y))[0];
+    missiles.push({x:mech.x,y:mech.y,vx:Math.cos(ang)*300,vy:Math.sin(ang)*300,target,r:8,dmg:120,life:3,alive:true});
+  }
+}
+
+function killAlien(a){
+  a.alive=false;kills++;score+=a.pts+(wave*10);
+  document.getElementById('killEl').textContent=kills;
+  document.getElementById('scEl').textContent=score;
+  for(let i=0;i<(a.type==='boss'?30:12);i++){
+    const ang=Math.random()*Math.PI*2,sp=50+Math.random()*150;
+    particles.push({x:a.x,y:a.y,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,life:.7,color:a.color,sz:2+Math.random()*4});
+  }
+  // Carrier spawns scouts
+  if(a.type==='carrier'){
+    for(let i=0;i<4;i++)aliens.push({...ALIEN_TYPES[0],x:a.x+(Math.random()-.5)*40,y:a.y+(Math.random()-.5)*40,alive:true,hp:20,maxHp:20,shootT:0,t:Math.random()*5,angle:0});
+  }
+}
+
+function update(dt){
+  if(shieldOn){shieldTimer-=dt;if(shieldTimer<=0){shieldOn=false;}}
+  mech.energy=Math.min(100,mech.energy+dt*15);
+  if(shootCd>0)shootCd-=dt;
+
+  // Move mech
+  const boost=(keys['shift']||keys['shiftleft']||keys['shiftright'])&&mech.energy>20?1.7:1;
+  if(boost>1)mech.energy=Math.max(0,mech.energy-dt*25);
+  let dx=0;
+  if(keys['arrowleft']||keys['a'])dx=-1;
+  if(keys['arrowright']||keys['d'])dx=1;
+  mech.x=Math.max(mech.w/2,Math.min(W-mech.w/2,mech.x+dx*mech.speed*boost*dt));
+  mech.angle=Math.atan2(mouseY-mech.y,mouseX-mech.x);
+
+  // Spawn
+  if(spawnQ.length){spawnT+=dt;while(spawnQ.length&&spawnQ[0].delay<=spawnT){spawnQ.shift();aliens.push(makeAlien(wave));}}
+
+  // Aliens
+  for(const a of aliens){
+    if(!a.alive)continue;
+    a.t+=dt;
+    const ang=Math.atan2(mech.y-a.y,mech.x-a.x);
+    a.angle=ang;
+    a.x+=Math.cos(ang)*a.spd*dt;a.y+=Math.sin(ang)*a.spd*dt;
+    // Alien shooting
+    if(a.shoot){a.shootT+=dt;if(a.shootT>=a.scd){a.shootT=0;const ba=ang+(Math.random()-.5)*.3;bullets.push({x:a.x,y:a.y,vx:Math.cos(ba)*280,vy:Math.sin(ba)*280,r:5,dmg:a.dmg/3,color:'#ff003c',life:2,alive:true,enemy:true});}}
+    // Hit mech
+    if(Math.hypot(a.x-mech.x,a.y-mech.y)<a.r+mech.w/2){
+      if(shieldOn){a.hp-=50;if(a.hp<=0)killAlien(a);} else{mech.hp-=a.dmg*dt*4;if(mech.hp<=0){gameOver();return;}}
+    }
+  }
+  aliens=aliens.filter(a=>a.alive);
+
+  // Bullets
+  for(const b of bullets){
+    if(!b.alive)continue;
+    b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
+    if(b.x<-20||b.x>W+20||b.y<-20||b.y>H+20||b.life<=0){b.alive=false;continue;}
+    if(b.enemy){if(Math.hypot(b.x-mech.x,b.y-mech.y)<mech.w/2&&!shieldOn){mech.hp-=b.dmg;b.alive=false;if(mech.hp<=0){gameOver();return;}}}
+    else{for(const a of aliens){if(!a.alive)continue;if(Math.hypot(b.x-a.x,b.y-a.y)<a.r+b.r){a.hp-=b.dmg;b.alive=false;if(a.hp<=0)killAlien(a);break;}}}
+  }
+  bullets=bullets.filter(b=>b.alive);
+
+  // Missiles (homing)
+  for(const m of missiles){
+    if(!m.alive)continue;
+    m.life-=dt;if(m.life<=0){m.alive=false;continue;}
+    if(m.target&&m.target.alive){const ang=Math.atan2(m.target.y-m.y,m.target.x-m.x);m.vx+=(Math.cos(ang)*400-m.vx)*dt*3;m.vy+=(Math.sin(ang)*400-m.vy)*dt*3;}
+    m.x+=m.vx*dt;m.y+=m.vy*dt;
+    for(const a of aliens){if(!a.alive)continue;if(Math.hypot(m.x-a.x,m.y-a.y)<a.r+m.r){// Explosion
+      a.hp-=m.dmg;m.alive=false;if(a.hp<=0)killAlien(a);
+      for(let i=0;i<20;i++){const aa=Math.random()*Math.PI*2,sp=80+Math.random()*200;particles.push({x:m.x,y:m.y,vx:Math.cos(aa)*sp,vy:Math.sin(aa)*sp,life:.6,color:'#ffe600',sz:3+Math.random()*4});}
+      break;
+    }}
+  }
+  missiles=missiles.filter(m=>m.alive);
+  if(laserBeam){laserBeam.life-=dt;if(laserBeam.life<=0)laserBeam=null;}
+  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;p.vx*=.9;p.vy*=.9;}
+  particles=particles.filter(p=>p.life>0);
+
+  // HUD
+  document.getElementById('hpEl').textContent=Math.max(0,Math.floor(mech.hp));
+  document.getElementById('enEl').textContent=Math.floor(mech.energy);
+  document.getElementById('shieldFill').style.width=(mech.energy)+'%';
+
+  // Wave clear
+  if(waveActive&&spawnQ.length===0&&aliens.length===0){waveActive=false;setTimeout(()=>startWave(wave+1),2000);}
+}
+
+function gameOver(){
+  running=false;
+  if(score>hi){hi=score;try{localStorage.setItem('mech_hi',String(hi));}catch(e){}}
+  const ov=document.getElementById('ov');
+  ov.style.display='flex';
+  ov.innerHTML='<h1 style="color:var(--red);text-shadow:0 0 16px var(--red)">PLANET LOST</h1>'
+    +'<h2 style="color:var(--orange)">Wave '+wave+' · '+kills+' kills</h2>'
+    +'<div style="font-size:36px;color:var(--yellow);font-weight:bold;text-shadow:0 0 14px var(--yellow);margin:10px 0">'+score.toLocaleString()+' pts</div>'
+    +'<p style="color:var(--sub)">Hi: '+hi.toLocaleString()+'</p>'
+    +'<button class="mbtn y" id="rb" style="margin-top:16px">↻ TRY AGAIN</button>'
+    +'<p style="margin-top:10px"><a href="index.html" style="color:var(--cyan);font-size:11px">◄ GAME HUB</a></p>';
+  document.getElementById('rb').onclick=()=>{ov.style.display='none';resetGame();};
+}
+
+function resetGame(){
+  mech.x=W/2;mech.hp=mech.maxHp;mech.energy=100;
+  wave=1;kills=0;score=0;aliens=[];bullets=[];missiles=[];particles=[];laserBeam=null;
+  shieldOn=false;weapIdx=0;setWeap(0);
+  document.getElementById('killEl').textContent=0;
+  document.getElementById('scEl').textContent=0;
+  running=true;startWave(1);
+}
+
+function draw(){
+  ctx.fillStyle='#020508';ctx.fillRect(0,0,W,H);
+  // Stars
+  ctx.fillStyle='rgba(255,255,255,.5)';
+  for(let i=0;i<120;i++){ctx.fillRect((i*137.5%W),(i*97.3%H),1,1);}
+  // Planet surface (bottom)
+  const pg=ctx.createLinearGradient(0,H-35,0,H);
+  pg.addColorStop(0,'#0a2a14');pg.addColorStop(1,'#051508');
+  ctx.fillStyle=pg;ctx.fillRect(0,H-35,W,35);
+  ctx.strokeStyle='rgba(57,255,20,.3)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,H-35);ctx.lineTo(W,H-35);ctx.stroke();
+
+  // Laser beam
+  if(laserBeam){
+    ctx.save();ctx.shadowColor='#ff003c';ctx.shadowBlur=20;
+    ctx.strokeStyle='#ff003c';ctx.lineWidth=3;ctx.globalAlpha=laserBeam.life*8;
+    ctx.beginPath();ctx.moveTo(laserBeam.x1,laserBeam.y1);ctx.lineTo(laserBeam.x2,laserBeam.y2);ctx.stroke();
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
+  // Aliens
+  for(const a of aliens){
+    if(!a.alive)continue;
+    ctx.save();ctx.translate(a.x,a.y);ctx.rotate(a.angle+Math.PI/2);
+    ctx.shadowColor=a.color;ctx.shadowBlur=14;
+    ctx.fillStyle=a.color+'22';
+    if(a.type==='boss'||a.type==='carrier'){
+      ctx.beginPath();for(let i=0;i<6;i++){const ang=i/6*Math.PI*2;ctx[i?'lineTo':'moveTo'](Math.cos(ang)*a.r,Math.sin(ang)*a.r);}ctx.closePath();ctx.fill();
+      ctx.strokeStyle=a.color;ctx.lineWidth=2;ctx.stroke();
+    }else{
+      ctx.beginPath();ctx.moveTo(0,-a.r);ctx.lineTo(a.r*.7,a.r);ctx.lineTo(-a.r*.7,a.r);ctx.closePath();ctx.fill();
+      ctx.strokeStyle=a.color;ctx.lineWidth=1.5;ctx.stroke();
+    }
+    ctx.restore();ctx.shadowBlur=0;
+    // HP bar
+    if(a.hp<a.maxHp){const pct=a.hp/a.maxHp;ctx.fillStyle='#222';ctx.fillRect(a.x-a.r,a.y-a.r-10,a.r*2,4);ctx.fillStyle=pct>.5?'#39ff14':'#ff003c';ctx.fillRect(a.x-a.r,a.y-a.r-10,a.r*2*pct,4);}
+  }
+
+  // Bullets
+  for(const b of bullets){
+    ctx.fillStyle=b.color;ctx.shadowColor=b.color;ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  }
+  // Missiles
+  for(const m of missiles){
+    ctx.save();ctx.translate(m.x,m.y);const ma=Math.atan2(m.vy,m.vx);ctx.rotate(ma+Math.PI/2);
+    ctx.shadowColor='#ffe600';ctx.shadowBlur=12;ctx.fillStyle='#ffe600';
+    ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(5,8);ctx.lineTo(-5,8);ctx.closePath();ctx.fill();
+    ctx.restore();ctx.shadowBlur=0;
+  }
+  // Particles
+  for(const p of particles){ctx.globalAlpha=Math.max(0,p.life*1.5);ctx.fillStyle=p.color;ctx.fillRect(p.x-p.sz/2,p.y-p.sz/2,p.sz,p.sz);}ctx.globalAlpha=1;
+
+  // Mech
+  if(running){
+    ctx.save();ctx.translate(mech.x,mech.y);
+    // Shield bubble
+    if(shieldOn){ctx.strokeStyle='rgba(77,166,255,.6)';ctx.lineWidth=3;ctx.shadowColor='#4da6ff';ctx.shadowBlur=20;ctx.beginPath();ctx.arc(0,0,mech.w*.8,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;}
+    ctx.shadowColor='#00fff2';ctx.shadowBlur=16;
+    // Body
+    ctx.fillStyle='#0a3a4a';ctx.fillRect(-mech.w/2,-mech.h/2,mech.w,mech.h);
+    // Core
+    ctx.fillStyle='#00fff2';ctx.fillRect(-8,-8,16,16);
+    // Arms
+    ctx.fillStyle='#0a3a4a';ctx.fillRect(-mech.w/2-10,-mech.h/4,10,mech.h/2);ctx.fillRect(mech.w/2,-mech.h/4,10,mech.h/2);
+    // Gun barrels
+    const gAng=mech.angle;ctx.strokeStyle='#ffe600';ctx.lineWidth=3;ctx.shadowColor='#ffe600';ctx.shadowBlur=8;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(gAng)*40,Math.sin(gAng)*40);ctx.stroke();
+    // Legs
+    ctx.fillStyle='#072030';ctx.fillRect(-mech.w*.4,mech.h/2-4,mech.w*.3,20);ctx.fillRect(mech.w*.1,mech.h/2-4,mech.w*.3,20);
+    ctx.restore();ctx.shadowBlur=0;
+    // Mech HP bar
+    const pct=mech.hp/mech.maxHp;
+    ctx.fillStyle='#222';ctx.fillRect(mech.x-30,mech.y-mech.h/2-14,60,6);
+    ctx.fillStyle=pct>.5?'#39ff14':pct>.25?'#ffe600':'#ff003c';ctx.fillRect(mech.x-30,mech.y-mech.h/2-14,60*pct,6);
+  }
+  // Pause
+  if(paused){ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#00fff2';ctx.font='bold 22px monospace';ctx.textAlign='center';ctx.fillText('PAUSED — P to resume',W/2,H/2);}
+}
+
+let last=0;
+function loop(ts){if(!last)last=ts;const dt=Math.min((ts-last)/1000,.033);last=ts;if(running&&!paused)update(dt);draw();requestAnimationFrame(loop);}
+document.getElementById('startBtn').onclick=()=>{document.getElementById('ov').style.display='none';resetGame();};
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
