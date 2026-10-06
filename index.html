@@ -282,7 +282,7 @@
     <br><span class="play">▶ PLAY</span>
   </a>
 
-
+  <!-- COMING SOON -->
   <a class="card new-card" href="geoguessr.html" style="--c:var(--blue)" data-cat="puzzle" data-name="geoguessr geo location landmark world map guess">
     <span class="tag">NEW</span>
     <span class="icon">🌍</span>
@@ -299,14 +299,7 @@
     <span class="badge">WAVES</span><span class="badge">4 GUNS</span><span class="badge">XP LEVELS</span><br><span class="play">▶ PLAY</span>
   </a>
 
-  <a class="card new-card" href="hoopshot.html" style="--c:var(--orange)" data-cat="arcade" data-name="hoop shot basketball moving basket power shoot">
-    <span class="tag">NEW</span><span class="icon">🏀</span>
-    <h2>HOOP SHOT</h2>
-    <p>Moving basket, aim and shoot. From Edison.</p>
-    <span class="badge">COMBO</span><span class="badge">POWER METER</span><span class="badge">LEVELS</span><br><span class="play">▶ PLAY</span>
-  </a>
-
-<a class="card new-card" href="mechdefender.html" style="--c:var(--cyan)" data-cat="action" data-name="mech defender robot alien planet waves cannon laser missile shield">
+  <a class="card new-card" href="mechdefender.html" style="--c:var(--cyan)" data-cat="action" data-name="mech defender robot alien planet waves cannon laser missile shield">
     <span class="tag">NEW</span><span class="icon">🤖</span>
     <h2>MECH DEFENDER</h2>
     <p>Pilot a giant mech to defend your planet. Cannon, Laser, Homing Missiles, Shield. Wave-based alien assault. From Kiko!</p>
@@ -314,22 +307,27 @@
     <br><span class="play">▶ PLAY</span>
   </a>
 
-<a class="card new-card" href="guessthelogo.html" style="--c:var(--yellow)" data-cat="puzzle" data-name="guess logo brand recognition blurry timer hints categories">
-    <span class="tag">NEW</span><span class="icon">🏷️</span>
-    <h2>GUESS THE LOGO</h2>
-    <p>Identify 32 brand logos from blurry images. Timer reveals clarity. Categories, hints, combo streaks. From Jack!</p>
-    <span class="badge">32 LOGOS</span><span class="badge">BLUR REVEAL</span><span class="badge">CATEGORIES</span>
-    <br><span class="play">▶ PLAY</span>
+  <a class="card new-card" href="hoopshot.html" style="--c:var(--orange)" data-cat="arcade" data-name="hoop shot basketball moving basket power shoot">
+    <span class="tag">NEW</span><span class="icon">🏀</span>
+    <h2>HOOP SHOT</h2>
+    <p>Moving basket, aim and shoot. From Edison.</p>
+    <span class="badge">COMBO</span><span class="badge">POWER METER</span><span class="badge">LEVELS</span><br><span class="play">▶ PLAY</span>
   </a>
-  
-<!-- COMING SOON   -->
-  
+
   <div class="card" style="--c:var(--purple);opacity:.3;pointer-events:none;border-style:dashed" data-cat="arcade">
     <span class="tag">SOON</span><span class="icon">⚽</span>
     <h2>BALL COURSE</h2>
     <p>Roll a ball through obstacle courses. From Peter.</p>
     <span class="badge">COMING SOON</span><br><span class="play">▶ PLAY</span>
   </div>
+
+  <a class="card new-card" href="guessthelogo.html" style="--c:var(--yellow)" data-cat="puzzle" data-name="guess logo brand recognition blurry timer hints categories">
+    <span class="tag">NEW</span><span class="icon">🏷️</span>
+    <h2>GUESS THE LOGO</h2>
+    <p>Identify 32 brand logos from blurry images. Timer reveals clarity. Categories, hints, combo streaks. From Jack!</p>
+    <span class="badge">32 LOGOS</span><span class="badge">BLUR REVEAL</span><span class="badge">CATEGORIES</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
 
   <div class="card" style="--c:var(--pink);opacity:.3;pointer-events:none;border-style:dashed" data-cat="action">
     <span class="tag">SOON</span><span class="icon">🕳️</span>
@@ -354,6 +352,10 @@
   <a href="contact.html">📧 CONTACT</a>
   <a href="contact.html">🐛 BUG REPORT</a>
   <a href="https://github.com/JackTheDemon355/gamehub" target="_blank">🐙 GITHUB</a>
+  <a href="login.html">👤 ACCOUNT</a>
+  <a href="staff.html" style="color:var(--red)">🛡 STAFF</a>
+  <br><br>
+  <div id="remoteAccessFooter" style="display:inline-block;cursor:pointer;font-size:10px;letter-spacing:2px;color:#334;border:1px solid #222;border-radius:4px;padding:5px 12px;" onclick="showRemoteAccess()">📡 REMOTE ACCESS</div>
 </footer>
 
 <script>
@@ -501,6 +503,31 @@ window.subscribeNL=function(){
   // Also send to formspree
   fetch('https://formspree.io/f/xaennwkb',{method:'POST',body:JSON.stringify({email,subject:'Newsletter Subscription',message:'New Game Hub newsletter subscriber: '+email}),headers:{'Content-Type':'application/json','Accept':'application/json'}}).catch(()=>{});
 };
+// Remote Access modal
+window.showRemoteAccess=function(){
+  var stored=null;try{stored=JSON.parse(localStorage.getItem('gh_staff_code'));}catch(e){}
+  var el=document.createElement('div');
+  el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:flex;align-items:center;justify-content:center;';
+  el.innerHTML='<div style="background:#03030c;border:2px solid rgba(0,255,242,.25);border-radius:12px;padding:28px 32px;max-width:360px;width:90%;text-align:center;font-family:Consolas,monospace;color:#fff;">'
+    +'<div style="font-size:14px;letter-spacing:4px;color:#00fff2;margin-bottom:14px">📡 REMOTE ACCESS</div>'
+    +'<div style="font-size:11px;color:#b9c4cc;margin-bottom:16px;line-height:1.8">Enter a 6-digit code from the staff panel to connect to a support session.</div>'
+    +'<input id="raCode" type="text" maxlength="6" style="background:rgba(0,0,0,.6);border:2px solid rgba(0,255,242,.3);color:#ffe600;padding:12px;font-family:Consolas,monospace;font-size:24px;letter-spacing:10px;border-radius:6px;outline:none;width:200px;text-align:center;" placeholder="000000">'
+    +'<br><button onclick="connectRemote()" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:10px 24px;font-family:Consolas,monospace;font-size:13px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:12px;">▶ CONNECT</button>'
+    +'<div id="raMsg" style="font-size:11px;min-height:18px;margin-top:8px;"></div>'
+    +'<button onclick="this.parentElement.parentElement.remove()" style="background:transparent;border:1px solid #333;color:#555;padding:7px 16px;font-family:Consolas,monospace;font-size:11px;border-radius:4px;cursor:pointer;margin-top:10px;">✕ CLOSE</button>'
+    +'</div>';
+  document.body.appendChild(el);
+  document.getElementById('raCode').focus();
+};
+window.connectRemote=function(){
+  var input=document.getElementById('raCode').value.trim();
+  var msg=document.getElementById('raMsg');
+  var stored=null;try{stored=JSON.parse(localStorage.getItem('gh_staff_code'));}catch(e){}
+  if(stored&&stored.code===input&&Date.now()<stored.expiry){
+    msg.style.color='#39ff14';msg.textContent='✓ Connected! Staff can now assist.';
+  }else{msg.style.color='#ff003c';msg.textContent='Invalid or expired code.';}
+};
+
 // Auth badge
 (function(){
   try{
