@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STAFF PANEL — GAME HUB</title>
+<style>
+:root{--bg:#02020a;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--purple:#9d4edd;--orange:#ff6a00;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;color:#fff;}
+/* Login */
+#loginWrap{min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.login-card{background:rgba(255,255,255,.03);border:2px solid rgba(255,0,60,.25);border-radius:14px;padding:40px 36px;width:min(420px,92vw);text-align:center;}
+.login-card h1{font-size:28px;letter-spacing:8px;color:var(--red);text-shadow:0 0 12px var(--red);margin-bottom:6px;}
+.login-card p{font-size:11px;letter-spacing:3px;color:var(--sub);margin-bottom:24px;}
+.login-card input{width:100%;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.12);color:#fff;padding:13px 16px;font-family:inherit;font-size:16px;letter-spacing:6px;border-radius:6px;outline:none;text-align:center;margin-bottom:12px;}
+.login-card input:focus{border-color:var(--red);}
+.login-card button{width:100%;padding:12px;background:var(--red);color:#fff;border:none;font-family:inherit;font-size:14px;letter-spacing:4px;border-radius:6px;cursor:pointer;}
+.login-card button:hover{background:#cc0030;}
+#loginErr{color:var(--red);font-size:12px;min-height:18px;letter-spacing:2px;margin-top:8px;}
+/* Staff panel */
+#staffWrap{display:none;max-width:1100px;margin:0 auto;padding:24px 20px 60px;}
+header{text-align:center;padding:20px 0 28px;}
+header h1{font-size:clamp(20px,4vw,36px);letter-spacing:8px;color:var(--red);text-shadow:0 0 10px var(--red);}
+header p{font-size:11px;letter-spacing:3px;color:var(--sub);margin-top:4px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;}
+.card h2{font-size:13px;letter-spacing:4px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.07);}
+.card h2.red{color:var(--red);}
+.card h2.cyan{color:var(--cyan);}
+.card h2.yellow{color:var(--yellow);}
+.card h2.green{color:var(--green);}
+.card h2.purple{color:var(--purple);}
+.card h2.orange{color:var(--orange);}
+label{display:block;font-size:10px;letter-spacing:2px;color:var(--sub);margin-bottom:5px;margin-top:10px;}
+input[type=text],input[type=email],input[type=password],textarea,select{
+  width:100%;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);color:#fff;
+  padding:9px 12px;font-family:inherit;font-size:12px;border-radius:5px;outline:none;margin-bottom:4px;}
+input:focus,textarea:focus,select:focus{border-color:var(--cyan);}
+textarea{resize:vertical;min-height:70px;}
+select option{background:#111;}
+.sbtn{cursor:pointer;padding:9px 16px;font-family:inherit;font-size:11px;letter-spacing:2px;border-radius:5px;border:none;margin-top:6px;margin-right:4px;transition:.15s;}
+.sbtn.cyan{background:rgba(0,255,242,.15);color:var(--cyan);border:1px solid var(--cyan);}
+.sbtn.cyan:hover{background:var(--cyan);color:#000;}
+.sbtn.red{background:rgba(255,0,60,.12);color:var(--red);border:1px solid var(--red);}
+.sbtn.red:hover{background:var(--red);color:#fff;}
+.sbtn.green{background:rgba(57,255,20,.12);color:var(--green);border:1px solid var(--green);}
+.sbtn.green:hover{background:var(--green);color:#000;}
+.sbtn.yellow{background:rgba(255,230,0,.12);color:var(--yellow);border:1px solid var(--yellow);}
+.sbtn.yellow:hover{background:var(--yellow);color:#000;}
+.sbtn.purple{background:rgba(157,78,221,.15);color:var(--purple);border:1px solid var(--purple);}
+.sbtn.purple:hover{background:var(--purple);color:#fff;}
+.status{font-size:11px;letter-spacing:1px;min-height:16px;margin-top:6px;padding:6px 10px;border-radius:4px;}
+.status.ok{color:var(--green);background:rgba(57,255,20,.08);}
+.status.err{color:var(--red);background:rgba(255,0,60,.08);}
+.status.info{color:var(--cyan);background:rgba(0,255,242,.06);}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.toggle-row:last-child{border:none;}
+.toggle-row span{font-size:11px;letter-spacing:2px;color:var(--sub);}
+.pill{width:42px;height:22px;border-radius:11px;background:#222;position:relative;cursor:pointer;transition:background .2s;}
+.pill.on{background:var(--green);}
+.pill::after{content:"";position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .2s;}
+.pill.on::after{left:22px;}
+/* Remote access code */
+#accessCode{font-size:48px;letter-spacing:12px;color:var(--yellow);text-shadow:0 0 20px var(--yellow);text-align:center;padding:14px;font-weight:bold;}
+#codeTimer{font-size:11px;letter-spacing:2px;color:var(--sub);text-align:center;}
+/* User table */
+.user-table{width:100%;border-collapse:collapse;font-size:11px;}
+.user-table th{padding:8px 10px;text-align:left;letter-spacing:2px;color:var(--sub);border-bottom:1px solid rgba(255,255,255,.08);}
+.user-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);}
+.user-table tr:hover td{background:rgba(255,255,255,.02);}
+.pro-tag{display:inline-block;background:var(--purple);color:#fff;font-size:8px;letter-spacing:2px;padding:2px 6px;border-radius:3px;margin-left:4px;}
+/* Log */
+#actionLog{background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:10px;max-height:160px;overflow-y:auto;font-size:10px;letter-spacing:1px;color:var(--sub);margin-top:10px;}
+.log-entry{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.log-entry .time{color:#445;}
+.log-entry .action{color:var(--cyan);}
+/* Footer */
+#signOutBtn{position:fixed;top:16px;right:16px;background:rgba(255,0,60,.1);color:var(--red);border:1px solid var(--red);padding:7px 14px;font-family:inherit;font-size:11px;letter-spacing:2px;border-radius:4px;cursor:pointer;}
+#signOutBtn:hover{background:var(--red);color:#fff;}
+a.hubLink{color:var(--cyan);font-size:11px;letter-spacing:2px;position:fixed;top:16px;left:16px;text-decoration:none;border:1px solid var(--cyan);padding:7px 14px;border-radius:4px;background:rgba(0,0,0,.6);}
+a.hubLink:hover{background:var(--cyan);color:#000;}
+</style>
+</head>
+<body>
+
+<!-- Login screen -->
+<div id="loginWrap">
+  <div class="login-card">
+    <h1>🛡 STAFF</h1>
+    <p>GAME HUB ADMIN PANEL</p>
+    <input type="password" id="staffPw" placeholder="••••••••••••" autocomplete="off">
+    <button onclick="staffLogin()">▶ ENTER</button>
+    <div id="loginErr"></div>
+  </div>
+</div>
+
+<!-- Staff panel -->
+<div id="staffWrap">
+  <a class="hubLink" href="index.html">◄ HUB</a>
+  <button id="signOutBtn" onclick="staffLogout()">↩ SIGN OUT</button>
+
+  <header>
+    <h1>🛡 STAFF PANEL</h1>
+    <p>GAME HUB ADMIN & MANAGEMENT</p>
+  </header>
+
+  <div class="grid">
+
+    <!-- Lock Control -->
+    <div class="card">
+      <h2 class="red">🔒 LOCK CONTROL</h2>
+      <div class="toggle-row"><span>MASTER LOCK (all games)</span><div class="pill" id="pMasterLock" onclick="toggleLock('locked')"></div></div>
+      <div class="toggle-row"><span>SCHOOL HOURS AUTO-LOCK</span><div class="pill on" id="pSchoolLock" onclick="toggleLock('school_hours_lock')"></div></div>
+      <label>LOCK MESSAGE (shown to users)</label>
+      <textarea id="lockMessage" rows="2">Games are locked during school hours (8:15am–3:15pm AWST, Mon–Fri). Enter password to override.</textarea>
+      <button class="sbtn red" onclick="saveLockConfig()">💾 SAVE LOCK CONFIG</button>
+      <div class="status" id="lockStatus"></div>
+      <div style="margin-top:10px;font-size:10px;color:#334;letter-spacing:1px;">
+        ⚠ Note: lock.json must be in your repo root. This panel generates the config — copy it to your repo.<br>
+        Passwords: gamehub234 · oscarmccumstie · user13579
+      </div>
+    </div>
+
+    <!-- Pro / Membership -->
+    <div class="card">
+      <h2 class="purple">⭐ PRO MEMBERSHIP</h2>
+      <label>EMAIL — Grant Pro</label>
+      <input type="email" id="proEmail" placeholder="user@example.com">
+      <button class="sbtn purple" onclick="grantPro()">⭐ GRANT PRO</button>
+      <button class="sbtn red" onclick="revokePro()">✕ REVOKE PRO</button>
+      <div class="status" id="proStatus"></div>
+      <label style="margin-top:14px">STRIPE PRO LINK</label>
+      <div style="font-size:10px;color:var(--cyan);letter-spacing:1px;padding:6px;background:rgba(0,0,0,.4);border-radius:4px;word-break:break-all;">
+        https://buy.stripe.com/28E4gycp97Qm5Qq0lq18c09
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:#334;">After payment, Stripe webhook updates is_pro in Supabase automatically.</div>
+    </div>
+
+    <!-- Remote Access -->
+    <div class="card">
+      <h2 class="cyan">📡 REMOTE ACCESS</h2>
+      <p style="font-size:11px;color:var(--sub);margin-bottom:12px;line-height:1.7">Generate a 6-digit code. Share with staff to let them connect to your account session for support/debugging. Code expires in 5 minutes.</p>
+      <button class="sbtn cyan" onclick="genCode()">🔑 GENERATE CODE</button>
+      <div id="accessCode" style="display:none"></div>
+      <div id="codeTimer"></div>
+      <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.07);padding-top:12px;">
+        <label>ENTER STAFF CODE (to connect)</label>
+        <input type="text" id="codeInput" placeholder="000000" maxlength="6" style="letter-spacing:8px;font-size:18px;text-align:center;">
+        <button class="sbtn green" onclick="connectCode()">▶ CONNECT</button>
+        <div class="status" id="codeStatus"></div>
+      </div>
+    </div>
+
+    <!-- Game Features -->
+    <div class="card">
+      <h2 class="green">🎮 GAME FEATURES</h2>
+      <label>GAME</label>
+      <select id="featGame">
+        <option value="neonrunner">Neon Runner</option>
+        <option value="galaxia">Galaxia</option>
+        <option value="snake">Neon Snake</option>
+        <option value="brickbreaker">Brick Breaker</option>
+        <option value="blockfall">Block Fall</option>
+        <option value="pong">Pong Arena</option>
+        <option value="asteroids">Asteroid Storm</option>
+        <option value="memorymatch">Memory Match</option>
+        <option value="wordjump">Word Jump</option>
+        <option value="strangerthingsclicker">ST Clicker</option>
+        <option value="towerdefense">Tower Defense</option>
+        <option value="zombieapocalypse">Zombie Apocalypse</option>
+        <option value="hoopshot">Hoop Shot</option>
+        <option value="geoguessr">GeoGuessr</option>
+        <option value="planetmaker">Planet Maker</option>
+        <option value="guessthelogo">Guess the Logo</option>
+        <option value="mechdefender">Mech Defender</option>
+      </select>
+      <label>FEATURE FLAG</label>
+      <select id="featFlag">
+        <option value="debug_mode">Debug Mode</option>
+        <option value="pro_only">Pro Only Access</option>
+        <option value="double_xp">Double XP Event</option>
+        <option value="maintenance">Maintenance Mode</option>
+        <option value="new_badge">Show NEW Badge</option>
+        <option value="updated_badge">Show UPDATED Badge</option>
+      </select>
+      <label>VALUE</label>
+      <select id="featVal">
+        <option value="true">Enable</option>
+        <option value="false">Disable</option>
+      </select>
+      <button class="sbtn green" onclick="setFeature()">▶ APPLY FEATURE</button>
+      <div class="status" id="featStatus"></div>
+      <div id="activeFeatures" style="margin-top:10px;font-size:10px;color:#445;"></div>
+    </div>
+
+    <!-- Newsletter -->
+    <div class="card">
+      <h2 class="yellow">📧 NEWSLETTER</h2>
+      <p style="font-size:11px;color:var(--sub);margin-bottom:10px;">Subscribers stored in localStorage of each visitor's browser (client-side only). For server-side management, use Formspree dashboard.</p>
+      <button class="sbtn yellow" onclick="viewSubs()">👁 VIEW LOCAL SUBS</button>
+      <button class="sbtn cyan" onclick="window.open('https://formspree.io/forms','_blank')">🌐 FORMSPREE DASHBOARD</button>
+      <div id="subsList" style="margin-top:10px;font-size:11px;color:var(--sub);"></div>
+    </div>
+
+    <!-- Supabase Quick Actions -->
+    <div class="card">
+      <h2 class="orange">🗄 SUPABASE QUICK LINKS</h2>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+        <a href="https://supabase.com/dashboard/project/rxdkdylcfspmiljicwdd/auth/users" target="_blank" class="sbtn cyan" style="text-decoration:none;display:block;text-align:center;">👥 VIEW AUTH USERS</a>
+        <a href="https://supabase.com/dashboard/project/rxdkdylcfspmiljicwdd/editor" target="_blank" class="sbtn green" style="text-decoration:none;display:block;text-align:center;">📋 SQL EDITOR</a>
+        <a href="https://supabase.com/dashboard/project/rxdkdylcfspmiljicwdd/functions" target="_blank" class="sbtn yellow" style="text-decoration:none;display:block;text-align:center;">⚡ EDGE FUNCTIONS</a>
+        <a href="https://dashboard.stripe.com" target="_blank" class="sbtn purple" style="text-decoration:none;display:block;text-align:center;">💳 STRIPE DASHBOARD</a>
+      </div>
+      <label style="margin-top:14px">QUICK SQL — Set Pro by Email</label>
+      <textarea id="quickSql" rows="3" readonly style="font-size:10px;color:var(--cyan);">UPDATE profiles SET is_pro = true WHERE email = 'user@email.com';</textarea>
+      <button class="sbtn cyan" onclick="copySQL()">📋 COPY SQL</button>
+    </div>
+
+    <!-- Action Log -->
+    <div class="card" style="grid-column:1/-1;">
+      <h2 class="sub" style="color:var(--sub)">📝 ACTION LOG</h2>
+      <div id="actionLog"><div style="color:#334;font-size:10px;">No actions yet this session.</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://rxdkdylcfspmiljicwdd.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4ZGtkeWxjZnNwbWlsamljd2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNjQxMDAsImV4cCI6MjEwNTk0MDEwMH0.ifhyyUye28DlGEOcScRDz5lpFW_1soXjzPaS1PrMxmU';
+const STAFF_PW='@JackTheDemon355';
+
+// ── AUTH ──
+function staffLogin(){
+  const pw=document.getElementById('staffPw').value;
+  if(pw===STAFF_PW){
+    sessionStorage.setItem('staff_auth','1');
+    document.getElementById('loginWrap').style.display='none';
+    document.getElementById('staffWrap').style.display='block';
+    loadLockConfig();loadActiveFeatures();
+    log('Logged in','ok');
+  }else{
+    document.getElementById('loginErr').textContent='Incorrect password';
+    document.getElementById('staffPw').value='';
+    setTimeout(()=>document.getElementById('loginErr').textContent='',2000);
+  }
+}
+function staffLogout(){sessionStorage.removeItem('staff_auth');location.reload();}
+document.getElementById('staffPw').addEventListener('keydown',e=>{if(e.key==='Enter')staffLogin();});
+if(sessionStorage.getItem('staff_auth')==='1'){staffLogin.call=null;document.getElementById('loginWrap').style.display='none';document.getElementById('staffWrap').style.display='block';loadLockConfig();loadActiveFeatures();}
+
+// ── LOCK ──
+var lockConfig={locked:false,school_hours_lock:true};
+function loadLockConfig(){
+  fetch('lock.json?nc='+Date.now()).then(r=>r.json()).then(d=>{
+    lockConfig=d;
+    document.getElementById('pMasterLock').classList.toggle('on',d.locked===true);
+    document.getElementById('pSchoolLock').classList.toggle('on',d.school_hours_lock===true);
+    if(d.message)document.getElementById('lockMessage').value=d.message;
+  }).catch(()=>{});
+}
+function toggleLock(key){
+  lockConfig[key]=!lockConfig[key];
+  document.getElementById(key==='locked'?'pMasterLock':'pSchoolLock').classList.toggle('on',lockConfig[key]);
+}
+window.toggleLock=toggleLock;
+function saveLockConfig(){
+  lockConfig.message=document.getElementById('lockMessage').value;
+  var json=JSON.stringify(lockConfig,null,2);
+  // Can't write files from browser — provide copy
+  navigator.clipboard.writeText(json).then(()=>{
+    status('lockStatus','✓ JSON copied to clipboard — paste into lock.json in your repo','ok');
+  }).catch(()=>{
+    status('lockStatus','JSON: '+json,'info');
+  });
+  log('Lock config updated: locked='+lockConfig.locked+' school='+lockConfig.school_hours_lock,'info');
+}
+window.saveLockConfig=saveLockConfig;
+
+// ── PRO ──
+async function grantPro(){
+  const email=document.getElementById('proEmail').value.trim();
+  if(!email){status('proStatus','Enter an email','err');return;}
+  status('proStatus','Working…','info');
+  try{
+    const r=await fetch(SUPABASE_URL+'/rest/v1/profiles?email=eq.'+encodeURIComponent(email),{
+      method:'PATCH',headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({is_pro:true,pro_since:new Date().toISOString()})
+    });
+    if(r.ok){status('proStatus','✓ Pro granted to '+email,'ok');log('Pro granted: '+email,'ok');}
+    else status('proStatus','Error (may need service role key for RLS bypass)','err');
+  }catch(e){status('proStatus','Error: '+e.message,'err');}
+}
+async function revokePro(){
+  const email=document.getElementById('proEmail').value.trim();
+  if(!email){status('proStatus','Enter an email','err');return;}
+  status('proStatus','Working…','info');
+  try{
+    const r=await fetch(SUPABASE_URL+'/rest/v1/profiles?email=eq.'+encodeURIComponent(email),{
+      method:'PATCH',headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({is_pro:false})
+    });
+    if(r.ok){status('proStatus','✓ Pro revoked from '+email,'ok');log('Pro revoked: '+email,'info');}
+    else status('proStatus','Error: '+r.status,'err');
+  }catch(e){status('proStatus','Error: '+e.message,'err');}
+}
+window.grantPro=grantPro;window.revokePro=revokePro;
+
+// ── REMOTE ACCESS CODE ──
+var currentCode=null,codeExpiry=0,codeInterval=null;
+function genCode(){
+  currentCode=String(Math.floor(100000+Math.random()*900000));
+  codeExpiry=Date.now()+5*60*1000;
+  var stored={code:currentCode,expiry:codeExpiry};
+  try{localStorage.setItem('gh_staff_code',JSON.stringify(stored));}catch(e){}
+  document.getElementById('accessCode').style.display='block';
+  document.getElementById('accessCode').textContent=currentCode;
+  clearInterval(codeInterval);
+  codeInterval=setInterval(function(){
+    var rem=Math.max(0,Math.ceil((codeExpiry-Date.now())/1000));
+    document.getElementById('codeTimer').textContent=rem>0?'Expires in '+rem+'s':'Code expired';
+    if(rem<=0){clearInterval(codeInterval);document.getElementById('accessCode').textContent='------';}
+  },1000);
+  log('Remote access code generated','info');
+}
+function connectCode(){
+  var input=document.getElementById('codeInput').value.trim();
+  var stored=null;try{stored=JSON.parse(localStorage.getItem('gh_staff_code'));}catch(e){}
+  if(stored&&stored.code===input&&Date.now()<stored.expiry){
+    status('codeStatus','✓ Code valid — connected!','ok');log('Remote code accepted','ok');
+  }else{
+    status('codeStatus','Invalid or expired code','err');
+  }
+}
+window.genCode=genCode;window.connectCode=connectCode;
+
+// ── FEATURES ──
+function loadActiveFeatures(){
+  var feat=null;try{feat=JSON.parse(localStorage.getItem('gh_features')||'{}');}catch(e){}
+  var el=document.getElementById('activeFeatures');
+  var entries=Object.entries(feat||{});
+  el.innerHTML=entries.length?entries.map(([k,v])=>'<div style="color:var(--sub)">'+k+': <span style="color:var(--yellow)">'+JSON.stringify(v)+'</span></div>').join(''):'<span style="color:#334">No active features</span>';
+}
+function setFeature(){
+  var game=document.getElementById('featGame').value;
+  var flag=document.getElementById('featFlag').value;
+  var val=document.getElementById('featVal').value==='true';
+  var feat={};try{feat=JSON.parse(localStorage.getItem('gh_features')||'{}');}catch(e){}
+  feat[game+'_'+flag]=val;
+  try{localStorage.setItem('gh_features',JSON.stringify(feat));}catch(e){}
+  status('featStatus','✓ '+game+'.'+flag+'='+val,'ok');
+  loadActiveFeatures();
+  log('Feature set: '+game+'.'+flag+'='+val,'info');
+}
+window.setFeature=setFeature;
+
+// ── NEWSLETTER ──
+function viewSubs(){
+  var subs=[];try{subs=JSON.parse(localStorage.getItem('hub_newsletter')||'[]');}catch(e){}
+  var el=document.getElementById('subsList');
+  if(!subs.length){el.innerHTML='<span style="color:#334">No local subscribers found.</span>';return;}
+  el.innerHTML='<div style="color:var(--sub);margin-bottom:6px">'+subs.length+' subscriber(s):</div>'+subs.map(e=>'<div style="color:var(--cyan)">'+e+'</div>').join('');
+}
+window.viewSubs=viewSubs;
+
+// ── QUICK SQL ──
+function copySQL(){
+  var email=document.getElementById('proEmail').value||'user@email.com';
+  var sql="UPDATE profiles SET is_pro = true WHERE email = '"+email+"';";
+  document.getElementById('quickSql').value=sql;
+  navigator.clipboard.writeText(sql).then(()=>status('featStatus','SQL copied!','ok')).catch(()=>{});
+}
+window.copySQL=copySQL;
+
+// ── HELPERS ──
+function status(id,msg,type){
+  var el=document.getElementById(id);el.textContent=msg;el.className='status '+type;
+  setTimeout(()=>{el.textContent='';el.className='status';},4000);
+}
+function log(action,type){
+  var el=document.getElementById('actionLog');
+  var t=new Date().toLocaleTimeString();
+  var colors={ok:'var(--green)',err:'var(--red)',info:'var(--cyan)'};
+  var entry=document.createElement('div');entry.className='log-entry';
+  entry.innerHTML='<span class="time">'+t+'</span> <span class="action" style="color:'+colors[type]+'">'+action+'</span>';
+  el.prepend(entry);
+}
+</script>
+</body>
+</html>
