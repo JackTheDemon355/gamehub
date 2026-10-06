@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="https://raw.githubusercontent.com/JackTheDemon355/gamehub/5cce1d534df4800695e2094643fe2bd60420cfd1/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="https://uploads.onecompiler.io/44md3ywr8/1790746237660/favicon%20(1).ico" type="image/x-icon">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GEOGUESSR CLONE — GAME HUB</title>
 <style>
@@ -123,8 +126,100 @@ html,body{height:100%;background:var(--bg);font-family:'Consolas','Courier New',
 </div>
 
 <script>
+// ── GAME HUB LOCK SYSTEM v3 ──────────────────────────────
+(function(){
+  var PASSWORDS=['gamehub234','oscarmccumstie','user13579'];
+
+  function isSchoolHours(){
+    var now=new Date();
+    var awstOffset=8*60*60*1000;
+    var awst=new Date(now.getTime()+awstOffset);
+    var day=awst.getUTCDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+    if(day===0||day===6)return false; // Weekend - never locked
+    var h=awst.getUTCHours(),m=awst.getUTCMinutes();
+    var totalMins=h*60+m;
+    return totalMins>=495&&totalMins<915; // 8:15am=495mins, 3:15pm=915mins
+  }
+
+  function getAWSTString(){
+    var now=new Date();
+    var awst=new Date(now.getTime()+8*60*60*1000);
+    var h=awst.getUTCHours(),m=awst.getUTCMinutes();
+    var ampm=h>=12?'PM':'AM';var h12=h%12||12;
+    var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    return days[awst.getUTCDay()]+' '+h12+':'+(m<10?'0':'')+m+' '+ampm+' AWST';
+  }
+
+  function checkLock(){
+    fetch('lock.json?nc='+Date.now())
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.locked===true){
+          showLockScreen(d.message||'Games are locked by admin.',false);
+        } else if(d.school_hours_lock===true&&isSchoolHours()){
+          showLockScreen(d.message||'Games are locked during school hours (8:15am\u20133:15pm AWST, Mon\u2013Fri).',true);
+        }
+      })
+      .catch(function(){
+        // Cannot reach lock.json (file:// protocol or no server) - do NOT lock
+        // Only lock if we can confirm school hours AND a lock is intended
+      });
+  }
+
+  function showLockScreen(msg,isTime){
+    var div=document.createElement('div');
+    div.id='lockScreen';
+    div.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:24px;';
+    div.innerHTML=
+      '<div style="font-size:clamp(24px,6vw,48px);color:#ff003c;letter-spacing:6px;font-weight:bold;text-shadow:0 0 16px #ff003c">LOCKED \uD83D\uDD12</div>'+
+      '<div style="font-size:13px;letter-spacing:2px;color:#888;max-width:460px;line-height:1.7">'+msg+'</div>'+
+      (isTime?'<div style="font-size:11px;color:#39ff14;letter-spacing:2px">'+getAWSTString()+'</div>':'')+
+      '<div style="font-size:11px;color:#334;letter-spacing:2px;margin-top:6px">Hold <span style="color:#00fff2">SHIFT</span> then press any key \u00B7 Mobile: tap 3\xD7 quickly</div>';
+    document.body.appendChild(div);
+    document.body.style.overflow='hidden';
+    var shiftHeld=false;
+    function kd(e){
+      if(e.key==='Shift'){shiftHeld=true;return;}
+      if(shiftHeld){document.removeEventListener('keydown',kd);document.removeEventListener('keyup',ku);promptPassword(div);}
+    }
+    function ku(e){if(e.key==='Shift')shiftHeld=false;}
+    document.addEventListener('keydown',kd);
+    document.addEventListener('keyup',ku);
+    var tapCount=0,lastTap=0;
+    div.addEventListener('click',function(){
+      var n=Date.now();if(n-lastTap>700)tapCount=0;lastTap=n;
+      if(++tapCount>=3){tapCount=0;promptPassword(div);}
+    });
+  }
+
+  function promptPassword(lockDiv){
+    lockDiv.innerHTML=
+      '<div style="font-size:clamp(20px,5vw,36px);color:#ffe600;letter-spacing:6px;font-weight:bold;text-shadow:0 0 14px #ffe600">PASSWORD \uD83D\uDD11</div>'+
+      '<div style="font-size:11px;color:#667;letter-spacing:2px">Admin or user password (case insensitive)</div>'+
+      '<input id="lpi" type="password" autocomplete="off" spellcheck="false" style="background:rgba(0,0,0,.65);border:2px solid rgba(0,255,242,.4);color:#fff;padding:13px 20px;font-family:Consolas,monospace;font-size:20px;letter-spacing:6px;border-radius:6px;outline:none;width:280px;text-align:center;" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022">'+
+      '<button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:11px 30px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:2px;">\u25BA UNLOCK</button>'+
+      '<div id="lpe" style="color:#ff003c;font-size:12px;letter-spacing:2px;min-height:18px;"></div>';
+    var inp=document.getElementById('lpi'),btn=document.getElementById('lpb'),err=document.getElementById('lpe');
+    inp.focus();
+    function attempt(){
+      var val=(inp.value||'').trim().toLowerCase();
+      if(PASSWORDS.map(function(p){return p.toLowerCase();}).indexOf(val)>=0){
+        lockDiv.remove();document.body.style.overflow='';
+      }else{
+        err.textContent='Incorrect password \u2014 try again';
+        inp.value='';inp.focus();
+        setTimeout(function(){err.textContent='';},2200);
+      }
+    }
+    btn.addEventListener('click',attempt);
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter')attempt();});
+  }
+
+  checkLock();
+})();
+// ── END LOCK SYSTEM ──────────────────────────────────────
+
 // ── LOCK CHECK ──
-(function(){var P=['gamehub234','oscarmccumstie','user13579'];function isSchool(){var n=new Date(),a=new Date(n.getTime()+8*3600*1000),d=a.getUTCDay();if(d===0||d===6)return false;var m=a.getUTCHours()*60+a.getUTCMinutes();return m>=495&&m<915;}function chk(){fetch('lock.json?_='+Date.now()).then(r=>r.json()).then(d=>{if(d.locked===true||d.school_hours_lock===true&&isSchool())lock(d.message||'Locked.');}).catch(()=>{if(isSchool())lock('Locked during school hours.');});}function lock(msg){var el=document.createElement('div');el.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:20px;';el.innerHTML='<div style="font-size:40px;color:#ff003c;letter-spacing:8px;text-shadow:0 0 16px #ff003c">LOCKED 🔒</div><div style="color:#888;font-size:13px;max-width:400px">'+msg+'</div><div style="color:#445;font-size:11px">Hold SHIFT + press any key</div>';document.body.appendChild(el);document.body.style.overflow='hidden';var sh=false;document.addEventListener('keydown',function kd(e){if(e.key==='Shift'){sh=true;return;}if(sh){document.removeEventListener('keydown',kd);pw(el);}});var t=0,tc=0;el.addEventListener('click',function(){var n=Date.now();if(n-t>700)tc=0;t=n;if(++tc>=3){tc=0;pw(el);}});}function pw(el){el.innerHTML='<div style="font-size:30px;color:#ffe600;letter-spacing:6px">PASSWORD 🔑</div><input id="lpi" type="password" style="background:rgba(0,0,0,.6);border:2px solid #00fff2;color:#fff;padding:12px 18px;font-family:Consolas,monospace;font-size:18px;border-radius:6px;outline:none;width:260px;text-align:center;" placeholder="••••••••"><button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:10px 26px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:4px;">UNLOCK</button><div id="lpe" style="color:#ff003c;font-size:12px;min-height:16px;"></div>';var i=document.getElementById('lpi'),b=document.getElementById('lpb'),e=document.getElementById('lpe');i.focus();function go(){if(P.map(x=>x.toLowerCase()).indexOf((i.value||'').trim().toLowerCase())>=0){el.remove();document.body.style.overflow='';}else{e.textContent='Wrong password';i.value='';i.focus();setTimeout(()=>e.textContent='',2000);}}b.addEventListener('click',go);i.addEventListener('keydown',ev=>{if(ev.key==='Enter')go();});}chk();})();
 
 // ── GAME DATA ──
 // 20 real-world landmarks with Wikipedia image URLs + coordinates
