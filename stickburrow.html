@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="1rNDahd3JgJCYe4UGAdNJqAAZM_oOawfSZ-I2i2_mPs" />
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>STICK BURROW — GAME HUB</title>
+<style>
+:root{--bg:#080402;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--orange:#ff6a00;--brown:#8b5e3c;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;overflow:hidden;user-select:none;color:#fff;}
+#wrap{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
+canvas{display:block;border:2px solid rgba(139,94,60,.4);box-shadow:0 0 40px rgba(139,94,60,.15);max-width:100%;max-height:100%;}
+#hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 20px;font-size:12px;letter-spacing:2px;pointer-events:none;background:linear-gradient(rgba(0,0,0,.7),transparent);}
+.lbl{color:var(--orange);}.val{color:var(--yellow);font-weight:bold;}
+#hud .box{display:flex;gap:14px;}
+#back{position:absolute;bottom:14px;left:18px;z-index:5;color:var(--orange);text-decoration:none;border:1px solid var(--orange);padding:7px 14px;font-size:11px;letter-spacing:2px;border-radius:4px;background:rgba(0,0,0,.6);}
+#back:hover{background:var(--orange);color:#000;}
+#ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(4,2,1,.95);z-index:10;padding:20px;}
+#ov h1{font-size:clamp(26px,6vw,52px);letter-spacing:8px;color:var(--orange);text-shadow:0 0 14px var(--orange),0 0 40px rgba(255,106,0,.4);margin-bottom:8px;}
+#ov h2{font-size:15px;color:var(--yellow);letter-spacing:4px;margin-bottom:12px;}
+#ov p{color:var(--sub);font-size:12px;margin:3px 0;}
+.stbtn{cursor:pointer;background:transparent;border:2px solid var(--orange);color:var(--orange);padding:11px 26px;font-family:inherit;font-size:14px;letter-spacing:3px;border-radius:4px;margin:5px;}
+.stbtn:hover{background:var(--orange);color:#000;}
+.stbtn.y{border-color:var(--yellow);color:var(--yellow);}.stbtn.y:hover{background:var(--yellow);color:#000;}
+#depthBar{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:8px;height:200px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;}
+#depthFill{width:100%;background:linear-gradient(to bottom,#8b5e3c,#3a2010);border-radius:4px;transition:height .3s;}
+#depthLabel{position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:9px;letter-spacing:2px;color:var(--orange);writing-mode:vertical-rl;}
+/* Mobile controls */
+#mobileCtrl{display:none;position:fixed;inset:0;pointer-events:none;z-index:50;}
+#mobileCtrl.show{display:block;}
+.mc-d{position:absolute;pointer-events:auto;background:rgba(0,0,0,.45);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:rgba(255,255,255,.8);border:2px solid rgba(139,94,60,.5);-webkit-tap-highlight-color:transparent;user-select:none;width:56px;height:56px;}
+.mc-d:active{background:rgba(255,106,0,.2);}
+#mcU{position:absolute;bottom:110px;left:70px;}
+#mcD{position:absolute;bottom:18px;left:70px;}
+#mcL{position:absolute;bottom:64px;left:14px;}
+#mcR{position:absolute;bottom:64px;left:126px;}
+#mcDig{position:absolute;bottom:28px;right:18px;background:rgba(139,94,60,.3);border-color:var(--orange);color:var(--orange);width:64px;height:64px;font-size:26px;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" width="880" height="580"></canvas>
+  <div id="hud">
+    <div class="box"><span class="lbl">SCORE </span><span class="val" id="scEl">0</span>
+      <span class="lbl">DEPTH </span><span class="val" id="dpEl">0</span>m
+      <span class="lbl">HI </span><span class="val" id="hiEl">0</span></div>
+    <div class="box"><span class="lbl">FOOD </span><span class="val" id="fdEl">100</span>%
+      <span class="lbl">ENERGY </span><span class="val" id="enEl">100</span>%
+      <span class="lbl">WAVE </span><span class="val" id="wvEl">1</span></div>
+  </div>
+  <div id="depthBar"><div id="depthFill" style="height:0%"></div></div>
+  <div id="depthLabel">DEPTH</div>
+  <a id="back" href="index.html">◄ HUB</a>
+  <div id="ov">
+    <h1>STICK BURROW</h1>
+    <h2>◄ DIG DEEP, STAY ALIVE ►</h2>
+    <p>WASD / Arrows — Move &nbsp;·&nbsp; Space / Z — Dig direction &nbsp;·&nbsp; Shift — Sprint</p>
+    <p>Collect food gems to survive. Avoid predators (foxes, hawks, snakes).</p>
+    <p>Dig tunnels to hide and escape! The deeper you go the more you score.</p>
+    <p style="font-size:11px;color:#445;margin-top:8px">Endless survival · From Carter</p>
+    <button class="stbtn y" id="startBtn" style="margin-top:14px">▶ BURROW</button>
+  </div>
+</div>
+<div id="mobileCtrl">
+  <div class="mc-d" id="mcU">▲</div>
+  <div class="mc-d" id="mcD">▼</div>
+  <div class="mc-d" id="mcL">◀</div>
+  <div class="mc-d" id="mcR">▶</div>
+  <div class="mc-d" id="mcDig">⛏</div>
+</div>
+<script>
+// ── LOCK ──
+(function(){var P=['gamehub234','oscarmccumstie','user13579'];function isSH(){var n=new Date(),a=new Date(n.getTime()+28800000),d=a.getUTCDay();if(!d||d===6)return false;var m=a.getUTCHours()*60+a.getUTCMinutes();return m>=495&&m<915;}function chk(){fetch('lock.json?nc='+Date.now()).then(r=>r.json()).then(d=>{if(d.locked===true||d.school_hours_lock===true&&isSH())showL(d.message||'Locked.');}).catch(()=>{});}function showL(msg){var el=document.createElement('div');el.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:24px;';el.innerHTML='<div style="font-size:42px;color:#ff003c;letter-spacing:6px;font-weight:bold;text-shadow:0 0 16px #ff003c">LOCKED 🔒</div><div style="font-size:13px;color:#888;max-width:460px;line-height:1.7">'+msg+'</div><div style="font-size:11px;color:#334">Hold SHIFT + key · tap 3×</div>';document.body.appendChild(el);document.body.style.overflow='hidden';var sh=false;document.addEventListener('keydown',function kd(e){if(e.key==='Shift'){sh=true;return;}if(sh){document.removeEventListener('keydown',kd);pw(el);}});var t=0,tc=0;el.addEventListener('click',function(){var n=Date.now();if(n-t>700)tc=0;t=n;if(++tc>=3){tc=0;pw(el);}});}function pw(el){el.innerHTML='<div style="font-size:32px;color:#ffe600;letter-spacing:6px;font-weight:bold">PASSWORD 🔑</div><input id="lpi" type="password" autocomplete="off" style="background:rgba(0,0,0,.65);border:2px solid rgba(0,255,242,.4);color:#fff;padding:13px 20px;font-family:Consolas,monospace;font-size:20px;letter-spacing:6px;border-radius:6px;outline:none;width:280px;text-align:center;" placeholder="••••••••"><button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:11px 28px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:4px;">▶ UNLOCK</button><div id="lpe" style="color:#ff003c;font-size:12px;min-height:18px;"></div>';var i=document.getElementById('lpi'),b=document.getElementById('lpb'),e=document.getElementById('lpe');i.focus();function go(){if(P.map(p=>p.toLowerCase()).indexOf((i.value||'').trim().toLowerCase())>=0){el.remove();document.body.style.overflow='';}else{e.textContent='Incorrect';i.value='';i.focus();setTimeout(()=>e.textContent='',2200);}}b.addEventListener('click',go);i.addEventListener('keydown',ev=>{if(ev.key==='Enter')go();});}chk();})();
+
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const TILE=20, COLS=Math.floor(W/TILE), ROWS=Math.floor(H/TILE);
+
+// Mobile
+const isMobile=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+if(isMobile)document.getElementById('mobileCtrl').classList.add('show');
+function bindMC(id,key,up){
+  const el=document.getElementById(id);if(!el)return;
+  el.addEventListener('touchstart',e=>{e.preventDefault();keys[key]=true;},{passive:false});
+  el.addEventListener('touchend',e=>{e.preventDefault();keys[key]=false;},{passive:false});
+}
+bindMC('mcU','arrowup');bindMC('mcD','arrowdown');bindMC('mcL','arrowleft');bindMC('mcR','arrowright');
+bindMC('mcDig','z');
+
+// ── WORLD ──
+// Terrain: 0=air, 1=dirt, 2=stone, 3=deep-stone, 4=tunnel(dug)
+let terrain=[];
+let gems=[],predators=[],particles=[];
+let score=0,hi=0,food=100,energy=100,wave=1,maxDepth=0,running=false;
+let cameraY=0; // world scroll
+
+try{hi=parseInt(localStorage.getItem('sb_hi')||'0')||0;}catch(e){}
+document.getElementById('hiEl').textContent=hi;
+
+// Player (world coords)
+const P2={x:W/2,y:TILE*3,vx:0,vy:0,r:8,digDir:{x:0,y:1},alive:true,t:0};
+
+function genTerrain(){
+  terrain=[];
+  // World is 3x screen height tall (scrollable)
+  const WROWS=ROWS*4;
+  for(let r=0;r<WROWS;r++){
+    terrain[r]=[];
+    for(let c=0;c<COLS;c++){
+      if(r<3)terrain[r][c]=0; // sky
+      else if(r<5)terrain[r][c]=Math.random()<.3?1:0; // sparse topsoil
+      else if(r<WROWS*.3)terrain[r][c]=Math.random()<.85?1:0; // dirt
+      else if(r<WROWS*.6)terrain[r][c]=Math.random()<.92?2:0; // stone
+      else terrain[r][c]=Math.random()<.97?3:0; // deep
+    }
+  }
+  // Carve starting area
+  for(let r=0;r<4;r++)for(let c=0;c<COLS;c++)terrain[r][c]=0;
+}
+
+function spawnGems(){
+  gems=[];
+  const WROWS=terrain.length;
+  for(let r=4;r<WROWS;r+=3){
+    const n=2+Math.floor(r/ROWS);
+    for(let i=0;i<n;i++){
+      const c=Math.floor(Math.random()*COLS);
+      if(terrain[r][c]===0||terrain[r][c]===4){
+        const depth=r*TILE;
+        const val=Math.floor(10+depth/20);
+        gems.push({x:c*TILE+TILE/2,y:r*TILE+TILE/2,r:6,val,color:depth>ROWS*TILE*2?'#ff2fd0':depth>ROWS*TILE?'#00fff2':'#ffe600',alive:true,t:Math.random()*6});
+      }
+    }
+  }
+}
+
+function spawnPredators(){
+  predators=[];
+  // Fox (surface), Hawk (air), Snake (underground)
+  for(let i=0;i<wave+1;i++){
+    const type=i%3===0?'fox':i%3===1?'hawk':'snake';
+    predators.push({
+      type,
+      x:Math.random()<.5?-30:W+30,
+      y:type==='hawk'?TILE*1.5:type==='fox'?TILE*3:TILE*(5+Math.random()*4),
+      vx:type==='hawk'?(Math.random()<.5?-120:120):0,
+      vy:0,r:type==='hawk'?12:10,
+      spd:type==='fox'?90:type==='hawk'?110:60,
+      alive:true,t:0,
+      color:type==='fox'?'#ff6a00':type==='hawk'?'#ffe600':'#39ff14',
+    });
+  }
+}
+
+const keys={};
+addEventListener('keydown',e=>{
+  keys[e.key.toLowerCase()]=true;
+  if(['arrowleft','arrowright','arrowup','arrowdown',' '].includes(e.key.toLowerCase()))e.preventDefault();
+  if(e.key===' '||e.key.toLowerCase()==='z')keys['z']=true;
+});
+addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;if(e.key===' ')keys['z']=false;});
+
+function tileAt(wx,wy){
+  const c=Math.floor(wx/TILE),r=Math.floor(wy/TILE);
+  if(r<0||r>=terrain.length||c<0||c>=COLS)return 0;
+  return terrain[r][c];
+}
+function isBlocked(wx,wy){const t=tileAt(wx,wy);return t===1||t===2||t===3;}
+
+function dig(wx,wy){
+  const c=Math.floor(wx/TILE),r=Math.floor(wy/TILE);
+  if(r<0||r>=terrain.length||c<0||c>=COLS)return;
+  const t=terrain[r][c];
+  if(t===1){terrain[r][c]=4;score+=5;}
+  else if(t===2){terrain[r][c]=4;score+=15;}
+  else if(t===3){terrain[r][c]=4;score+=40;}
+}
+
+function update(dt){
+  P2.t+=dt;
+  food-=dt*2;energy-=dt*.5;
+  if(food<=0||energy<=0){gameOver();return;}
+
+  document.getElementById('fdEl').textContent=Math.max(0,Math.floor(food));
+  document.getElementById('enEl').textContent=Math.max(0,Math.floor(energy));
+
+  // Move player
+  const sprint=(keys['shift']||keys['shiftleft'])&&energy>10;
+  if(sprint)energy-=dt*20;
+  const spd=(sprint?180:110);
+  let dx=0,dy=0;
+  if(keys['arrowleft']||keys['a']){dx-=1;P2.digDir={x:-1,y:0};}
+  if(keys['arrowright']||keys['d']){dx+=1;P2.digDir={x:1,y:0};}
+  if(keys['arrowup']||keys['w']){dy-=1;P2.digDir={x:0,y:-1};}
+  if(keys['arrowdown']||keys['s']){dy+=1;P2.digDir={x:0,y:1};}
+
+  const len=Math.hypot(dx,dy)||1;
+  const nx=P2.x+dx/len*spd*dt;
+  const ny=P2.y+dy/len*spd*dt;
+
+  // Collision
+  const r=P2.r;
+  if(!isBlocked(nx+r,P2.y)||!isBlocked(nx-r,P2.y))P2.x=Math.max(r,Math.min(W-r,nx));
+  if(!isBlocked(P2.x,ny+r)||!isBlocked(P2.x,ny-r))P2.y=Math.max(r,ny);
+
+  // Dig on Z
+  if(keys['z']){
+    const tx=P2.x+P2.digDir.x*TILE*1.2;
+    const ty=P2.y+P2.digDir.y*TILE*1.2;
+    dig(tx,ty);energy=Math.max(0,energy-dt*15);
+    // Particle
+    if(Math.random()<.15)particles.push({x:tx,y:ty,vx:(Math.random()-.5)*80,vy:-50-Math.random()*60,life:.4,color:'#8b5e3c',sz:3+Math.random()*3});
+  }
+
+  // Camera follows player
+  cameraY=Math.max(0,P2.y-H*.45);
+  const depth=Math.max(0,P2.y-TILE*3);
+  maxDepth=Math.max(maxDepth,depth);
+  score+=dt*(1+depth/200);
+  document.getElementById('scEl').textContent=Math.floor(score);
+  document.getElementById('dpEl').textContent=Math.floor(depth);
+  document.getElementById('depthFill').style.height=Math.min(100,depth/(ROWS*TILE*3)*100)+'%';
+
+  // Gems
+  for(const g of gems){if(!g.alive)continue;g.t+=dt;
+    if(Math.hypot(g.x-P2.x,g.y-P2.y)<P2.r+g.r){
+      g.alive=false;score+=g.val;food=Math.min(100,food+12);
+      for(let i=0;i<8;i++){const a=Math.random()*Math.PI*2,sp=60+Math.random()*100;particles.push({x:g.x,y:g.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:.5,color:g.color,sz:3+Math.random()*3});}
+    }
+  }
+
+  // Predators
+  for(const pr of predators){
+    pr.t+=dt;
+    const ang=Math.atan2(P2.y-pr.y,P2.x-pr.x);
+    if(pr.type==='snake'){
+      // Snake follows tunnels (moves only if target area is open)
+      const nx2=pr.x+Math.cos(ang)*pr.spd*dt;
+      const ny2=pr.y+Math.sin(ang)*pr.spd*dt;
+      if(!isBlocked(nx2,ny2))pr.x=nx2,pr.y=ny2;
+    }else{
+      pr.x+=Math.cos(ang)*pr.spd*dt;pr.y+=Math.sin(ang)*pr.spd*dt;
+      if(pr.type==='hawk')pr.y=Math.min(TILE*2.5,pr.y);
+    }
+    if(Math.hypot(pr.x-P2.x,pr.y-P2.y)<P2.r+pr.r){gameOver();return;}
+    // Off screen → respawn far
+    if(pr.x<-60||pr.x>W+60)pr.x=pr.x<0?W+60:-60;
+  }
+
+  // Respawn gems
+  if(gems.filter(g=>g.alive).length<8)spawnGems();
+
+  // Wave scaling
+  if(Math.floor(depth/100)>=wave*2){wave++;document.getElementById('wvEl').textContent=wave;spawnPredators();}
+
+  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=200*dt;p.life-=dt;}
+  particles=particles.filter(p=>p.life>0);
+}
+
+function gameOver(){
+  running=false;
+  if(score>hi){hi=Math.floor(score);try{localStorage.setItem('sb_hi',String(hi));}catch(e){}}
+  const ov=document.getElementById('ov');ov.style.display='flex';
+  ov.innerHTML='<h1 style="color:var(--red);text-shadow:0 0 14px var(--red)">CAUGHT!</h1>'
+    +'<h2 style="color:var(--orange)">You were found</h2>'
+    +'<div style="font-size:34px;color:var(--yellow);font-weight:bold;text-shadow:0 0 14px var(--yellow);margin:10px 0">'+Math.floor(score).toLocaleString()+' pts</div>'
+    +'<p style="color:var(--sub)">Depth: '+Math.floor(maxDepth)+'m · Wave: '+wave+' · Hi: '+hi+'</p>'
+    +'<button class="stbtn y" id="rb" style="margin-top:14px">↻ TRY AGAIN</button>'
+    +'<p style="margin-top:10px"><a href="index.html" style="color:var(--orange);font-size:11px">◄ GAME HUB</a></p>';
+  document.getElementById('rb').onclick=()=>{ov.style.display='none';startGame();};
+}
+
+function startGame(){
+  genTerrain();spawnGems();
+  P2.x=W/2;P2.y=TILE*2.5;P2.vx=0;P2.vy=0;P2.alive=true;
+  score=0;food=100;energy=100;wave=1;maxDepth=0;cameraY=0;particles=[];
+  predators=[];spawnPredators();
+  document.getElementById('scEl').textContent=0;
+  document.getElementById('fdEl').textContent=100;
+  document.getElementById('enEl').textContent=100;
+  document.getElementById('wvEl').textContent=1;
+  running=true;
+}
+
+function draw(){
+  ctx.fillStyle='#080402';ctx.fillRect(0,0,W,H);
+
+  // Draw world (only visible portion)
+  const startRow=Math.max(0,Math.floor(cameraY/TILE)-1);
+  const endRow=Math.min(terrain.length,startRow+ROWS+2);
+
+  for(let r=startRow;r<endRow;r++){
+    for(let c=0;c<COLS;c++){
+      const t=terrain[r][c];
+      const sx=c*TILE,sy=r*TILE-cameraY;
+      if(t===0||t===4)continue;
+      if(t===1){ctx.fillStyle='#5a3a1a';ctx.fillRect(sx,sy,TILE,TILE);ctx.strokeStyle='#3a2010';ctx.lineWidth=.5;ctx.strokeRect(sx,sy,TILE,TILE);}
+      else if(t===2){ctx.fillStyle='#3a3a3a';ctx.fillRect(sx,sy,TILE,TILE);ctx.strokeStyle='#222';ctx.lineWidth=.5;ctx.strokeRect(sx,sy,TILE,TILE);}
+      else if(t===3){ctx.fillStyle='#1a1a2a';ctx.fillRect(sx,sy,TILE,TILE);ctx.strokeStyle='#0a0a18';ctx.lineWidth=.5;ctx.strokeRect(sx,sy,TILE,TILE);}
+    }
+  }
+
+  // Tunnel openings (dug tiles)
+  for(let r=startRow;r<endRow;r++)for(let c=0;c<COLS;c++){
+    if(terrain[r][c]===4){const sx=c*TILE,sy=r*TILE-cameraY;ctx.fillStyle='rgba(0,0,0,.8)';ctx.fillRect(sx,sy,TILE,TILE);}
+  }
+
+  // Ground line / sky
+  const skyY=TILE*3-cameraY;
+  if(skyY>0){
+    const sg=ctx.createLinearGradient(0,0,0,Math.min(skyY,H));
+    sg.addColorStop(0,'#050a14');sg.addColorStop(1,'#0a1810');
+    ctx.fillStyle=sg;ctx.fillRect(0,0,W,Math.min(skyY,H));
+  }
+
+  // Gems
+  for(const g of gems){if(!g.alive)continue;const sy=g.y-cameraY;if(sy<-20||sy>H+20)continue;
+    g.t+=.016;const bob=Math.sin(g.t*3)*2;
+    ctx.fillStyle=g.color;ctx.shadowColor=g.color;ctx.shadowBlur=10;
+    ctx.beginPath();ctx.arc(g.x,sy+bob,g.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  }
+
+  // Predators
+  for(const pr of predators){const sy=pr.y-cameraY;if(sy<-30||sy>H+30)continue;
+    ctx.font=(pr.type==='hawk'?'20px':'16px')+' monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor=pr.color;ctx.shadowBlur=8;
+    ctx.fillText(pr.type==='fox'?'🦊':pr.type==='hawk'?'🦅':'🐍',pr.x,sy);ctx.shadowBlur=0;
+  }
+
+  // Particles
+  for(const p of particles){const sy=p.y-cameraY;ctx.globalAlpha=Math.max(0,p.life*2);ctx.fillStyle=p.color;ctx.fillRect(p.x-p.sz/2,sy-p.sz/2,p.sz,p.sz);}ctx.globalAlpha=1;
+
+  // Player (stick figure)
+  const py=P2.y-cameraY;
+  ctx.save();ctx.translate(P2.x,py);
+  ctx.strokeStyle='#f0d080';ctx.lineWidth=2.5;ctx.shadowColor='#f0d080';ctx.shadowBlur=6;
+  // Head
+  ctx.beginPath();ctx.arc(0,-P2.r-6,6,0,Math.PI*2);ctx.stroke();
+  // Body
+  ctx.beginPath();ctx.moveTo(0,-P2.r);ctx.lineTo(0,P2.r);ctx.stroke();
+  // Legs
+  const legAnim=Math.sin(P2.t*8)*8;
+  ctx.beginPath();ctx.moveTo(0,P2.r*.3);ctx.lineTo(-6+legAnim,P2.r+8);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,P2.r*.3);ctx.lineTo(6-legAnim,P2.r+8);ctx.stroke();
+  // Arms + dig tool direction
+  ctx.beginPath();ctx.moveTo(0,-P2.r*.3);ctx.lineTo(P2.digDir.x*12-6,-P2.r*.3+P2.digDir.y*8+3);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,-P2.r*.3);ctx.lineTo(-P2.digDir.x*8+4,-P2.r*.3-P2.digDir.y*6-2);ctx.stroke();
+  ctx.restore();ctx.shadowBlur=0;
+
+  // HUD overlays
+  // Food bar
+  const bx=10,by=H-32,bw=120,bh=8;
+  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(bx-2,by-2,bw+4,bh+4);
+  ctx.fillStyle='#222';ctx.fillRect(bx,by,bw,bh);
+  ctx.fillStyle='#ffe600';ctx.fillRect(bx,by,bw*(food/100),bh);
+  ctx.fillStyle='#888';ctx.font='9px monospace';ctx.textAlign='left';ctx.fillText('FOOD',bx,by-2);
+
+  const ex=bx+bw+12;
+  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(ex-2,by-2,bw+4,bh+4);
+  ctx.fillStyle='#222';ctx.fillRect(ex,by,bw,bh);
+  ctx.fillStyle='#00fff2';ctx.fillRect(ex,by,bw*(energy/100),bh);
+  ctx.fillStyle='#888';ctx.fillText('ENERGY',ex,by-2);
+}
+
+let last=0;
+function loop(ts){if(!last)last=ts;const dt=Math.min((ts-last)/1000,.033);last=ts;if(running)update(dt);draw();requestAnimationFrame(loop);}
+document.getElementById('startBtn').onclick=()=>{document.getElementById('ov').style.display='none';startGame();};
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
