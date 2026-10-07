@@ -4,16 +4,18 @@
 
 A neon-styled arcade collection of self-contained browser games — no installs, no servers, no frameworks. Open `index.html` and play.
 
-![Games](https://img.shields.io/badge/games-17%20live-39ff14?style=flat-square)
+![Games](https://img.shields.io/badge/games-19%20live-39ff14?style=flat-square)
 ![Version](https://img.shields.io/badge/version-3.0-00fff2?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-ff2fd0?style=flat-square)
 ![Built with](https://img.shields.io/badge/built%20with-HTML%20%2B%20JS-ffe600?style=flat-square)
 
 **Live at:** https://jackthedemon355.github.io/gamehub/
 
+> 🆕 Newest: **Ball Course**, **Stick Burrow**
+
 ---
 
-## 🕹️ Live Games (17)
+## 🕹️ Live Games (19)
 
 | # | Game | File | Category | Made by | Highlights |
 |---|------|------|----------|---------|-----------|
@@ -34,6 +36,8 @@ A neon-styled arcade collection of self-contained browser games — no installs,
 | 15 | 🪐 **Planet Maker** | `planetmaker.html` | Creative | Jack | Build planets — size, mass, water, temp, atm, rings, moons, export JSON |
 | 16 | 🏷️ **Guess the Logo** | `guessthelogo.html` | Puzzle | Jack | 32 brand logos, blur reveal, timer, 4 categories, combo streaks |
 | 17 | 🤖 **Mech Defender** | `mechdefender.html` | Action | Kiko | Giant mech, 4 weapons (cannon/laser/missiles/shield), alien waves |
+| 18 | ⚽ **Ball Course** | `ballcourse.html` | Arcade | Peter | Roll through 15 obstacle courses — springs, spikes, coins, best time |
+| 19 | 🕳️ **Stick Burrow** | `stickburrow.html` | Action | Carter | Dig tunnels, collect food gems, avoid foxes/hawks/snakes — endless |
 
 ---
 
@@ -41,8 +45,6 @@ A neon-styled arcade collection of self-contained browser games — no installs,
 
 | Game | Description | Credit |
 |------|-------------|--------|
-| ⚽ **Ball Course** | Roll a ball through obstacle courses | Peter |
-| 🕳️ **Stick Burrow** | Dig tunnels, evade predators | Carter |
 
 ---
 
@@ -92,7 +94,9 @@ gamehub/
 ├── geoguessr.html             ← GeoGuessr (landmark guessing)
 ├── planetmaker.html           ← Planet Maker (interactive builder)
 ├── guessthelogo.html          ← Guess the Logo (brand recognition)
-└── mechdefender.html          ← Mech Defender (alien waves)
+├── mechdefender.html          ← Mech Defender (alien waves)
+├── ballcourse.html            ← Ball Course (15-level obstacle roller)
+└── stickburrow.html           ← Stick Burrow (dig & survive)
 ```
 
 ---
@@ -188,6 +192,8 @@ create policy "Users update own" on profiles for update using (auth.uid() = id);
 | Planet Maker | Sliders + presets · Export/Import JSON · Save to browser |
 | Guess the Logo | Click the correct brand name · faster = more points |
 | Mech Defender | `A`/`D` move · mouse aim · click fire · `1-4` weapons · `Shift` boost · `P` pause |
+| Ball Course | `A`/`D` roll · `Space`/`W` jump (double jump) · `R` restart · `P` pause |
+| Stick Burrow | `WASD`/arrows move · `Space`/`Z` dig · `Shift` sprint |
 
 ---
 
@@ -213,7 +219,7 @@ MIT — free to use, modify, and distribute.
 
 <div align="center">
 
-**We Code, You Game** · Built by Jack · 17 games and counting
+**We Code, You Game** · Built by Jack · 19 games and counting
 
 ⭐ Star the repo if you enjoy it!
 
