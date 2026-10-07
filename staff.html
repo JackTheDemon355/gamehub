@@ -140,15 +140,19 @@ a.hubLink:hover{background:var(--cyan);color:#000;}
     <!-- Remote Access -->
     <div class="card">
       <h2 class="cyan">📡 REMOTE ACCESS</h2>
-      <p style="font-size:11px;color:var(--sub);margin-bottom:12px;line-height:1.7">Generate a 6-digit code. Share with staff to let them connect to your account session for support/debugging. Code expires in 5 minutes.</p>
-      <button class="sbtn cyan" onclick="genCode()">🔑 GENERATE CODE</button>
-      <div id="accessCode" style="display:none"></div>
-      <div id="codeTimer"></div>
-      <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.07);padding-top:12px;">
-        <label>ENTER STAFF CODE (to connect)</label>
-        <input type="text" id="codeInput" placeholder="000000" maxlength="6" style="letter-spacing:8px;font-size:18px;text-align:center;">
-        <button class="sbtn green" onclick="connectCode()">▶ CONNECT</button>
-        <div class="status" id="codeStatus"></div>
+      <p style="font-size:11px;color:var(--sub);margin-bottom:8px;line-height:1.7">
+        <strong style="color:var(--cyan)">How it works:</strong> The USER visits their Game Hub, clicks Remote Access in the footer, and gets a 6-digit code. They give that code to you (staff). Enter it below to view their account info and assist them.
+      </p>
+      <label>ENTER USER'S 6-DIGIT CODE</label>
+      <input type="text" id="codeInput" placeholder="000000" maxlength="6" style="letter-spacing:8px;font-size:20px;text-align:center;width:100%;">
+      <button class="sbtn cyan" onclick="connectCode()">▶ CONNECT TO USER</button>
+      <div class="status" id="codeStatus"></div>
+      <div id="userSessionInfo" style="display:none;margin-top:12px;background:rgba(0,255,242,.04);border:1px solid rgba(0,255,242,.12);border-radius:8px;padding:12px;"></div>
+      <div style="border-top:1px solid rgba(255,255,255,.07);padding-top:12px;margin-top:16px;">
+        <p style="font-size:10px;color:#445;letter-spacing:1px;margin-bottom:8px;">Staff can also generate a support code to share back:</p>
+        <button class="sbtn green" onclick="genStaffCode()">🔑 GEN STAFF CODE</button>
+        <div id="staffCode" style="font-size:36px;letter-spacing:10px;color:var(--green);text-shadow:0 0 14px var(--green);text-align:center;padding:10px;display:none;font-weight:bold;"></div>
+        <div id="staffCodeTimer" style="font-size:10px;letter-spacing:2px;color:var(--sub);text-align:center;"></div>
       </div>
     </div>
 
@@ -325,15 +329,52 @@ function genCode(){
   log('Remote access code generated','info');
 }
 function connectCode(){
-  var input=document.getElementById('codeInput').value.trim();
+  var input=(document.getElementById('codeInput').value||'').trim();
+  if(input.length!==6){status('codeStatus','Enter 6 digits','err');return;}
+  // Code is stored in localStorage by the user's browser under gh_staff_code
+  // Staff checks: retrieve the code the user generated (same browser session via shared storage key)
+  // In production this would be server-side — for now we simulate via a shared localStorage key
+  // that the user copies over (or the staff panel is open on the same device for demo)
   var stored=null;try{stored=JSON.parse(localStorage.getItem('gh_staff_code'));}catch(e){}
   if(stored&&stored.code===input&&Date.now()<stored.expiry){
-    status('codeStatus','✓ Code valid — connected!','ok');log('Remote code accepted','ok');
+    var info=stored.userInfo||{};
+    status('codeStatus','✓ Connected to user session','ok');
+    log('Remote session connected: '+(info.email||'unknown'),'ok');
+    var el=document.getElementById('userSessionInfo');
+    el.style.display='block';
+    el.innerHTML='<div style="font-size:11px;letter-spacing:1px;line-height:2.2;">'
+      +'<div><span style="color:var(--sub)">EMAIL</span> <span style="color:var(--cyan)">'+(info.email||'—')+'</span></div>'
+      +'<div><span style="color:var(--sub)">NAME</span> <span style="color:var(--yellow)">'+(info.name||'—')+'</span></div>'
+      +'<div><span style="color:var(--sub)">PRO</span> <span class="'+(info.isPro?'ok':'danger')+'">'+(info.isPro?'YES ⭐':'NO')+'</span></div>'
+      +'<div><span style="color:var(--sub)">SAVES</span> <span style="color:var(--yellow)">'+(info.saves||0)+' games saved</span></div>'
+      +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.07)">'
+      +'<button class="sbtn purple" onclick="grantProToSession(this.dataset.e)" data-e="'+info.email+'" style="font-size:10px">⭐ GRANT PRO</button>'
+      +'<button class="sbtn red" onclick="revokeProFromSession(this.dataset.e)" data-e="'+info.email+'" style="font-size:10px;margin-left:4px">✕ REVOKE PRO</button>'
+      +'</div></div>';
   }else{
-    status('codeStatus','Invalid or expired code','err');
+    status('codeStatus','Invalid or expired code — ask user to regenerate','err');
+    document.getElementById('userSessionInfo').style.display='none';
   }
 }
-window.genCode=genCode;window.connectCode=connectCode;
+window.grantProToSession=function(email){if(email){document.getElementById('proEmail').value=email;grantPro();}};
+window.revokeProFromSession=function(email){if(email){document.getElementById('proEmail').value=email;revokePro();}};
+
+var staffCodeInt=null;
+function genStaffCode(){
+  var code=String(Math.floor(100000+Math.random()*900000));
+  var expiry=Date.now()+5*60*1000;
+  try{localStorage.setItem('gh_staff_code',JSON.stringify({code,expiry}));}catch(e){}
+  document.getElementById('staffCode').style.display='block';
+  document.getElementById('staffCode').textContent=code;
+  clearInterval(staffCodeInt);
+  staffCodeInt=setInterval(function(){
+    var rem=Math.max(0,Math.ceil((expiry-Date.now())/1000));
+    document.getElementById('staffCodeTimer').textContent=rem>0?'Expires in '+rem+'s':'Expired';
+    if(rem<=0)clearInterval(staffCodeInt);
+  },1000);
+  log('Staff code generated','info');
+}
+window.genCode=genStaffCode;window.connectCode=connectCode;window.genStaffCode=genStaffCode;
 
 // ── FEATURES ──
 function loadActiveFeatures(){
