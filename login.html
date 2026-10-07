@@ -277,9 +277,9 @@ async function showLoggedIn(user){
   // Check pro status from Supabase profiles table
   let isPro=false;
   try{
-    const{data}=await sb.from('profiles').select('is_pro').eq('id',user.id).single();
-    isPro=data?.is_pro===true;
-  }catch(e){}
+    const{data,error}=await sb.from('profiles').select('is_pro,display_name').eq('id',user.id).maybeSingle();
+    if(!error&&data)isPro=data.is_pro===true;
+  }catch(e){console.log('Profile check:',e);}
 
   const saveMax=isPro?GAMES.length:4;
   document.getElementById('saveCount').textContent=countSaves();
@@ -301,8 +301,9 @@ sb.auth.onAuthStateChange(async(event,session)=>{
     try{
       await sb.from('profiles').upsert({
         id:session.user.id,
-        email:session.user.email,
+        email:session.user.email?.toLowerCase(),
         display_name:session.user.user_metadata?.display_name||session.user.user_metadata?.full_name||session.user.email.split('@')[0],
+        avatar_url:session.user.user_metadata?.avatar_url||session.user.user_metadata?.picture||null,
         updated_at:new Date().toISOString()
       },{onConflict:'id'});
     }catch(e){}
