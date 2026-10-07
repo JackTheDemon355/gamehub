@@ -44,6 +44,54 @@
     background:rgba(0,255,242,.12);border:2px solid var(--cyan);color:var(--cyan);}
   #fireBtn{background:rgba(255,47,208,.15);border-color:var(--magenta);color:var(--magenta);}
   @media(max-width:900px){#touch{display:flex;}}
+
+  /* ── MOBILE CONTROLS (toggle in settings) ── */
+  #mobileCtrl{display:none;position:fixed;inset:0;pointer-events:none;z-index:50;}
+  #mobileCtrl.show{display:block;}
+  .mc-btn{position:absolute;pointer-events:auto;background:rgba(0,0,0,.45);
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:22px;color:rgba(255,255,255,.8);border:2px solid rgba(255,255,255,.25);
+    -webkit-tap-highlight-color:transparent;user-select:none;}
+  .mc-btn:active{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.6);}
+  .mc-dpad{position:absolute;bottom:20px;left:18px;}
+  .mc-dpad .mc-btn{width:52px;height:52px;}
+  .mc-dpad #mcUp   {bottom:110px;left:54px;}
+  .mc-dpad #mcDown {bottom:4px;  left:54px;}
+  .mc-dpad #mcLeft {bottom:57px; left:0;}
+  .mc-dpad #mcRight{bottom:57px; left:108px;}
+  .mc-actions{position:absolute;bottom:20px;right:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+  .mc-actions .mc-btn{width:56px;height:56px;}
+  #mcAction1{background:rgba(0,255,242,.18);border-color:rgba(0,255,242,.5);}
+  #mcAction2{background:rgba(255,47,208,.18);border-color:rgba(255,47,208,.5);}
+  #mcAction3{background:rgba(255,230,0,.18);border-color:rgba(255,230,0,.5);}
+  .mc-detect-msg{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);
+    font-family:Consolas,monospace;font-size:11px;letter-spacing:2px;color:rgba(0,255,242,.7);
+    pointer-events:none;opacity:0;transition:opacity .5s;}
+
+
+  /* Floating settings button */
+  #floatSettings{position:fixed;top:14px;right:60px;z-index:60;background:rgba(0,0,0,.6);
+    border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);padding:6px 12px;
+    font-family:Consolas,monospace;font-size:11px;letter-spacing:2px;border-radius:4px;cursor:pointer;}
+  #floatSettings:hover{border-color:var(--cyan,#00fff2);color:var(--cyan,#00fff2);}
+  #floatSettingsPanel{display:none;position:fixed;top:46px;right:14px;z-index:61;
+    background:rgba(5,5,20,.96);border:1px solid rgba(0,255,242,.2);border-radius:10px;
+    padding:16px;width:240px;font-family:Consolas,monospace;}
+  #floatSettingsPanel h3{font-size:11px;letter-spacing:4px;color:#00fff2;margin-bottom:12px;}
+  #floatSettingsPanel .fs-row{display:flex;justify-content:space-between;align-items:center;
+    padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+  #floatSettingsPanel .fs-row:last-of-type{border:none;}
+  #floatSettingsPanel .fs-row span{font-size:10px;letter-spacing:2px;color:#b9c4cc;}
+  #floatSettingsPanel .pill{width:38px;height:20px;border-radius:10px;background:#222;
+    position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+  #floatSettingsPanel .pill.on{background:#00fff2;}
+  #floatSettingsPanel .pill::after{content:"";position:absolute;left:2px;top:2px;width:16px;
+    height:16px;border-radius:50%;background:#fff;transition:left .2s;}
+  #floatSettingsPanel .pill.on::after{left:20px;}
+  #floatSettingsPanel button{width:100%;margin-top:10px;padding:8px;background:transparent;
+    border:1px solid #00fff2;color:#00fff2;font-family:Consolas,monospace;font-size:11px;
+    letter-spacing:2px;border-radius:4px;cursor:pointer;}
+
 </style>
 </head>
 <body>
@@ -518,5 +566,81 @@ document.getElementById('startBtn').onclick=()=>{
 requestAnimationFrame(loop);
 })();
 </script>
+
+// ── MOBILE CONTROLS ──
+(function(){
+  var isMobile=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+  var cfg={mobile:isMobile};
+  try{var s=JSON.parse(localStorage.getItem('gh_mob_'+location.pathname.split('/').pop())||'{}');if(typeof s.mobile==='boolean')cfg.mobile=s.mobile;}catch(e){}
+
+  function saveM(){try{localStorage.setItem('gh_mob_'+location.pathname.split('/').pop(),JSON.stringify(cfg));}catch(e){}}
+
+  // Expose toggle for settings panels
+  window.ghMobileEnabled=function(){return cfg.mobile;};
+  window.ghToggleMobile=function(on){cfg.mobile=on;saveM();applyMobile();};
+
+  function applyMobile(){
+    var el=document.getElementById('mobileCtrl');
+    if(!el)return;
+    if(cfg.mobile){el.classList.add('show');}
+    else{el.classList.remove('show');}
+  }
+
+  // Build control overlay once DOM is ready
+  function buildOverlay(){
+    if(document.getElementById('mobileCtrl'))return;
+    var div=document.createElement('div');div.id='mobileCtrl';
+    div.innerHTML=
+      '<div class="mc-dpad">'+
+        '<div class="mc-btn" id="mcUp">▲</div>'+
+        '<div class="mc-btn" id="mcDown">▼</div>'+
+        '<div class="mc-btn" id="mcLeft">◀</div>'+
+        '<div class="mc-btn" id="mcRight">▶</div>'+
+      '</div>'+
+      '<div class="mc-actions">'+
+        '<div class="mc-btn" id="mcAction1">🅰</div>'+
+        '<div class="mc-btn" id="mcAction2">🅱</div>'+
+        '<div class="mc-btn" id="mcAction3">✕</div>'+
+      '</div>';
+    document.body.appendChild(div);
+    applyMobile();
+
+    // Wire touch → key events
+    function touch(id,downKey,upKey){
+      var el=document.getElementById(id);if(!el)return;
+      function dn(e){e.preventDefault();if(downKey)document.dispatchEvent(new KeyboardEvent('keydown',{key:downKey,bubbles:true}));if(window.ghMcTap)window.ghMcTap(id);}
+      function up(e){e.preventDefault();if(upKey!==undefined)document.dispatchEvent(new KeyboardEvent('keyup',{key:upKey!==null?upKey:downKey,bubbles:true}));}
+      el.addEventListener('touchstart',dn,{passive:false});
+      el.addEventListener('touchend',up,{passive:false});
+      el.addEventListener('mousedown',dn);el.addEventListener('mouseup',up);
+    }
+    touch('mcUp','ArrowUp','ArrowUp');
+    touch('mcDown','ArrowDown','ArrowDown');
+    touch('mcLeft','ArrowLeft','ArrowLeft');
+    touch('mcRight','ArrowRight','ArrowRight');
+    // Action buttons — game overrides via window.ghMcTap(id)
+    touch('mcAction1',' ',' ');   // default: Space = fire/jump
+    touch('mcAction2','r','r');    // default: r = reload/restart
+    touch('mcAction3','Escape',null); // default: Esc = pause
+  }
+
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',buildOverlay);}
+  else{buildOverlay();}
+})();
+
+
+  <!-- Floating settings -->
+  <button id="floatSettings" onclick="document.getElementById('floatSettingsPanel').style.display=document.getElementById('floatSettingsPanel').style.display==='block'?'none':'block'">⚙</button>
+  <div id="floatSettingsPanel">
+    <h3>⚙ SETTINGS</h3>
+    <div class="fs-row"><span>MOBILE CONTROLS</span><div class="pill" id="t-mobile" onclick="(function(){var on=!window.ghMobileEnabled();window.ghToggleMobile(on);document.getElementById('t-mobile').classList.toggle('on',on);})()"></div></div>
+    <div class="fs-row"><span>NEON GLOW</span><div class="pill on" id="fsGlow" onclick="(function(){var p=document.getElementById('fsGlow');p.classList.toggle('on');})()"></div></div>
+    <button onclick="document.getElementById('floatSettingsPanel').style.display='none'">✓ DONE</button>
+  </div>
+  <script>
+  // Init float settings mobile pill
+  (function(){setTimeout(function(){var p=document.getElementById('t-mobile');if(p&&window.ghMobileEnabled)p.classList.toggle('on',window.ghMobileEnabled());},200);})();
+  </script>
+
 </body>
 </html>
