@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="1rNDahd3JgJCYe4UGAdNJqAAZM_oOawfSZ-I2i2_mPs" />
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>BALL COURSE — GAME HUB</title>
+<style>
+:root{--bg:#03030c;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--orange:#ff6a00;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;overflow:hidden;user-select:none;color:#fff;}
+#wrap{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
+canvas{display:block;border:2px solid rgba(0,255,242,.2);box-shadow:0 0 40px rgba(0,255,242,.08);max-width:100%;max-height:100%;}
+#hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 20px;font-size:12px;letter-spacing:2px;pointer-events:none;background:linear-gradient(rgba(0,0,0,.65),transparent);}
+.lbl{color:var(--mag);}.val{color:var(--yellow);font-weight:bold;}
+#hud .box{display:flex;gap:14px;}
+#back{position:absolute;bottom:14px;left:18px;z-index:5;color:var(--cyan);text-decoration:none;border:1px solid var(--cyan);padding:7px 14px;font-size:11px;letter-spacing:2px;border-radius:4px;background:rgba(0,0,0,.6);}
+#back:hover{background:var(--cyan);color:#000;}
+#ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(2,2,10,.95);z-index:10;padding:20px;}
+#ov h1{font-size:clamp(26px,6vw,52px);letter-spacing:8px;color:var(--cyan);text-shadow:0 0 14px var(--cyan),0 0 40px rgba(0,255,242,.4);margin-bottom:8px;}
+#ov h2{font-size:15px;color:var(--yellow);letter-spacing:4px;margin-bottom:12px;}
+#ov p{color:var(--sub);font-size:12px;margin:3px 0;}
+.bbtn{cursor:pointer;background:transparent;border:2px solid var(--cyan);color:var(--cyan);padding:11px 26px;font-family:inherit;font-size:14px;letter-spacing:3px;border-radius:4px;margin:5px;}
+.bbtn:hover{background:var(--cyan);color:#000;}
+.bbtn.y{border-color:var(--yellow);color:var(--yellow);}.bbtn.y:hover{background:var(--yellow);color:#000;}
+#levelBanner{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);font-size:clamp(22px,5vw,38px);letter-spacing:6px;color:var(--yellow);text-shadow:0 0 18px var(--yellow);opacity:0;pointer-events:none;transition:opacity .3s;}
+/* Mobile controls */
+#mobileCtrl{display:none;position:fixed;inset:0;pointer-events:none;z-index:50;}
+#mobileCtrl.show{display:block;}
+.mc-btn{position:absolute;pointer-events:auto;background:rgba(0,0,0,.45);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:rgba(255,255,255,.8);border:2px solid rgba(255,255,255,.25);-webkit-tap-highlight-color:transparent;user-select:none;width:56px;height:56px;}
+.mc-btn:active{background:rgba(255,255,255,.15);}
+#mcLeft{position:absolute;bottom:28px;left:18px;}
+#mcRight{position:absolute;bottom:28px;left:86px;}
+#mcUp{position:absolute;bottom:96px;left:52px;}
+#mcJump{position:absolute;bottom:28px;right:18px;background:rgba(255,47,208,.18);border-color:rgba(255,47,208,.5);color:var(--mag);width:64px;height:64px;font-size:26px;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" width="900" height="580"></canvas>
+  <div id="hud">
+    <div class="box"><span class="lbl">LEVEL </span><span class="val" id="lvEl">1</span><span class="lbl"> / </span><span class="val">15</span></div>
+    <div class="box"><span class="lbl">TIME </span><span class="val" id="tmEl">0.00</span>
+      <span class="lbl">BEST </span><span class="val" id="bsEl">—</span>
+      <span class="lbl">DEATHS </span><span class="val" id="dtEl">0</span></div>
+  </div>
+  <div id="levelBanner"></div>
+  <a id="back" href="index.html">◄ HUB</a>
+  <div id="ov">
+    <h1>BALL COURSE</h1>
+    <h2>◄ ROLL TO THE GOAL ►</h2>
+    <p>← → / A D — Roll &nbsp;·&nbsp; Space / W / ↑ — Jump</p>
+    <p>Reach the green portal on each level. Avoid spikes and fall-offs!</p>
+    <p style="font-size:11px;color:#445;margin-top:8px">15 levels · Beat your best time · From Peter</p>
+    <button class="bbtn y" id="startBtn" style="margin-top:14px">▶ START</button>
+  </div>
+</div>
+<div id="mobileCtrl">
+  <div class="mc-btn" id="mcLeft">◀</div>
+  <div class="mc-btn" id="mcRight">▶</div>
+  <div class="mc-btn" id="mcUp">▲</div>
+  <div class="mc-btn" id="mcJump">⬆</div>
+</div>
+<script>
+// ── LOCK ──
+(function(){var P=['gamehub234','oscarmccumstie','user13579'];function isSH(){var n=new Date(),a=new Date(n.getTime()+28800000),d=a.getUTCDay();if(!d||d===6)return false;var m=a.getUTCHours()*60+a.getUTCMinutes();return m>=495&&m<915;}function chk(){fetch('lock.json?nc='+Date.now()).then(r=>r.json()).then(d=>{if(d.locked===true||d.school_hours_lock===true&&isSH())showL(d.message||'Locked.');}).catch(()=>{});}function showL(msg){var el=document.createElement('div');el.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:24px;';el.innerHTML='<div style="font-size:42px;color:#ff003c;letter-spacing:6px;font-weight:bold;text-shadow:0 0 16px #ff003c">LOCKED 🔒</div><div style="font-size:13px;color:#888;max-width:460px;line-height:1.7">'+msg+'</div><div style="font-size:11px;color:#334">Hold SHIFT + key · tap 3×</div>';document.body.appendChild(el);document.body.style.overflow='hidden';var sh=false;document.addEventListener('keydown',function kd(e){if(e.key==='Shift'){sh=true;return;}if(sh){document.removeEventListener('keydown',kd);pw(el);}});var t=0,tc=0;el.addEventListener('click',function(){var n=Date.now();if(n-t>700)tc=0;t=n;if(++tc>=3){tc=0;pw(el);}});}function pw(el){el.innerHTML='<div style="font-size:32px;color:#ffe600;letter-spacing:6px;font-weight:bold">PASSWORD 🔑</div><input id="lpi" type="password" autocomplete="off" style="background:rgba(0,0,0,.65);border:2px solid rgba(0,255,242,.4);color:#fff;padding:13px 20px;font-family:Consolas,monospace;font-size:20px;letter-spacing:6px;border-radius:6px;outline:none;width:280px;text-align:center;" placeholder="••••••••"><button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:11px 28px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:4px;">▶ UNLOCK</button><div id="lpe" style="color:#ff003c;font-size:12px;min-height:18px;"></div>';var i=document.getElementById('lpi'),b=document.getElementById('lpb'),e=document.getElementById('lpe');i.focus();function go(){if(P.map(p=>p.toLowerCase()).indexOf((i.value||'').trim().toLowerCase())>=0){el.remove();document.body.style.overflow='';}else{e.textContent='Incorrect';i.value='';i.focus();setTimeout(()=>e.textContent='',2200);}}b.addEventListener('click',go);i.addEventListener('keydown',ev=>{if(ev.key==='Enter')go();});}chk();})();
+
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=cv.width,H=cv.height,T=40;
+
+// Mobile detect
+const isMobile=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+if(isMobile)document.getElementById('mobileCtrl').classList.add('show');
+function bindMC(id,key){const el=document.getElementById(id);if(!el)return;el.addEventListener('touchstart',e=>{e.preventDefault();keys[key]=true;},{passive:false});el.addEventListener('touchend',e=>{e.preventDefault();keys[key]=false;},{passive:false});}
+bindMC('mcLeft','arrowleft');bindMC('mcRight','arrowright');bindMC('mcUp','jump');bindMC('mcJump','jump');
+
+// ── LEVELS (15 levels, string maps) ──
+// # = solid, ^ = spike, * = coin, S = spring, P = player start, E = exit goal, _ = ice, ~ = bounce pad
+const LEVELS=[
+// 1 - Tutorial
+["                    ",
+ "                    ",
+ "                    ",
+ "                    ",
+ "             *    E ",
+ "          ######  # ",
+ "    *               ",
+ "  ######            ",
+ "                    ",
+ " P                  ",
+ "####################"],
+// 2
+["                    ",
+ "                    ",
+ "             *    E ",
+ "           ######   ",
+ "     *              ",
+ "   #####            ",
+ "           *        ",
+ "         ####       ",
+ "P                   ",
+ "####################",
+ "                    "],
+// 3 - Spikes intro
+["                    ",
+ "                    ",
+ "                *  E",
+ "              ######",
+ "         *          ",
+ "      ######   ^    ",
+ "  *         ########",
+ "####                ",
+ "P  ^  ^             ",
+ "####################",
+ "                    "],
+// 4 - Gaps
+["                    ",
+ "               *   E",
+ "             ######  ",
+ "      *             ",
+ "   ####             ",
+ "         *    *     ",
+ "P     ######  ##### ",
+ "####                ",
+ "       ^  ^  ^      ",
+ "####################",
+ "                    "],
+// 5 - Zigzag
+["                    ",
+ "                   E",
+ "               #### ",
+ "      *             ",
+ "   ####             ",
+ "             *      ",
+ "          ####      ",
+ "   *                ",
+ "P  ####             ",
+ "####################",
+ "                    "],
+// 6 - High jump needed
+["                    ",
+ "      *         *  E",
+ "     ###       #### ",
+ "                    ",
+ "  *                 ",
+ " ###                ",
+ "                    ",
+ "P                   ",
+ "####     ^^^^^^^^^^#",
+ "####################",
+ "                    "],
+// 7 - Narrow path
+["####################",
+ "#         *        #",
+ "#  ####  ####      #",
+ "#       *       *  #",
+ "# ####    ######   #",
+ "#P          *      E",
+ "####################",
+ "                    ",
+ "                    ",
+ "                    ",
+ "                    "],
+// 8 - Bounce chamber
+["                    ",
+ "                    ",
+ "                *  E",
+ "             ######  ",
+ "    *   S           ",
+ "  ####  ####        ",
+ "                    ",
+ "P                   ",
+ "##   ^^  ^^   ######",
+ "####################",
+ "                    "],
+// 9 - Spike maze
+["                    ",
+ "                   E",
+ "                #### ",
+ "     *     *        ",
+ "  ########  ########",
+ "     ^      ^       ",
+ "P                   ",
+ "####  ####  ####  ##",
+ "   ^      ^      ^  ",
+ "####################",
+ "                    "],
+// 10 - Speed run
+["                    ",
+ "                   E",
+ "                ####",
+ "        *   *       ",
+ "   #### ### ###     ",
+ "*              *    ",
+ "###  *  *  *  ###   ",
+ "  #### #### ####    ",
+ "P                   ",
+ "####################",
+ "                    "],
+// 11 - Vertical
+["##  *  *  *  *  *  E",
+ "##  #  #  #  #  ## #",
+ "##           ##     ",
+ "##  ######   #      ",
+ "##           #      ",
+ "##  ######   #      ",
+ "##           #      ",
+ "##  ######   #      ",
+ "##    *      #      ",
+ "## P         #      ",
+ "##############      "],
+// 12 - Ice slide
+["                    ",
+ "               *   E",
+ "            ########",
+ "   *   S            ",
+ " ######             ",
+ "          *         ",
+ "P       ####        ",
+ "####  ^      ^^^^   ",
+ "   ##               ",
+ "####################",
+ "                    "],
+// 13 - The Gauntlet
+["                    ",
+ "                   E",
+ "           *  * ####",
+ "       #### ####    ",
+ "  *  *              ",
+ " ######   *  *      ",
+ "       ##### ####   ",
+ "P  ^       *        ",
+ "#### ####  ####  ###",
+ "####################",
+ "                    "],
+// 14 - Precision
+["####################",
+ "#*  *  *  *  *  * E#",
+ "# #### #### #### ##  ",
+ "#                  #",
+ "# ## ## ## ## ## ##",
+ "#                  #",
+ "# #### #### #### ##",
+ "#P                 #",
+ "####################",
+ "                    ",
+ "                    "],
+// 15 - Final
+["                    ",
+ "                   E",
+ "               #### ",
+ "      * S  *        ",
+ "   ######  ######   ",
+ "                    ",
+ " * ^^^^  ^^^^  * ^  ",
+ "####               #",
+ "P   *   *   *      #",
+ "##  ### ### ###  ###",
+ "####################"],
+];
+
+const COIN_PTS=50;
+let level=0,deaths=0,running=false,paused=false;
+let grid=[],spikes=[],coins=[],springs=[],exitPos={x:0,y:0},spawn={x:0,y:0};
+let particles=[],levelTime=0,levelStart=0;
+let bests=[];try{bests=JSON.parse(localStorage.getItem('bc_bests')||'[]');}catch(e){}
+
+const ball={x:0,y:0,r:14,vx:0,vy:0,onGround:false,jumps:0,_jHeld:false};
+const GRAV=1100,MAXFALL=700,ACC=1600,FRIC=1400,MAXSPD=320,JUMP=-620,WALLJUMP=-500;
+
+const keys={};
+addEventListener('keydown',e=>{
+  const k=e.key.toLowerCase();keys[k]=true;
+  if(['arrowleft','arrowright','arrowup',' '].includes(e.key.toLowerCase()))e.preventDefault();
+  if(e.key===' '||e.key==='ArrowUp'||k==='w')keys['jump']=true;
+  if(k==='r'&&running)loadLevel(level,true);
+  if(k==='p'&&running)paused=!paused;
+});
+addEventListener('keyup',e=>{
+  const k=e.key.toLowerCase();keys[k]=false;
+  if(e.key===' '||e.key==='ArrowUp'||k==='w')keys['jump']=false;
+});
+
+function solidAt(px,py){
+  const cN=Math.floor(px/T),r=Math.floor(py/T);
+  if(r<0||r>=grid.length||cN<0||(grid[r]&&cN>=grid[r].length))return 0;
+  return grid[r]?.[cN]||0;
+}
+
+function loadLevel(i,isRetry){
+  level=i;
+  const rows=LEVELS[i];
+  grid=[];spikes=[];coins=[];springs=[];particles=[];
+  for(let r=0;r<rows.length;r++){
+    grid[r]=[];
+    for(let c=0;c<rows[r].length;c++){
+      const ch=rows[r][c];const px=c*T,py=r*T;
+      grid[r][c]=(ch==='#')?1:0;
+      if(ch==='^')spikes.push({x:px+T/2,y:py+T/2});
+      if(ch==='*')coins.push({x:px+T/2,y:py+T/2,got:false,t:Math.random()*6});
+      if(ch==='S')springs.push({x:px+T/2,y:py+T/2,t:0});
+      if(ch==='P'){spawn={x:px+T/2,y:py+T/2};}
+      if(ch==='E'){exitPos={x:px+T/2,y:py+T/2};}
+    }
+  }
+  ball.x=spawn.x;ball.y=spawn.y;ball.vx=0;ball.vy=0;ball.onGround=false;ball.jumps=0;ball._jHeld=false;
+  levelStart=performance.now();levelTime=0;
+  document.getElementById('lvEl').textContent=level+1;
+  if(!isRetry){
+    const b=document.getElementById('levelBanner');
+    b.textContent='LEVEL '+(level+1);b.style.opacity='1';
+    setTimeout(()=>b.style.opacity='0',1100);
+  }
+  updateBest();
+}
+
+function updateBest(){
+  const b=bests[level];
+  document.getElementById('bsEl').textContent=b?b.toFixed(2)+'s':'—';
+}
+
+function pop(x,y,col,n){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,sp=60+Math.random()*140;particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-80,life:.5,color:col,sz:3+Math.random()*3});}}
+
+function update(dt){
+  levelTime=(performance.now()-levelStart)/1000;
+  document.getElementById('tmEl').textContent=levelTime.toFixed(2);
+
+  let dir=0;
+  if(keys['arrowleft']||keys['a'])dir-=1;
+  if(keys['arrowright']||keys['d'])dir+=1;
+  if(dir)ball.vx+=dir*ACC*dt;
+  else{if(ball.vx>0)ball.vx=Math.max(0,ball.vx-FRIC*dt);else if(ball.vx<0)ball.vx=Math.min(0,ball.vx+FRIC*dt);}
+  ball.vx=Math.max(-MAXSPD,Math.min(MAXSPD,ball.vx));
+
+  ball.vy+=GRAV*dt;ball.vy=Math.min(MAXFALL,ball.vy);
+
+  if(keys['jump']&&!ball._jHeld){
+    ball._jHeld=true;
+    if(ball.jumps<2){ball.vy=JUMP;ball.jumps++;}
+  }
+  if(!keys['jump']){ball._jHeld=false;if(ball.vy<-180)ball.vy=-180;}
+
+  ball.x+=ball.vx*dt;
+  const hw=ball.r;
+  for(const oy of[-hw*.6,0,hw*.6]){
+    if(solidAt(ball.x+hw,ball.y+oy)===1){ball.x=Math.floor((ball.x+hw)/T)*T-hw-.01;ball.vx=0;}
+    if(solidAt(ball.x-hw,ball.y+oy)===1){ball.x=Math.floor((ball.x-hw)/T)*T+T+hw+.01;ball.vx=0;}
+  }
+  const prevBot=ball.y+hw;
+  ball.y+=ball.vy*dt;ball.onGround=false;
+  for(const ox of[-hw*.7,0,hw*.7]){
+    if(ball.vy>=0){
+      if(solidAt(ball.x+ox,ball.y+hw)===1){ball.y=Math.floor((ball.y+hw)/T)*T-hw-.01;ball.vy=0;ball.onGround=true;ball.jumps=0;}
+    }else{if(solidAt(ball.x+ox,ball.y-hw)===1){ball.y=Math.floor((ball.y-hw)/T)*T+T+hw+.01;ball.vy=0;}}
+  }
+
+  // Spikes
+  for(const s of spikes){if(Math.hypot(s.x-ball.x,s.y-ball.y)<ball.r+10){killBall();return;}}
+  // Out of bounds
+  if(ball.y>H+80){killBall();return;}
+
+  // Coins
+  for(const c of coins){if(!c.got&&Math.hypot(c.x-ball.x,c.y-ball.y)<ball.r+14){c.got=true;pop(c.x,c.y,'#ffe600',8);}}
+
+  // Springs
+  for(const s of springs){s.t+=dt;if(Math.hypot(s.x-ball.x,s.y-ball.y)<ball.r+16){ball.vy=-900;s.t=0;}}
+
+  // Exit
+  if(Math.hypot(exitPos.x-ball.x,exitPos.y-ball.y)<ball.r+20){
+    // Save best
+    if(!bests[level]||levelTime<bests[level]){bests[level]=levelTime;try{localStorage.setItem('bc_bests',JSON.stringify(bests));}catch(e){}}
+    pop(ball.x,ball.y,'#00fff2',20);
+    if(level+1>=LEVELS.length){gameWin();return;}
+    loadLevel(level+1);return;
+  }
+
+  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=400*dt;p.life-=dt;}
+  particles=particles.filter(p=>p.life>0);
+}
+
+function killBall(){
+  deaths++;document.getElementById('dtEl').textContent=deaths;
+  pop(ball.x,ball.y,'#ff003c',16);
+  setTimeout(()=>loadLevel(level,true),400);
+}
+
+function gameWin(){
+  running=false;
+  const ov=document.getElementById('ov');ov.style.display='flex';
+  ov.innerHTML='<h1 style="color:var(--yellow)">COMPLETE!</h1>'
+    +'<h2>All 15 Levels Cleared!</h2>'
+    +'<p style="color:var(--sub)">Deaths: '+deaths+'</p>'
+    +'<button class="bbtn y" id="rb" style="margin-top:14px">↻ PLAY AGAIN</button>'
+    +'<p style="margin-top:10px"><a href="index.html" style="color:var(--cyan);font-size:11px">◄ GAME HUB</a></p>';
+  document.getElementById('rb').onclick=()=>{ov.style.display='none';deaths=0;document.getElementById('dtEl').textContent=0;running=true;loadLevel(0);};
+}
+
+function draw(){
+  ctx.fillStyle='#03030c';ctx.fillRect(0,0,W,H);
+  // Grid lines
+  ctx.strokeStyle='rgba(0,255,242,.04)';ctx.lineWidth=1;
+  for(let i=0;i<W;i+=T){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,H);ctx.stroke();}
+  for(let j=0;j<H;j+=T){ctx.beginPath();ctx.moveTo(0,j);ctx.lineTo(W,j);ctx.stroke();}
+
+  // Tiles
+  for(let r=0;r<grid.length;r++)for(let c=0;c<(grid[r]||[]).length;c++){
+    if(!grid[r][c])continue;
+    const px=c*T,py=r*T;
+    ctx.fillStyle='#0a2a14';ctx.fillRect(px,py,T,T);
+    ctx.strokeStyle='#39ff14';ctx.lineWidth=1.5;ctx.shadowColor='#39ff14';ctx.shadowBlur=6;
+    ctx.strokeRect(px+1,py+1,T-2,T-2);ctx.shadowBlur=0;
+  }
+  // Spikes
+  ctx.fillStyle='#ff003c';ctx.shadowColor='#ff003c';ctx.shadowBlur=8;
+  for(const s of spikes){ctx.beginPath();ctx.moveTo(s.x-10,s.y+10);ctx.lineTo(s.x,s.y-12);ctx.lineTo(s.x+10,s.y+10);ctx.closePath();ctx.fill();}
+  ctx.shadowBlur=0;
+  // Springs
+  for(const s of springs){
+    ctx.fillStyle='#ffe600';ctx.shadowColor='#ffe600';ctx.shadowBlur=10;
+    ctx.fillRect(s.x-10,s.y-4,20,8);ctx.fillRect(s.x-6,s.y-12,12,10);ctx.shadowBlur=0;
+  }
+  // Coins
+  for(const c of coins){if(c.got)continue;c.t+=.016;
+    const bob=Math.sin(c.t*3)*3;
+    ctx.fillStyle='#ffe600';ctx.shadowColor='#ffe600';ctx.shadowBlur=12;
+    ctx.beginPath();ctx.arc(c.x,c.y+bob,7,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  }
+  // Exit
+  const et=performance.now()/400;
+  ctx.save();ctx.translate(exitPos.x,exitPos.y);ctx.shadowColor='#39ff14';ctx.shadowBlur=20;
+  for(let i=3;i>0;i--){ctx.strokeStyle='rgba(57,255,20,'+(i*.25+.2)+')';ctx.lineWidth=2+i;ctx.beginPath();ctx.ellipse(0,0,12+i*5+Math.sin(et+i)*2,20+i*3,0,0,Math.PI*2);ctx.stroke();}
+  ctx.fillStyle='rgba(57,255,20,.3)';ctx.beginPath();ctx.ellipse(0,0,10,18,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();ctx.shadowBlur=0;
+
+  // Particles
+  for(const p of particles){ctx.globalAlpha=Math.max(0,p.life*2);ctx.fillStyle=p.color;ctx.fillRect(p.x-p.sz/2,p.y-p.sz/2,p.sz,p.sz);}ctx.globalAlpha=1;
+
+  // Ball
+  if(running){
+    ctx.save();ctx.translate(ball.x,ball.y);
+    ctx.shadowColor='#00fff2';ctx.shadowBlur=18;
+    const bg=ctx.createRadialGradient(-ball.r*.3,-ball.r*.3,0,0,0,ball.r);
+    bg.addColorStop(0,'#a0fffc');bg.addColorStop(.6,'#00fff2');bg.addColorStop(1,'#006066');
+    ctx.fillStyle=bg;ctx.beginPath();ctx.arc(0,0,ball.r,0,Math.PI*2);ctx.fill();
+    // Shine
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.ellipse(-ball.r*.3,-ball.r*.35,ball.r*.3,ball.r*.2,-0.5,0,Math.PI*2);ctx.fill();
+    ctx.restore();ctx.shadowBlur=0;
+  }
+
+  if(paused&&running){ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#00fff2';ctx.font='bold 22px monospace';ctx.textAlign='center';ctx.fillText('PAUSED — P to resume · R restart',W/2,H/2);}
+}
+
+let last=0;
+function loop(ts){if(!last)last=ts;const dt=Math.min((ts-last)/1000,.033);last=ts;if(running&&!paused)update(dt);draw();requestAnimationFrame(loop);}
+document.getElementById('startBtn').onclick=()=>{document.getElementById('ov').style.display='none';deaths=0;running=true;loadLevel(0);};
+loadLevel(0,true);requestAnimationFrame(loop);
+</script>
+</body>
+</html>
