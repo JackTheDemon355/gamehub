@@ -180,7 +180,7 @@
   <div id="nlMsg">✓ You're subscribed! We'll email you when new games are added.</div>
 </div>
 
-<div class="sec-lbl" id="secLbl">— 17 GAMES AVAILABLE —</div>
+<div class="sec-lbl" id="secLbl">— 19 GAMES AVAILABLE —</div>
 <div id="grid">
 
   <a class="card" href="neonrunner.html" style="--c:var(--green)" data-cat="action" data-name="neon runner platformer jump wall">
@@ -314,12 +314,13 @@
     <span class="badge">COMBO</span><span class="badge">POWER METER</span><span class="badge">LEVELS</span><br><span class="play">▶ PLAY</span>
   </a>
 
-  <div class="card" style="--c:var(--purple);opacity:.3;pointer-events:none;border-style:dashed" data-cat="arcade">
-    <span class="tag">SOON</span><span class="icon">⚽</span>
+  <a class="card new-card" href="ballcourse.html" style="--c:var(--cyan)" data-cat="arcade" data-name="ball course roll obstacle jump spring coin platformer">
+    <span class="tag">NEW</span><span class="icon">⚽</span>
     <h2>BALL COURSE</h2>
-    <p>Roll a ball through obstacle courses. From Peter.</p>
-    <span class="badge">COMING SOON</span><br><span class="play">▶ PLAY</span>
-  </div>
+    <p>Roll a glowing ball through 15 obstacle courses. Jump, bounce on springs, collect coins. Beat your best time! From Peter.</p>
+    <span class="badge">15 LEVELS</span><span class="badge">SPRINGS</span><span class="badge">BEST TIME</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
 
   <a class="card new-card" href="guessthelogo.html" style="--c:var(--yellow)" data-cat="puzzle" data-name="guess logo brand recognition blurry timer hints categories">
     <span class="tag">NEW</span><span class="icon">🏷️</span>
@@ -329,12 +330,13 @@
     <br><span class="play">▶ PLAY</span>
   </a>
 
-  <div class="card" style="--c:var(--pink);opacity:.3;pointer-events:none;border-style:dashed" data-cat="action">
-    <span class="tag">SOON</span><span class="icon">🕳️</span>
+  <a class="card new-card" href="stickburrow.html" style="--c:var(--orange)" data-cat="action" data-name="stick burrow dig tunnel evade predator fox hawk snake survival">
+    <span class="tag">NEW</span><span class="icon">🕳️</span>
     <h2>STICK BURROW</h2>
-    <p>Dig tunnels, evade predators. From Carter.</p>
-    <span class="badge">COMING SOON</span><br><span class="play">▶ PLAY</span>
-  </div>
+    <p>Dig tunnels underground as a stick figure. Collect food gems, avoid foxes, hawks and snakes. Endless survival — how deep can you go? From Carter.</p>
+    <span class="badge">ENDLESS</span><span class="badge">DIG</span><span class="badge">3 PREDATORS</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
 
   <a class="card new-card" href="planetmaker.html" style="--c:var(--blue)" data-cat="puzzle" data-name="planet maker build world gravity atmosphere rings moons">
     <span class="tag">NEW</span><span class="icon">🪐</span>
@@ -505,27 +507,41 @@ window.subscribeNL=function(){
 };
 // Remote Access modal
 window.showRemoteAccess=function(){
-  var stored=null;try{stored=JSON.parse(localStorage.getItem('gh_staff_code'));}catch(e){}
+  // USER generates a code and gives it to staff
   var el=document.createElement('div');
-  el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:flex;align-items:center;justify-content:center;';
-  el.innerHTML='<div style="background:#03030c;border:2px solid rgba(0,255,242,.25);border-radius:12px;padding:28px 32px;max-width:360px;width:90%;text-align:center;font-family:Consolas,monospace;color:#fff;">'
-    +'<div style="font-size:14px;letter-spacing:4px;color:#00fff2;margin-bottom:14px">📡 REMOTE ACCESS</div>'
-    +'<div style="font-size:11px;color:#b9c4cc;margin-bottom:16px;line-height:1.8">Enter a 6-digit code from the staff panel to connect to a support session.</div>'
-    +'<input id="raCode" type="text" maxlength="6" style="background:rgba(0,0,0,.6);border:2px solid rgba(0,255,242,.3);color:#ffe600;padding:12px;font-family:Consolas,monospace;font-size:24px;letter-spacing:10px;border-radius:6px;outline:none;width:200px;text-align:center;" placeholder="000000">'
-    +'<br><button onclick="connectRemote()" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:10px 24px;font-family:Consolas,monospace;font-size:13px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:12px;">▶ CONNECT</button>'
-    +'<div id="raMsg" style="font-size:11px;min-height:18px;margin-top:8px;"></div>'
-    +'<button onclick="this.parentElement.parentElement.remove()" style="background:transparent;border:1px solid #333;color:#555;padding:7px 16px;font-family:Consolas,monospace;font-size:11px;border-radius:4px;cursor:pointer;margin-top:10px;">✕ CLOSE</button>'
+  el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;align-items:center;justify-content:center;';
+  // Gather user info to attach to code
+  var userInfo={};try{userInfo=JSON.parse(localStorage.getItem('gh_user')||'{}');}catch(e){}
+  var saves=0;['neonrunner','galaxia','snake','brickbreaker','blockfall','pong','asteroids','memorymatch','wordjump','strangerthingsclicker','towerdefense','zombieapocalypse','hoopshot'].forEach(function(g){if(localStorage.getItem('save_'+g))saves++;});
+  userInfo.saves=saves;
+  el.innerHTML='<div style="background:#03030c;border:2px solid rgba(0,255,242,.25);border-radius:12px;padding:28px 32px;max-width:380px;width:92%;text-align:center;font-family:Consolas,monospace;color:#fff;">'
+    +'<div style="font-size:14px;letter-spacing:4px;color:#00fff2;margin-bottom:8px">📡 REMOTE ACCESS</div>'
+    +'<div style="font-size:11px;color:#b9c4cc;margin-bottom:16px;line-height:1.9">Click <strong style="color:#ffe600">Generate Code</strong> then give the 6-digit code to a staff member. They\'ll enter it in the staff panel to view your account and help you.</div>'
+    +'<button id="raGenBtn" onclick="generateUserCode(this)" style="background:rgba(0,255,242,.12);color:#00fff2;border:2px solid #00fff2;padding:10px 24px;font-family:Consolas,monospace;font-size:13px;letter-spacing:3px;border-radius:4px;cursor:pointer;width:100%;">🔑 GENERATE CODE</button>'
+    +'<div id="raCodeDisplay" style="font-size:52px;letter-spacing:14px;color:#ffe600;font-weight:bold;text-shadow:0 0 20px #ffe600;padding:14px 0;display:none;"></div>'
+    +'<div id="raTimer" style="font-size:11px;color:#667;letter-spacing:2px;margin-bottom:6px;"></div>'
+    +'<div id="raMsg" style="font-size:11px;color:#39ff14;min-height:16px;"></div>'
+    +'<button onclick="this.parentElement.parentElement.remove()" style="background:transparent;border:1px solid #333;color:#555;padding:7px 16px;font-family:Consolas,monospace;font-size:11px;border-radius:4px;cursor:pointer;margin-top:14px;">✕ CLOSE</button>'
     +'</div>';
   document.body.appendChild(el);
-  document.getElementById('raCode').focus();
+  window._raUserInfo=userInfo;
 };
-window.connectRemote=function(){
-  var input=document.getElementById('raCode').value.trim();
-  var msg=document.getElementById('raMsg');
-  var stored=null;try{stored=JSON.parse(localStorage.getItem('gh_staff_code'));}catch(e){}
-  if(stored&&stored.code===input&&Date.now()<stored.expiry){
-    msg.style.color='#39ff14';msg.textContent='✓ Connected! Staff can now assist.';
-  }else{msg.style.color='#ff003c';msg.textContent='Invalid or expired code.';}
+var _raTimerInt=null;
+window.generateUserCode=function(btn){
+  var code=String(Math.floor(100000+Math.random()*900000));
+  var expiry=Date.now()+5*60*1000;
+  var userInfo=window._raUserInfo||{};
+  try{localStorage.setItem('gh_staff_code',JSON.stringify({code:code,expiry:expiry,userInfo:userInfo}));}catch(e){}
+  document.getElementById('raCodeDisplay').style.display='block';
+  document.getElementById('raCodeDisplay').textContent=code;
+  document.getElementById('raMsg').textContent='Show this code to staff — expires in 5 min';
+  btn.style.display='none';
+  clearInterval(_raTimerInt);
+  _raTimerInt=setInterval(function(){
+    var rem=Math.max(0,Math.ceil((expiry-Date.now())/1000));
+    document.getElementById('raTimer').textContent=rem>0?'Expires in '+rem+'s':'Code expired';
+    if(rem<=0)clearInterval(_raTimerInt);
+  },1000);
 };
 
 // Auth badge
