@@ -36,7 +36,7 @@ A neon-styled arcade collection of self-contained browser games — no installs,
 | 15 | 🪐 **Planet Maker** | `planetmaker.html` | Creative | Jack | Build planets — size, mass, water, temp, atm, rings, moons, export JSON |
 | 16 | 🏷️ **Guess the Logo** | `guessthelogo.html` | Puzzle | Jack | 32 brand logos, blur reveal, timer, 4 categories, combo streaks |
 | 17 | 🤖 **Mech Defender** | `mechdefender.html` | Action | Kiko | Giant mech, 4 weapons (cannon/laser/missiles/shield), alien waves |
-| 18 | ⚽ **Ball Course** | `ballcourse.html` | Arcade | Peter | Roll through 15 obstacle courses — springs, spikes, coins, best time |
+| 18 | ⛳ **Ball Course** | `ballcourse.html` | Arcade | Peter | Neon mini golf — aim & shoot, 15 holes, bouncy walls, bumpers, par scoring |
 | 19 | 🕳️ **Stick Burrow** | `stickburrow.html` | Action | Carter | Dig tunnels, collect food gems, avoid foxes/hawks/snakes — endless |
 
 ---
@@ -192,7 +192,7 @@ create policy "Users update own" on profiles for update using (auth.uid() = id);
 | Planet Maker | Sliders + presets · Export/Import JSON · Save to browser |
 | Guess the Logo | Click the correct brand name · faster = more points |
 | Mech Defender | `A`/`D` move · mouse aim · click fire · `1-4` weapons · `Shift` boost · `P` pause |
-| Ball Course | `A`/`D` roll · `Space`/`W` jump (double jump) · `R` restart · `P` pause |
+| Ball Course | Mouse aim · Hold &amp; release to shoot · Ball bounces off walls |
 | Stick Burrow | `WASD`/arrows move · `Space`/`Z` dig · `Shift` sprint |
 
 ---
@@ -200,7 +200,7 @@ create policy "Users update own" on profiles for update using (auth.uid() = id);
 ## 🐛 Bug Reports
 
 - **Email:** jvanwijk.business@outlook.com
-- **Contact form:** [contact.html](https://jackthedemon355.github.io/gamehub/contact.html)
+- **Contact form:** [contact.html](contact.html)
 - **GitHub Issues:** https://github.com/JackTheDemon355/gamehub/issues
 
 ---
