@@ -1,4 +1,4 @@
-# 🎮 Game Hub
+# 🎮 Game Hub 👾
 
 > **We Code, You Game.**
 
