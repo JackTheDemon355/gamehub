@@ -200,7 +200,7 @@ create policy "Users update own" on profiles for update using (auth.uid() = id);
 ## 🐛 Bug Reports
 
 - **Email:** jvanwijk.business@outlook.com
-- **Contact form:** [contact.html](contact.html)
+- **Contact form:** [contact.html](https://jackthedemon355.github.io/gamehub/contact.html)
 - **GitHub Issues:** https://github.com/JackTheDemon355/gamehub/issues
 
 ---
