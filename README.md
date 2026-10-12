@@ -4,10 +4,10 @@
 
 A neon-styled arcade collection of self-contained browser games — no installs, no servers, no frameworks. Open `index.html` and play.
 
-![Games](https://img.shields.io/badge/games-20%20live-39ff14?style=flat-square)
-![Version](https://img.shields.io/badge/version-3.0-00fff2?style=flat-square)
-![License](https://img.shields.io/badge/license-MIT-ff2fd0?style=flat-square)
-![Built with](https://img.shields.io/badge/built%20with-HTML%20%2B%20JS-ffe600?style=flat-square)
+![Games](https://img.shields.io/badge/games-20%20live-39ff14?style=square)
+![Version](https://img.shields.io/badge/version-3.0-00fff2?style=square)
+![License](https://img.shields.io/badge/license-MIT-ff2fd0?style=square)
+![Built with](https://img.shields.io/badge/built%20with-HTML%20%2B%20JS-ffe600?style=square)
 
 **Live at:** https://jackthedemon355.github.io/gamehub/
 
