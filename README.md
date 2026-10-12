@@ -1,10 +1,10 @@
-# 🎮 Game Hub 👾
+# 🎮 Game Hub
 
 > **We Code, You Game.**
 
 A neon-styled arcade collection of self-contained browser games — no installs, no servers, no frameworks. Open `index.html` and play.
 
-![Games](https://img.shields.io/badge/games-19%20live-39ff14?style=flat-square)
+![Games](https://img.shields.io/badge/games-20%20live-39ff14?style=flat-square)
 ![Version](https://img.shields.io/badge/version-3.0-00fff2?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-ff2fd0?style=flat-square)
 ![Built with](https://img.shields.io/badge/built%20with-HTML%20%2B%20JS-ffe600?style=flat-square)
@@ -15,7 +15,7 @@ A neon-styled arcade collection of self-contained browser games — no installs,
 
 ---
 
-## 🕹️ Live Games (19)
+## 🕹️ Live Games (20)
 
 | # | Game | File | Category | Made by | Highlights |
 |---|------|------|----------|---------|-----------|
@@ -38,6 +38,7 @@ A neon-styled arcade collection of self-contained browser games — no installs,
 | 17 | 🤖 **Mech Defender** | `mechdefender.html` | Action | Kiko | Giant mech, 4 weapons (cannon/laser/missiles/shield), alien waves |
 | 18 | ⛳ **Ball Course** | `ballcourse.html` | Arcade | Peter | Neon mini golf — aim & shoot, 15 holes, bouncy walls, bumpers, par scoring |
 | 19 | 🕳️ **Stick Burrow** | `stickburrow.html` | Action | Carter | Dig tunnels, collect food gems, avoid foxes/hawks/snakes — endless |
+| 20 | 📱 **Phone Maker** | `phonemaker.html` | Creative | Jack | Design a smartphone — specs, live canvas render, price calculator, export JSON |
 
 ---
 
@@ -132,7 +133,10 @@ Edit `lock.json` to control access:
 | `locked: false` | Manual lock off |
 | `school_hours_lock: true` | Auto-lock Mon–Fri 8:15am–3:15pm AWST |
 
-**Passwords** (case-insensitive): `gamehub234` · `oscarmccumstie` · `user13579`
+**Passwords** (case-insensitive): `g****u*2##` · `os*****c******` · `us**###7#`
+**'*'** = hidden letter
+**'#'** = hidden number
+HIDDEN FOR PRIVACY REASONS!
 
 ---
 
@@ -165,7 +169,7 @@ create policy "Users update own" on profiles for update using (auth.uid() = id);
 **Edge Function secrets** (Supabase → Settings → Edge Functions → Secrets):
 - `STRIPE_SECRET_KEY` — `sk_live_...`
 - `STRIPE_WEBHOOK_SECRET` — `whsec_...`
-- `SERVICE_ROLE_KEY` — service_role JWT (no `SUPABASE_` prefix — Supabase blocks it)
+- `SERVICE_ROLE_KEY` — `eyJhbG**************.*************************************jd2R*******************lhdCI6MTc5M*********************************an6***_**********RpQrZ14` (no `SUPABASE_` prefix — Supabase blocks it)
 
 **After payment redirect:** Set in Stripe → Payment Links → your link → After payment → set to `https://jackthedemon355.github.io/gamehub/login.html`
 
@@ -207,7 +211,7 @@ create policy "Users update own" on profiles for update using (auth.uid() = id);
 
 ## 🐾 Mascot
 
-**Jasper** — the Game Hub dog. Featured in the logo. Approves all commits while napping.
+**Jasper** — the Game Hub dog. Featured in the logo. Approves all commits whilst having belly rubs.
 
 ---
 
@@ -219,7 +223,7 @@ MIT — free to use, modify, and distribute.
 
 <div align="center">
 
-**We Code, You Game** · Built by Jack · 19 games and counting
+**We Code, You Game** · Built by Jack · 20 games and counting
 
 ⭐ Star the repo if you enjoy it!
 
