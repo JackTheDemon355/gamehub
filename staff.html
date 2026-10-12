@@ -148,11 +148,9 @@ a.hubLink:hover{background:var(--cyan);color:#000;}
       <button class="sbtn cyan" onclick="connectCode()">▶ CONNECT TO USER</button>
       <div class="status" id="codeStatus"></div>
       <div id="userSessionInfo" style="display:none;margin-top:12px;background:rgba(0,255,242,.04);border:1px solid rgba(0,255,242,.12);border-radius:8px;padding:12px;"></div>
-      <div style="border-top:1px solid rgba(255,255,255,.07);padding-top:12px;margin-top:16px;">
-        <p style="font-size:10px;color:#445;letter-spacing:1px;margin-bottom:8px;">Staff can also generate a support code to share back:</p>
-        <button class="sbtn green" onclick="genStaffCode()">🔑 GEN STAFF CODE</button>
-        <div id="staffCode" style="font-size:36px;letter-spacing:10px;color:var(--green);text-shadow:0 0 14px var(--green);text-align:center;padding:10px;display:none;font-weight:bold;"></div>
-        <div id="staffCodeTimer" style="font-size:10px;letter-spacing:2px;color:var(--sub);text-align:center;"></div>
+      <div style="border-top:1px solid rgba(255,255,255,.07);padding-top:12px;margin-top:16px;font-size:10px;color:#334;letter-spacing:1px;line-height:1.9;">
+        ℹ️ Only the <strong style="color:var(--cyan)">user</strong> can generate a help code.<br>
+        They go to Game Hub → footer → 📡 Remote Access → Generate Code → give you the number.
       </div>
     </div>
 
@@ -219,6 +217,54 @@ a.hubLink:hover{background:var(--cyan);color:#000;}
       <label style="margin-top:14px">QUICK SQL — Set Pro by Email</label>
       <textarea id="quickSql" rows="3" readonly style="font-size:10px;color:var(--cyan);">UPDATE profiles SET is_pro = true WHERE email = 'user@email.com';</textarea>
       <button class="sbtn cyan" onclick="copySQL()">📋 COPY SQL</button>
+    </div>
+
+    <!-- Announcement Banner -->
+    <div class="card">
+      <h2 class="yellow">📢 ANNOUNCEMENT BANNER</h2>
+      <p style="font-size:11px;color:var(--sub);margin-bottom:10px;line-height:1.7">Show a banner across the top of Game Hub (stored in localStorage — users on same device see it).</p>
+      <label>BANNER MESSAGE</label>
+      <input type="text" id="bannerMsg" placeholder="🎉 New game added: Ball Course!" maxlength="100">
+      <label>TYPE</label>
+      <select id="bannerType">
+        <option value="info">ℹ️ Info (cyan)</option>
+        <option value="success">✅ Success (green)</option>
+        <option value="warn">⚠️ Warning (yellow)</option>
+        <option value="event">🎉 Event (magenta)</option>
+      </select>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="sbtn yellow" onclick="setBanner()">📢 SET BANNER</button>
+        <button class="sbtn red" onclick="clearBanner()">✕ CLEAR</button>
+      </div>
+      <div class="status" id="bannerStatus"></div>
+    </div>
+
+    <!-- Game Stats -->
+    <div class="card">
+      <h2 class="green">📊 LOCAL GAME STATS</h2>
+      <p style="font-size:11px;color:var(--sub);margin-bottom:10px;">Stats from this browser's localStorage (admin device only).</p>
+      <button class="sbtn green" onclick="loadStats()">📊 LOAD STATS</button>
+      <div id="statsOut" style="margin-top:10px;font-size:10px;letter-spacing:1px;line-height:2.2;color:var(--sub);max-height:200px;overflow-y:auto;"></div>
+    </div>
+
+    <!-- User Lookup -->
+    <div class="card">
+      <h2 class="cyan">🔍 USER LOOKUP</h2>
+      <label>EMAIL OR USER ID</label>
+      <input type="text" id="lookupEmail" placeholder="user@email.com">
+      <button class="sbtn cyan" onclick="lookupUser()">🔍 LOOKUP</button>
+      <div id="lookupResult" style="margin-top:10px;font-size:11px;letter-spacing:1px;line-height:2.2;"></div>
+    </div>
+
+    <!-- Maintenance Mode -->
+    <div class="card">
+      <h2 class="orange">🔧 MAINTENANCE</h2>
+      <div class="toggle-row"><span>MAINTENANCE MODE</span><div class="pill" id="pMaint" onclick="toggleMaint()"></div></div>
+      <label style="margin-top:10px">MAINTENANCE MESSAGE</label>
+      <textarea id="maintMsg" rows="2">We're doing some updates! Back soon. 🔧</textarea>
+      <button class="sbtn orange" onclick="saveMaint()">💾 SAVE</button>
+      <div class="status" id="maintStatus"></div>
+      <div style="margin-top:8px;font-size:10px;color:#334;">Maintenance mode shows a full-screen message on all games.</div>
     </div>
 
     <!-- Action Log -->
@@ -359,22 +405,7 @@ function connectCode(){
 window.grantProToSession=function(email){if(email){document.getElementById('proEmail').value=email;grantPro();}};
 window.revokeProFromSession=function(email){if(email){document.getElementById('proEmail').value=email;revokePro();}};
 
-var staffCodeInt=null;
-function genStaffCode(){
-  var code=String(Math.floor(100000+Math.random()*900000));
-  var expiry=Date.now()+5*60*1000;
-  try{localStorage.setItem('gh_staff_code',JSON.stringify({code,expiry}));}catch(e){}
-  document.getElementById('staffCode').style.display='block';
-  document.getElementById('staffCode').textContent=code;
-  clearInterval(staffCodeInt);
-  staffCodeInt=setInterval(function(){
-    var rem=Math.max(0,Math.ceil((expiry-Date.now())/1000));
-    document.getElementById('staffCodeTimer').textContent=rem>0?'Expires in '+rem+'s':'Expired';
-    if(rem<=0)clearInterval(staffCodeInt);
-  },1000);
-  log('Staff code generated','info');
-}
-window.genCode=genStaffCode;window.connectCode=connectCode;window.genStaffCode=genStaffCode;
+window.connectCode=connectCode;
 
 // ── FEATURES ──
 function loadActiveFeatures(){
@@ -427,6 +458,84 @@ function log(action,type){
   entry.innerHTML='<span class="time">'+t+'</span> <span class="action" style="color:'+colors[type]+'">'+action+'</span>';
   el.prepend(entry);
 }
+
+// ── ANNOUNCEMENT BANNER ──
+function setBanner(){
+  var msg=document.getElementById('bannerMsg').value.trim();
+  var type=document.getElementById('bannerType').value;
+  if(!msg){status('bannerStatus','Enter a message','err');return;}
+  var colors={info:'#00fff2',success:'#39ff14',warn:'#ffe600',event:'#ff2fd0'};
+  var data={msg,type,color:colors[type],ts:Date.now()};
+  try{localStorage.setItem('gh_banner',JSON.stringify(data));}catch(e){}
+  status('bannerStatus','✓ Banner set — visible on Hub','ok');
+  log('Banner set: '+msg,'info');
+}
+function clearBanner(){
+  try{localStorage.removeItem('gh_banner');}catch(e){}
+  status('bannerStatus','✓ Banner cleared','ok');
+  log('Banner cleared','info');
+}
+window.setBanner=setBanner;window.clearBanner=clearBanner;
+
+// ── GAME STATS ──
+function loadStats(){
+  var GAMES=['neonrunner','galaxia','snake','brickbreaker','blockfall','pong','asteroids',
+    'memorymatch','wordjump','strangerthingsclicker','towerdefense','zombieapocalypse',
+    'hoopshot','geoguessr','planetmaker','guessthelogo','mechdefender','ballcourse','stickburrow'];
+  var HIKEYS={neonrunner:'nr_hi',galaxia:'galaxia_hi',snake:'snake_hi',brickbreaker:'bb_hi',
+    blockfall:'bf_hi',pong:'pong_hi',asteroids:'ast_hi',memorymatch:'mm_best',
+    wordjump:'wj_streak',strangerthingsclicker:'stEnergy',towerdefense:'td_hi',
+    zombieapocalypse:'zombie_hi',hoopshot:'hoop_hi',geoguessr:'geo_hi',
+    planetmaker:'',guessthelogo:'logo_hi',mechdefender:'mech_hi',
+    ballcourse:'bc_bests',stickburrow:'sb_hi'};
+  var out='';
+  GAMES.forEach(function(g){
+    var key=HIKEYS[g];
+    var val=key?localStorage.getItem(key):null;
+    out+='<div><span style="color:var(--sub)">'+g.toUpperCase()+'</span> '
+      +'<span style="color:var(--yellow)">'+(val!==null?val:'—')+'</span></div>';
+  });
+  document.getElementById('statsOut').innerHTML=out||'<span style="color:#334">No stats found</span>';
+}
+window.loadStats=loadStats;
+
+// ── USER LOOKUP ──
+async function lookupUser(){
+  var email=document.getElementById('lookupEmail').value.trim();
+  if(!email){return;}
+  var out=document.getElementById('lookupResult');
+  out.innerHTML='<span style="color:#445">Searching…</span>';
+  try{
+    var r=await fetch('https://rxdkdylcfspmiljicwdd.supabase.co/rest/v1/profiles?email=eq.'+encodeURIComponent(email.toLowerCase())+'&select=*',
+      {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4ZGtkeWxjZnNwbWlsamljd2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNjQxMDAsImV4cCI6MjEwNTk0MDEwMH0.ifhyyUye28DlGEOcScRDz5lpFW_1soXjzPaS1PrMxmU',
+      'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4ZGtkeWxjZnNwbWlsamljd2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNjQxMDAsImV4cCI6MjEwNTk0MDEwMH0.ifhyyUye28DlGEOcScRDz5lpFW_1soXjzPaS1PrMxmU'}});
+    var data=await r.json();
+    if(data&&data.length){
+      var u=data[0];
+      out.innerHTML='<div style="color:var(--cyan)">'+u.email+'</div>'
+        +'<div><span style="color:var(--sub)">NAME</span> <span style="color:var(--yellow)">'+(u.display_name||'—')+'</span></div>'
+        +'<div><span style="color:var(--sub)">PRO</span> <span class="'+(u.is_pro?'ok':'danger')+'">'+(u.is_pro?'YES ⭐':'NO')+'</span></div>'
+        +'<div><span style="color:var(--sub)">ID</span> <span style="color:#445;font-size:9px">'+(u.id||'—')+'</span></div>'
+        +'<div><span style="color:var(--sub)">SINCE</span> <span style="color:#445">'+(u.created_at?new Date(u.created_at).toLocaleDateString():'—')+'</span></div>';
+      document.getElementById('proEmail').value=email;
+    }else{out.innerHTML='<span style="color:var(--red)">No user found with that email</span>';}
+  }catch(e){out.innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>';}
+}
+window.lookupUser=lookupUser;
+
+// ── MAINTENANCE ──
+var maintOn=false;
+function toggleMaint(){maintOn=!maintOn;document.getElementById('pMaint').classList.toggle('on',maintOn);}
+function saveMaint(){
+  var msg=document.getElementById('maintMsg').value;
+  var data={maintenance:maintOn,message:msg};
+  try{localStorage.setItem('gh_maintenance',JSON.stringify(data));}catch(e){}
+  var json=JSON.stringify({...JSON.parse(localStorage.getItem('lock.json')||'{}'),...data},null,2);
+  status('maintStatus',maintOn?'✓ Maintenance mode ON — copy lock.json below':'✓ Maintenance mode OFF','ok');
+  log('Maintenance: '+maintOn,'info');
+}
+window.toggleMaint=toggleMaint;window.saveMaint=saveMaint;
+
 </script>
 </body>
 </html>
