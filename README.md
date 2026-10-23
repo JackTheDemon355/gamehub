@@ -4,10 +4,10 @@
 
 A neon-styled arcade collection of self-contained browser games — no installs, no servers, no frameworks. Open `index.html` and play.
 
-![Games](https://img.shields.io/badge/games-20%20live-39ff14?style=square)
-![Version](https://img.shields.io/badge/version-3.0-00fff2?style=square)
-![License](https://img.shields.io/badge/license-MIT-ff2fd0?style=square)
-![Built with](https://img.shields.io/badge/built%20with-HTML%20%2B%20JS-ffe600?style=square)
+![Games](https://img.shields.io/badge/games-26%20live-39ff14?style=flat-square)
+![Version](https://img.shields.io/badge/version-3.0-00fff2?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-ff2fd0?style=flat-square)
+![Built with](https://img.shields.io/badge/built%20with-HTML%20%2B%20JS-ffe600?style=flat-square)
 
 **Live at:** https://jackthedemon355.github.io/gamehub/
 
@@ -15,7 +15,7 @@ A neon-styled arcade collection of self-contained browser games — no installs,
 
 ---
 
-## 🕹️ Live Games (20)
+## 🕹️ Live Games (26)
 
 | # | Game | File | Category | Made by | Highlights |
 |---|------|------|----------|---------|-----------|
@@ -39,6 +39,12 @@ A neon-styled arcade collection of self-contained browser games — no installs,
 | 18 | ⛳ **Ball Course** | `ballcourse.html` | Arcade | Peter | Neon mini golf — aim & shoot, 15 holes, bouncy walls, bumpers, par scoring |
 | 19 | 🕳️ **Stick Burrow** | `stickburrow.html` | Action | Carter | Dig tunnels, collect food gems, avoid foxes/hawks/snakes — endless |
 | 20 | 📱 **Phone Maker** | `phonemaker.html` | Creative | Jack | Design a smartphone — specs, live canvas render, price calculator, export JSON |
+| 21 | 👾 **Pixel Invaders** | `pixelinvaders.html` | Arcade | Jack | Space Invaders — pixel aliens, shields, UFO bonus, 20 waves |
+| 22 | 🔢 **Slide Puzzle** | `slidepuzzle.html` | Puzzle | Jack | 15-puzzle in 3×3 to 6×6, best times, arrow keys |
+| 23 | 💣 **Neon Mines** | `minesweeper.html` | Puzzle | Jack | Minesweeper — 3 levels, safe first click, chording, touch flags |
+| 24 | 🐦 **Neon Flap** | `neonflap.html` | Arcade | Jack | One-tap flappy-style endless flyer, tightening gaps, medals |
+| 25 | 🔷 **Neon 2048** | `neon2048.html` | Puzzle | Jack | 2048 with swipe, undo, 3×3–6×6 boards |
+| 26 | 🔴 **Connect 4** | `connectfour.html` | Strategy | Jack | Vs CPU (minimax, 3 levels) or 2 players |
 
 ---
 
@@ -54,7 +60,7 @@ A neon-styled arcade collection of self-contained browser games — no installs,
 - **Zero dependencies** — pure HTML + CSS + vanilla JS. No npm, no build step.
 - **Offline-ready** — every game works without internet after first load.
 - **Neon arcade aesthetic** — scan lines, glows, particles, full neon palette, CRT vibes.
-- **Lock system** — `lock.json` controls access. Manual lock (`locked: true`) or auto school-hours lock (Mon–Fri 8:15am–3:15pm AWST). SHIFT + key → password prompt. 3 passwords accepted.
+- **Lock system** — `lock.json` controls access. Manual lock (`locked: true`) or auto school-hours lock (Mon–Fri 8:15am–3:15pm AWST). SHIFT + key → password prompt. Passwords are set in the lock snippet.
 - **Auth** — Supabase email/password + Google OAuth + Discord OAuth. Guest saves 4 games, signed-in saves all, Pro saves all + perks.
 - **Pro tier** — $2.99/mo via Stripe. Stripe webhook → Supabase Edge Function → `profiles.is_pro = true`.
 - **Search & filter** — find by name or category (Action / Puzzle / Arcade / Word / Idle / Strategy / Creative).
@@ -74,6 +80,7 @@ gamehub/
 ├── login.html                 ← Auth — email, Google, Discord, Pro upgrade
 ├── staff.html                 ← Staff panel — lock, Pro, remote access, features
 ├── contact.html               ← Contact / bug report (Formspree)
+├── pro.html                   ← Pro page (post-payment, downloads)
 ├── auth.js                    ← Shared Supabase auth helper
 ├── lock.json                  ← Lock config — locked, school_hours_lock, message
 ├── favicon.ico                ← Site favicon
@@ -97,7 +104,14 @@ gamehub/
 ├── guessthelogo.html          ← Guess the Logo (brand recognition)
 ├── mechdefender.html          ← Mech Defender (alien waves)
 ├── ballcourse.html            ← Ball Course (15-level obstacle roller)
-└── stickburrow.html           ← Stick Burrow (dig & survive)
+├── stickburrow.html           ← Stick Burrow (dig & survive)
+├── phonemaker.html            ← Phone Maker (smartphone designer)
+├── pixelinvaders.html         ← Pixel Invaders
+├── slidepuzzle.html           ← Slide Puzzle
+├── minesweeper.html           ← Neon Mines
+├── neonflap.html              ← Neon Flap
+├── neon2048.html              ← Neon 2048
+└── connectfour.html           ← Connect 4
 ```
 
 ---
@@ -133,10 +147,7 @@ Edit `lock.json` to control access:
 | `locked: false` | Manual lock off |
 | `school_hours_lock: true` | Auto-lock Mon–Fri 8:15am–3:15pm AWST |
 
-**Passwords** (case-insensitive): `g****u*2##` · `os*****c******` · `us**###7#`
-**'*'** = hidden letter
-**'#'** = hidden number
-HIDDEN FOR PRIVACY REASONS!
+Unlock passwords live in the lock snippet at the top of each game (not documented here on purpose).
 
 ---
 
@@ -169,7 +180,7 @@ create policy "Users update own" on profiles for update using (auth.uid() = id);
 **Edge Function secrets** (Supabase → Settings → Edge Functions → Secrets):
 - `STRIPE_SECRET_KEY` — `sk_live_...`
 - `STRIPE_WEBHOOK_SECRET` — `whsec_...`
-- `SERVICE_ROLE_KEY` — `eyJhbG**************.*************************************jd2R*******************lhdCI6MTc5M*********************************an6***_**********RpQrZ14` (no `SUPABASE_` prefix — Supabase blocks it)
+- `SERVICE_ROLE_KEY` — service_role JWT (no `SUPABASE_` prefix — Supabase blocks it)
 
 **After payment redirect:** Set in Stripe → Payment Links → your link → After payment → set to `https://jackthedemon355.github.io/gamehub/login.html`
 
@@ -198,12 +209,17 @@ create policy "Users update own" on profiles for update using (auth.uid() = id);
 | Mech Defender | `A`/`D` move · mouse aim · click fire · `1-4` weapons · `Shift` boost · `P` pause |
 | Ball Course | Mouse aim · Hold &amp; release to shoot · Ball bounces off walls |
 | Stick Burrow | `WASD`/arrows move · `Space`/`Z` dig · `Shift` sprint |
+| Pixel Invaders | `←→`/`A D` move · `Space` fire · `P` pause |
+| Slide Puzzle | Click a tile (or arrow keys) to slide |
+| Neon Mines | Click reveal · right-click / long-press / Flag Mode to flag · click a number to chord |
+| Neon Flap | Tap / click / `Space` to flap |
+| Neon 2048 | Arrow keys / `WASD` / swipe · `U` undo · `N` new |
+| Connect 4 | Click/tap a column · `←→` + `Space`/`Enter` · keys `1`–`7` |
 
 ---
 
 ## 🐛 Bug Reports
 
-- **Email:** jvanwijk.business@outlook.com
 - **Contact form:** [contact.html](contact.html)
 - **GitHub Issues:** https://github.com/JackTheDemon355/gamehub/issues
 
@@ -211,7 +227,7 @@ create policy "Users update own" on profiles for update using (auth.uid() = id);
 
 ## 🐾 Mascot
 
-**Jasper** — the Game Hub dog. Featured in the logo. Approves all commits whilst having belly rubs.
+**Jasper** — the Game Hub dog. Featured in the logo. Approves all commits while napping.
 
 ---
 
@@ -223,7 +239,7 @@ MIT — free to use, modify, and distribute.
 
 <div align="center">
 
-**We Code, You Game** · Built by Jack · 20 games and counting
+**We Code, You Game** · Built by Jack · 26 games and counting
 
 ⭐ Star the repo if you enjoy it!
 
