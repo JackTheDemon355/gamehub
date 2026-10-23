@@ -1,101 +1,173 @@
-// ── GAME HUB AUTH + SAVE GATING ──────────────────────────
-// Include after Supabase CDN script. Usage: GHAuth.init('gameName')
-const SUPABASE_URL='https://rxdkdylcfspmiljicwdd.supabase.co';
-const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4ZGtkeWxjZnNwbWlsamljd2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNjQxMDAsImV4cCI6MjEwNTk0MDEwMH0.ifhyyUye28DlGEOcScRDz5lpFW_1soXjzPaS1PrMxmU';
+// ── GAME HUB AUTH MODULE ────────────────────────────────────────────
+// Include this on game pages that need save/load functionality
+// <script src="auth.js"></script>
 
-const GHAuth=(function(){
-  let _sb=null,_user=null,_isPro=false,_gameName='';
-  const FREE_SAVE_LIMIT=4;
-  const ALL_GAMES=['neonrunner','galaxia','snake','brickbreaker','blockfall','pong',
-    'asteroids','memorymatch','wordjump','strangerthingsclicker','towerdefense','zombie','hoopshot'];
+const SUPABASE_URL = 'https://rxdkdylcfspmiljicwdd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4ZGtkeWxjZnNwbWlsamljd2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNjQxMDAsImV4cCI6MjEwNTk0MDEwMH0.ifhyyUye28DlGEOcScRDz5lpFW_1soXjzPaS1PrMxmU';
 
-  function _getSB(){
-    if(!_sb&&window.supabase)_sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+// Load Supabase if not already loaded
+(function() {
+  if (window.supabase) return;
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+  s.onload = () => window._sbReady && window._sbReady();
+  document.head.appendChild(s);
+})();
+
+const GHAuth = (function() {
+  const GUEST_SAVE_LIMIT = 4;
+  let _sb = null;
+  let _session = null;
+  let _profile = null;
+  let _ready = false;
+  let _readyCbs = [];
+
+  function getSB() {
+    if (!_sb) _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     return _sb;
   }
 
-  function _countSavedGames(){
-    return ALL_GAMES.filter(g=>localStorage.getItem('save_'+g)!==null).length;
-  }
-
-  function _canSave(){
-    if(!_gameName)return true; // no restriction if unnamed
-    if(_user&&_isPro)return true; // pro = unlimited
-    if(_user)return true; // signed-in free = all saves (no limit for signed-in)
-    // Guest: max 4 games
-    const alreadySaved=localStorage.getItem('save_'+_gameName)!==null;
-    if(alreadySaved)return true; // this game already counted
-    return _countSavedGames()<FREE_SAVE_LIMIT;
-  }
-
-  function _showGate(){
-    // Show a non-blocking banner prompting sign-up
-    if(document.getElementById('gh-gate'))return;
-    const el=document.createElement('div');
-    el.id='gh-gate';
-    el.style.cssText='position:fixed;bottom:0;left:0;right:0;background:rgba(5,5,20,.97);border-top:2px solid rgba(0,255,242,.3);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;z-index:8888;font-family:Consolas,monospace;flex-wrap:wrap;gap:10px;';
-    el.innerHTML='<div style="font-size:12px;letter-spacing:2px;color:#b9c4cc;"><span style="color:#ffe600;font-weight:bold;">SAVE LIMIT REACHED</span> — You\'ve used all 4 free save slots. <a href="login.html" style="color:#00fff2;text-decoration:none;">Sign up free</a> to save all games.</div>'
-      +'<div style="display:flex;gap:8px;"><a href="login.html" style="background:#00fff2;color:#000;padding:8px 16px;font-family:Consolas,monospace;font-size:12px;letter-spacing:2px;border-radius:4px;text-decoration:none;font-weight:bold;">▶ SIGN UP FREE</a><button onclick="document.getElementById(\'gh-gate\').remove()" style="background:transparent;border:1px solid #445;color:#667;padding:8px 12px;font-family:Consolas,monospace;font-size:11px;border-radius:4px;cursor:pointer;">✕</button></div>';
-    document.body.appendChild(el);
-  }
-
-  // Public API
-  return{
-    init:async function(gameName){
-      _gameName=gameName||'';
-      const sb=_getSB();
-      if(!sb)return;
-      try{
-        const{data:{session}}=await sb.auth.getSession();
-        if(session?.user){
-          _user=session.user;
-          try{
-            const{data}=await sb.from('profiles').select('is_pro').eq('id',_user.id).single();
-            _isPro=data?.is_pro===true;
-          }catch(e){}
-          // Update localStorage user cache
-          const name=_user.user_metadata?.display_name||_user.user_metadata?.full_name||_user.email.split('@')[0];
-          localStorage.setItem('gh_user',JSON.stringify({id:_user.id,name,email:_user.email,isPro:_isPro}));
-        }
-      }catch(e){}
-      return{user:_user,isPro:_isPro};
-    },
-
-    canSave:_canSave,
-
-    // Call before saving game state
-    saveState:function(key,data){
-      if(!_canSave()){_showGate();return false;}
-      try{
-        const saveKey='save_'+(_gameName||key);
-        localStorage.setItem(saveKey,JSON.stringify(data));
-        return true;
-      }catch(e){return false;}
-    },
-
-    loadState:function(key){
-      try{return JSON.parse(localStorage.getItem('save_'+(_gameName||key)));}catch(e){return null;}
-    },
-
-    getUser:function(){return _user;},
-    isPro:function(){return _isPro;},
-
-    // Show a small user badge in-game (top-right corner)
-    showBadge:function(){
-      if(document.getElementById('gh-badge'))return;
-      let cached=null;
-      try{cached=JSON.parse(localStorage.getItem('gh_user'));}catch(e){}
-      const el=document.createElement('a');
-      el.id='gh-badge';
-      el.href='login.html';
-      el.style.cssText='position:fixed;top:10px;right:10px;z-index:8000;background:rgba(5,5,20,.85);border:1px solid rgba(0,255,242,.2);border-radius:20px;padding:5px 10px 5px 7px;display:flex;align-items:center;gap:6px;text-decoration:none;font-family:Consolas,monospace;font-size:10px;letter-spacing:1px;color:#b9c4cc;cursor:pointer;';
-      if(cached&&cached.name){
-        el.innerHTML=(cached.isPro?'<span style="color:#9d4edd">⭐</span>':'<span>👤</span>')+'<span style="color:#00fff2">'+cached.name.toUpperCase().slice(0,12)+'</span>';
-      }else{
-        el.innerHTML='<span>👤</span><span style="color:#445">SIGN IN</span>';
-      }
-      document.body.appendChild(el);
+  async function init() {
+    const sb = getSB();
+    const { data: { session } } = await sb.auth.getSession();
+    _session = session;
+    if (session) {
+      const { data } = await sb.from('profiles')
+        .select('is_pro, display_name, avatar_url, email')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      _profile = data;
     }
-  };
+    _ready = true;
+    _readyCbs.forEach(cb => cb());
+    _readyCbs = [];
+    sb.auth.onAuthStateChange(async (event, session) => {
+      _session = session;
+      if (session) {
+        const { data } = await sb.from('profiles')
+          .select('is_pro, display_name, avatar_url, email')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        _profile = data;
+      } else {
+        _profile = null;
+      }
+    });
+  }
+
+  function onReady(cb) {
+    if (_ready) cb(); else _readyCbs.push(cb);
+  }
+
+  function getUser() { return _session?.user || null; }
+  function getProfile() { return _profile; }
+  function isPro() { return _profile?.is_pro === true; }
+  function isLoggedIn() { return !!_session; }
+  function getDisplayName() {
+    return _profile?.display_name || _session?.user?.email?.split('@')[0] || 'Guest';
+  }
+
+  // ── SAVE SYSTEM ──────────────────────────────────────────────────
+  // Saves go to Supabase if logged in, localStorage as fallback
+  // Key = game_slug (e.g. 'neonrunner', 'snake')
+  async function saveGame(slug, data) {
+    const payload = JSON.stringify({ slug, data, saved_at: new Date().toISOString() });
+    if (isLoggedIn()) {
+      // Upsert to game_saves table
+      const sb = getSB();
+      const { error } = await sb.from('game_saves').upsert({
+        user_id: _session.user.id,
+        game: slug,
+        save_data: data,
+        saved_at: new Date().toISOString()
+      }, { onConflict: 'user_id,game' });
+      if (error) {
+        console.warn('Cloud save failed, using localStorage:', error.message);
+        try { localStorage.setItem('gh_save_' + slug, payload); } catch(e) {}
+      }
+      // Also keep local copy for fast load
+      try { localStorage.setItem('gh_save_' + slug, payload); } catch(e) {}
+      return !error;
+    } else {
+      // Guest: check limit
+      const savedKeys = Object.keys(localStorage).filter(k => k.startsWith('gh_save_'));
+      const alreadySaved = savedKeys.includes('gh_save_' + slug);
+      if (!alreadySaved && savedKeys.length >= GUEST_SAVE_LIMIT) {
+        return { error: 'limit', message: 'Guests can only save ' + GUEST_SAVE_LIMIT + ' games. Sign in for unlimited saves!' };
+      }
+      try { localStorage.setItem('gh_save_' + slug, payload); return true; } catch(e) { return false; }
+    }
+  }
+
+  async function loadGame(slug) {
+    // Try localStorage first (fastest)
+    try {
+      const local = localStorage.getItem('gh_save_' + slug);
+      if (local) {
+        const parsed = JSON.parse(local);
+        return parsed.data;
+      }
+    } catch(e) {}
+    // Try Supabase
+    if (isLoggedIn()) {
+      const sb = getSB();
+      const { data } = await sb.from('game_saves')
+        .select('save_data')
+        .eq('user_id', _session.user.id)
+        .eq('game', slug)
+        .maybeSingle();
+      if (data?.save_data) {
+        try { localStorage.setItem('gh_save_' + slug, JSON.stringify({ slug, data: data.save_data })); } catch(e) {}
+        return data.save_data;
+      }
+    }
+    return null;
+  }
+
+  async function deleteGame(slug) {
+    try { localStorage.removeItem('gh_save_' + slug); } catch(e) {}
+    if (isLoggedIn()) {
+      const sb = getSB();
+      await sb.from('game_saves').delete()
+        .eq('user_id', _session.user.id).eq('game', slug);
+    }
+  }
+
+  function canSave(slug) {
+    if (isLoggedIn()) return true;
+    const savedKeys = Object.keys(localStorage).filter(k => k.startsWith('gh_save_'));
+    return savedKeys.includes('gh_save_' + slug) || savedKeys.length < GUEST_SAVE_LIMIT;
+  }
+
+  // ── AUTH BADGE (inject into pages) ───────────────────────────────
+  function injectBadge() {
+    onReady(() => {
+      let badge = document.getElementById('ghAuthBadge');
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.id = 'ghAuthBadge';
+        badge.style.cssText = 'position:fixed;top:12px;right:56px;z-index:100;display:flex;align-items:center;gap:8px;font-family:Consolas,monospace;font-size:10px;letter-spacing:1px;';
+        document.body.appendChild(badge);
+      }
+      if (isLoggedIn()) {
+        const proTag = isPro() ? ' <span style="color:#ffd700;font-size:9px">⭐ PRO</span>' : '';
+        badge.innerHTML = '<a href="pro.html" style="color:#ffd700;text-decoration:none;opacity:.8">' + getDisplayName() + proTag + '</a>';
+      } else {
+        badge.innerHTML = '<a href="login.html" style="color:rgba(0,255,242,.6);text-decoration:none;font-size:9px;letter-spacing:2px;border:1px solid rgba(0,255,242,.25);padding:4px 8px;border-radius:3px;">SIGN IN</a>';
+      }
+    });
+  }
+
+  // Init on load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.supabase) init(); else { window._sbReady = init; }
+    });
+  } else {
+    if (window.supabase) init(); else { window._sbReady = init; }
+  }
+
+  return { onReady, getUser, getProfile, isPro, isLoggedIn, getDisplayName, saveGame, loadGame, deleteGame, canSave, injectBadge };
 })();
-// ── END AUTH ──────────────────────────────────────────────
+
+window.GHAuth = GHAuth;
