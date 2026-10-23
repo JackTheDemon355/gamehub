@@ -41,7 +41,7 @@
 <div class="container">
   <a id="back" href="index.html">◄ GAME HUB</a>
   <div class="card">
-    <form id="contactForm" action="https://formspree.io/f/xaennwkb" method="POST">
+    <form id="contactForm" action="https://formspree.io/f/mjygnzaz" method="POST">
       <div id="formFields">
         <label>YOUR NAME</label>
         <input type="text" name="name" placeholder="Enter your name" required>
@@ -65,7 +65,6 @@
       </div>
     </form>
     <div class="info">
-      📧 Direct email: <a href="mailto:jvanwijk.business@outlook.com">jvanwijk.business@outlook.com</a><br>
       🎮 Game Hub — All games built by Jack<br>
       🐛 Found a bug? Use the Bug Report option above.<br>
       💡 Got a game idea? We'd love to hear it!
@@ -78,7 +77,7 @@ document.getElementById('contactForm').addEventListener('submit',async function(
   const btn=this.querySelector('.submit');
   btn.textContent='SENDING...';btn.disabled=true;
   try{
-    const res=await fetch('https://formspree.io/f/xaennwkb',{method:'POST',body:new FormData(this),headers:{Accept:'application/json'}});
+    const res=await fetch('https://formspree.io/f/mjygnzaz',{method:'POST',body:new FormData(this),headers:{Accept:'application/json'}});
     if(res.ok){document.getElementById('formFields').style.display='none';document.getElementById('thanks').style.display='block';}
     else{btn.textContent='ERROR — TRY AGAIN';btn.disabled=false;}
   }catch(err){btn.textContent='ERROR — TRY AGAIN';btn.disabled=false;}
