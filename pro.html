@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="1rNDahd3JgJCYe4UGAdNJqAAZM_oOawfSZ-I2i2_mPs" />
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>PRO — GAME HUB</title>
+<style>
+:root{--bg:#03030c;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--purple:#9d4edd;--gold:#ffd700;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;color:#fff;
+  background-image:radial-gradient(ellipse at 50% 0%,#1a0a3a,transparent 60%),radial-gradient(ellipse at 50% 100%,#0a1a0a,transparent 60%);}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(157,78,221,.015) 0,rgba(157,78,221,.015) 1px,transparent 1px,transparent 4px);}
+#wrap{max-width:900px;margin:0 auto;padding:20px 16px 80px;position:relative;z-index:1;}
+#back{position:fixed;top:14px;left:14px;z-index:50;color:var(--cyan);text-decoration:none;border:1px solid var(--cyan);padding:7px 14px;font-size:11px;letter-spacing:2px;border-radius:4px;background:rgba(0,0,0,.7);}
+#back:hover{background:var(--cyan);color:#000;}
+
+/* Hero */
+.hero{text-align:center;padding:40px 20px 30px;}
+.hero .crown{font-size:64px;display:block;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(255,215,0,.6));}
+.hero h1{font-size:clamp(28px,6vw,56px);letter-spacing:10px;color:var(--gold);text-shadow:0 0 20px var(--gold),0 0 60px rgba(255,215,0,.4);}
+.hero p{font-size:13px;letter-spacing:3px;color:var(--purple);margin-top:8px;}
+
+/* Status card */
+.status-card{background:linear-gradient(135deg,rgba(157,78,221,.15),rgba(0,255,242,.08));border:2px solid rgba(157,78,221,.4);border-radius:16px;padding:24px 28px;text-align:center;margin:20px 0;position:relative;overflow:hidden;}
+.status-card::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(255,255,255,.01) 10px,rgba(255,255,255,.01) 20px);}
+.status-card h2{font-size:14px;letter-spacing:4px;color:var(--gold);margin-bottom:8px;}
+#statusMsg{font-size:24px;font-weight:bold;letter-spacing:4px;margin:10px 0;}
+#statusSub{font-size:11px;color:var(--sub);letter-spacing:2px;}
+#signInBtn{margin-top:14px;display:inline-block;background:transparent;border:2px solid var(--gold);color:var(--gold);padding:10px 24px;font-family:inherit;font-size:12px;letter-spacing:3px;border-radius:6px;cursor:pointer;text-decoration:none;transition:.15s;}
+#signInBtn:hover{background:var(--gold);color:#000;}
+
+/* Download cards */
+.section-title{font-size:11px;letter-spacing:6px;color:var(--purple);margin:28px 0 12px;display:flex;align-items:center;gap:10px;}
+.section-title::after{content:"";flex:1;height:1px;background:rgba(157,78,221,.25);}
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.dl-card{background:rgba(255,255,255,.03);border:1px solid rgba(157,78,221,.2);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px;transition:.2s;}
+.dl-card:hover{border-color:rgba(157,78,221,.5);background:rgba(157,78,221,.06);}
+.dl-card .icon{font-size:32px;}
+.dl-card h3{font-size:13px;letter-spacing:2px;color:#fff;}
+.dl-card p{font-size:10px;letter-spacing:1px;color:var(--sub);line-height:1.8;flex:1;}
+.dl-card .tags{display:flex;gap:5px;flex-wrap:wrap;}
+.dl-card .tag{font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:3px;border:1px solid;}
+.tag-apk{color:#39ff14;border-color:rgba(57,255,20,.4);background:rgba(57,255,20,.06);}
+.tag-exe{color:#4da6ff;border-color:rgba(77,166,255,.4);background:rgba(77,166,255,.06);}
+.tag-web{color:#00fff2;border-color:rgba(0,255,242,.4);background:rgba(0,255,242,.06);}
+.tag-soon{color:#667;border-color:#334;background:transparent;}
+.dl-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:6px;font-family:inherit;font-size:11px;letter-spacing:2px;cursor:pointer;border:none;text-decoration:none;transition:.15s;font-weight:bold;}
+.dl-btn.apk{background:rgba(57,255,20,.15);color:var(--green);border:1px solid rgba(57,255,20,.4);}
+.dl-btn.apk:hover{background:rgba(57,255,20,.25);}
+.dl-btn.exe{background:rgba(77,166,255,.15);color:#4da6ff;border:1px solid rgba(77,166,255,.4);}
+.dl-btn.exe:hover{background:rgba(77,166,255,.25);}
+.dl-btn.locked{background:rgba(255,255,255,.04);color:#445;border:1px solid #333;cursor:not-allowed;}
+.dl-btn.soon{background:rgba(255,255,255,.04);color:#445;border:1px solid #333;cursor:default;}
+.dl-btn.play{background:rgba(0,255,242,.12);color:var(--cyan);border:1px solid rgba(0,255,242,.3);}
+.dl-btn.play:hover{background:rgba(0,255,242,.22);}
+
+/* Perks list */
+.perks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:12px 0;}
+.perk{background:rgba(255,255,255,.03);border:1px solid rgba(255,215,0,.15);border-radius:10px;padding:14px 16px;display:flex;gap:10px;align-items:flex-start;}
+.perk .pi{font-size:22px;flex-shrink:0;}
+.perk h4{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;}
+.perk p{font-size:10px;color:var(--sub);letter-spacing:1px;line-height:1.7;}
+
+/* Upgrade CTA */
+.cta{text-align:center;padding:30px 20px;margin-top:20px;background:rgba(255,215,0,.04);border:2px solid rgba(255,215,0,.2);border-radius:16px;}
+.cta h2{font-size:22px;letter-spacing:6px;color:var(--gold);}
+.cta p{color:var(--sub);font-size:12px;margin:8px 0 18px;letter-spacing:2px;}
+.cta a{display:inline-block;background:var(--gold);color:#000;padding:14px 32px;font-family:inherit;font-size:14px;letter-spacing:4px;border-radius:8px;text-decoration:none;font-weight:bold;box-shadow:0 0 20px rgba(255,215,0,.3);}
+.cta a:hover{box-shadow:0 0 40px rgba(255,215,0,.5);}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <a id="back" href="index.html">◄ HUB</a>
+
+  <div class="hero">
+    <span class="crown">👑</span>
+    <h1>GAME HUB PRO</h1>
+    <p>⭐ PREMIUM MEMBERSHIP ⭐</p>
+  </div>
+
+  <!-- Auth status card -->
+  <div class="status-card">
+    <h2>MEMBERSHIP STATUS</h2>
+    <div id="statusMsg" style="color:#667">CHECKING...</div>
+    <div id="statusSub"></div>
+    <div id="signInArea"></div>
+  </div>
+
+  <!-- Pro perks -->
+  <div class="section-title">✨ PRO PERKS</div>
+  <div class="perks">
+    <div class="perk"><div class="pi">📱</div><div><h4>ANDROID APK</h4><p>Install Game Hub as a native Android app. No browser needed.</p></div></div>
+    <div class="perk"><div class="pi">💻</div><div><h4>WINDOWS EXE</h4><p>Desktop app for Windows. Runs offline, no internet needed.</p></div></div>
+    <div class="perk"><div class="pi">💾</div><div><h4>UNLIMITED SAVES</h4><p>Save progress on all games. Guests are limited to 4.</p></div></div>
+    <div class="perk"><div class="pi">⭐</div><div><h4>PRO BADGE</h4><p>Gold ⭐ badge on your profile across all Game Hub pages.</p></div></div>
+    <div class="perk"><div class="pi">🚀</div><div><h4>EARLY ACCESS</h4><p>Play new games before they go public.</p></div></div>
+    <div class="perk"><div class="pi">🔕</div><div><h4>AD-FREE</h4><p>Clean, no-interruption gaming. Always.</p></div></div>
+  </div>
+
+  <!-- Downloads section -->
+  <div class="section-title">⬇ DOWNLOADS</div>
+  <div id="dlSection">
+    <div class="dl-grid" id="dlGrid">
+      <!-- Populated by JS based on pro status -->
+    </div>
+  </div>
+
+  <!-- Not pro CTA -->
+  <div class="cta" id="upgradeCta" style="display:none">
+    <h2>UPGRADE TO PRO</h2>
+    <p>$2.99/month · Cancel anytime</p>
+    <a href="https://buy.stripe.com/28E4gycp97Qm5Qq0lq18c09" target="_blank">👑 GET PRO — $2.99/mo</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL='https://rxdkdylcfspmiljicwdd.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4ZGtkeWxjZnNwbWlsamljd2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNjQxMDAsImV4cCI6MjEwNTk0MDEwMH0.ifhyyUye28DlGEOcScRDz5lpFW_1soXjzPaS1PrMxmU';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+// Download definitions
+// APK/EXE are hosted on GitHub Releases (you upload them there)
+// URL format: https://github.com/JackTheDemon355/gamehub/releases/latest/download/GameHub.apk
+const DOWNLOADS=[
+  {id:'android',icon:'📱',name:'Game Hub for Android',desc:'Full Game Hub as a native Android APK. Install directly — no Play Store needed. Requires Android 8.0+.',
+   tags:['apk','22 MB'],apk:'https://github.com/JackTheDemon355/gamehub/releases/latest/download/GameHub.apk',exe:null,soon:false},
+  {id:'windows',icon:'💻',name:'Game Hub for Windows',desc:'Standalone Windows desktop app. All games offline. No browser. Requires Windows 10+.',
+   tags:['exe','45 MB'],apk:null,exe:'https://github.com/JackTheDemon355/gamehub/releases/latest/download/GameHub-Setup.exe',soon:false},
+  {id:'mac',icon:'🍎',name:'Game Hub for macOS',desc:'macOS app bundle coming soon.',
+   tags:['soon'],apk:null,exe:null,soon:true},
+  {id:'ios',icon:'📲',name:'Game Hub for iOS',desc:'iOS app coming soon via TestFlight.',
+   tags:['soon'],apk:null,exe:null,soon:true},
+];
+
+function buildDownloads(isPro){
+  const grid=document.getElementById('dlGrid');
+  grid.innerHTML='';
+  DOWNLOADS.forEach(function(dl){
+    const card=document.createElement('div');card.className='dl-card';
+    let btns='';
+    if(dl.soon){
+      btns='<span class="dl-btn soon">🔜 COMING SOON</span>';
+    }else if(!isPro){
+      btns='<span class="dl-btn locked">🔒 PRO ONLY</span>';
+    }else{
+      if(dl.apk)btns+='<a href="'+dl.apk+'" class="dl-btn apk" download>⬇ DOWNLOAD APK</a>';
+      if(dl.exe)btns+='<a href="'+dl.exe+'" class="dl-btn exe" download>⬇ DOWNLOAD EXE</a>';
+    }
+    // Always show play in browser
+    const tags=dl.tags.map(function(t){
+      var cls=t==='apk'?'tag-apk':t==='exe'?'tag-exe':t==='soon'?'tag-soon':'tag-web';
+      return '<span class="tag '+cls+'">'+t.toUpperCase()+'</span>';
+    }).join('');
+    card.innerHTML='<div class="icon">'+dl.icon+'</div>'
+      +'<h3>'+dl.name+'</h3>'
+      +'<p>'+dl.desc+'</p>'
+      +'<div class="tags">'+tags+'</div>'
+      +(dl.soon?'':'')
+      +btns;
+    grid.appendChild(card);
+  });
+}
+
+async function checkStatus(){
+  const msgEl=document.getElementById('statusMsg');
+  const subEl=document.getElementById('statusSub');
+  const signInArea=document.getElementById('signInArea');
+
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){
+    msgEl.style.color='#667';msgEl.textContent='NOT SIGNED IN';
+    subEl.textContent='Sign in to check your Pro status';
+    signInArea.innerHTML='<a href="login.html" id="signInBtn">🔑 SIGN IN / SIGN UP</a>';
+    buildDownloads(false);
+    document.getElementById('upgradeCta').style.display='block';
+    return;
+  }
+
+  const user=session.user;
+  const{data:profile}=await sb.from('profiles').select('is_pro,display_name,pro_since').eq('id',user.id).maybeSingle();
+  const isPro=profile?.is_pro===true;
+  const name=profile?.display_name||user.email?.split('@')[0]||'Member';
+
+  if(isPro){
+    msgEl.style.color='#ffd700';msgEl.textContent='👑 PRO MEMBER';
+    subEl.textContent='Welcome back, '+name+' · Pro since '+(profile.pro_since?new Date(profile.pro_since).toLocaleDateString():'recently');
+    signInArea.innerHTML='<a href="index.html" style="color:var(--cyan);font-size:11px;letter-spacing:2px;text-decoration:none;margin-top:8px;display:inline-block">▶ PLAY GAMES</a>';
+    buildDownloads(true);
+    document.getElementById('upgradeCta').style.display='none';
+  }else{
+    msgEl.style.color='var(--sub)';msgEl.textContent='FREE MEMBER';
+    subEl.textContent='Signed in as '+user.email+' · Upgrade to unlock downloads';
+    signInArea.innerHTML='<a href="https://buy.stripe.com/28E4gycp97Qm5Qq0lq18c09" target="_blank" id="signInBtn" style="border-color:var(--gold);color:var(--gold)">👑 UPGRADE TO PRO — $2.99/mo</a>';
+    buildDownloads(false);
+    document.getElementById('upgradeCta').style.display='block';
+  }
+}
+
+// Check for ?payment=success in URL (redirected from Stripe)
+if(window.location.search.includes('payment=success')||window.location.hash.includes('access_token')){
+  // Stripe redirect lands here - show a welcome message while DB updates
+  const hero=document.querySelector('.hero p');
+  if(hero)hero.textContent='🎉 PAYMENT RECEIVED — ACTIVATING YOUR PRO...';
+  // Give webhook a moment then check
+  setTimeout(checkStatus,2500);
+}else{
+  checkStatus();
+}
+</script>
+</body>
+</html>
