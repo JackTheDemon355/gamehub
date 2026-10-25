@@ -60,52 +60,23 @@ html,body{margin:0;min-height:100%;background:#03030c;font-family:'Consolas','Co
 .lenBtn{cursor:pointer;padding:7px 13px;font-family:inherit;font-size:12px;letter-spacing:2px;border-radius:4px;border:2px solid #333;color:#666;background:transparent;}
 .lenBtn.active{border-color:#ff2fd0;color:#ff2fd0;}
 
-  /* ── MOBILE CONTROLS (toggle in settings) ── */
-  #mobileCtrl{display:none;position:fixed;inset:0;pointer-events:none;z-index:50;}
-  #mobileCtrl.show{display:block;}
-  .mc-btn{position:absolute;pointer-events:auto;background:rgba(0,0,0,.45);
-    border-radius:50%;display:flex;align-items:center;justify-content:center;
-    font-size:22px;color:rgba(255,255,255,.8);border:2px solid rgba(255,255,255,.25);
-    -webkit-tap-highlight-color:transparent;user-select:none;}
-  .mc-btn:active{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.6);}
-  .mc-dpad{position:absolute;bottom:20px;left:18px;}
-  .mc-dpad .mc-btn{width:52px;height:52px;}
-  .mc-dpad #mcUp   {bottom:110px;left:54px;}
-  .mc-dpad #mcDown {bottom:4px;  left:54px;}
-  .mc-dpad #mcLeft {bottom:57px; left:0;}
-  .mc-dpad #mcRight{bottom:57px; left:108px;}
-  .mc-actions{position:absolute;bottom:20px;right:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
-  .mc-actions .mc-btn{width:56px;height:56px;}
-  #mcAction1{background:rgba(0,255,242,.18);border-color:rgba(0,255,242,.5);}
-  #mcAction2{background:rgba(255,47,208,.18);border-color:rgba(255,47,208,.5);}
-  #mcAction3{background:rgba(255,230,0,.18);border-color:rgba(255,230,0,.5);}
-  .mc-detect-msg{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);
-    font-family:Consolas,monospace;font-size:11px;letter-spacing:2px;color:rgba(0,255,242,.7);
-    pointer-events:none;opacity:0;transition:opacity .5s;}
-
-
-  /* Floating settings button */
-  #floatSettings{position:fixed;top:14px;right:60px;z-index:60;background:rgba(0,0,0,.6);
-    border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);padding:6px 12px;
-    font-family:Consolas,monospace;font-size:11px;letter-spacing:2px;border-radius:4px;cursor:pointer;}
-  #floatSettings:hover{border-color:var(--cyan,#00fff2);color:var(--cyan,#00fff2);}
-  #floatSettingsPanel{display:none;position:fixed;top:46px;right:14px;z-index:61;
-    background:rgba(5,5,20,.96);border:1px solid rgba(0,255,242,.2);border-radius:10px;
-    padding:16px;width:240px;font-family:Consolas,monospace;}
-  #floatSettingsPanel h3{font-size:11px;letter-spacing:4px;color:#00fff2;margin-bottom:12px;}
-  #floatSettingsPanel .fs-row{display:flex;justify-content:space-between;align-items:center;
-    padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);}
-  #floatSettingsPanel .fs-row:last-of-type{border:none;}
-  #floatSettingsPanel .fs-row span{font-size:10px;letter-spacing:2px;color:#b9c4cc;}
-  #floatSettingsPanel .pill{width:38px;height:20px;border-radius:10px;background:#222;
-    position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
-  #floatSettingsPanel .pill.on{background:#00fff2;}
-  #floatSettingsPanel .pill::after{content:"";position:absolute;left:2px;top:2px;width:16px;
-    height:16px;border-radius:50%;background:#fff;transition:left .2s;}
-  #floatSettingsPanel .pill.on::after{left:20px;}
-  #floatSettingsPanel button{width:100%;margin-top:10px;padding:8px;background:transparent;
-    border:1px solid #00fff2;color:#00fff2;font-family:Consolas,monospace;font-size:11px;
-    letter-spacing:2px;border-radius:4px;cursor:pointer;}
+  
+  .adv-tog{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:6px 12px;cursor:pointer;
+    font-size:10px;letter-spacing:2px;color:#b9c4cc;transition:.15s;user-select:none;}
+  .adv-tog:hover{border-color:var(--c,#00fff2);color:var(--c,#00fff2);}
+  .adv-tog.on{border-color:#00fff2;color:#00fff2;}
+  .adv-pill{width:30px;height:16px;border-radius:8px;background:#333;position:relative;
+    flex-shrink:0;transition:background .2s;}
+  .adv-pill.on{background:#00fff2;}
+  .adv-pill::after{content:"";position:absolute;left:2px;top:2px;width:12px;height:12px;
+    border-radius:50%;background:#fff;transition:left .2s;}
+  .adv-pill.on::after{left:16px;}
+  #hintBtn{cursor:pointer;background:transparent;border:1px solid #4da6ff;color:#4da6ff;
+    padding:5px 14px;font-family:inherit;font-size:11px;letter-spacing:2px;border-radius:4px;
+    display:none;margin-top:4px;}
+  #hintBtn:hover{background:#4da6ff;color:#000;}
+  #hintBtn:disabled{opacity:.35;cursor:not-allowed;}
 
 </style>
 </head>
@@ -119,6 +90,7 @@ html,body{margin:0;min-height:100%;background:#03030c;font-family:'Consolas','Co
       <span class="lbl">LEFT</span><span class="val" id="lfEl">6</span></div>
   </div>
   <div id="clue"></div>
+  <button id="hintBtn" onclick="revealHint()">💡 REVEAL HINT</button>
   <div id="attGrid"></div>
   <div id="msg"></div>
   <div id="kb"></div>
@@ -135,6 +107,15 @@ html,body{margin:0;min-height:100%;background:#03030c;font-family:'Consolas','Co
     <button class="lenBtn active" data-len="4" onclick="setLen(this)">4 LETTERS</button>
     <button class="lenBtn" data-len="5" onclick="setLen(this)">5 LETTERS</button>
     <button class="lenBtn" data-len="6" onclick="setLen(this)">6 LETTERS</button>
+  </div>
+  <!-- Advanced options -->
+  <div id="advRow" style="display:flex;gap:10px;margin-top:10px;justify-content:center;flex-wrap:wrap;">
+    <div class="adv-tog" id="togDict" onclick="toggleAdv('dict')" title="Only accept valid dictionary guesses">
+      <span>📖 DICTIONARY</span><div class="adv-pill" id="pill-dict"></div>
+    </div>
+    <div class="adv-tog" id="togHints" onclick="toggleAdv('hints')" title="Show a hint clue for each word">
+      <span>💡 HINTS</span><div class="adv-pill on" id="pill-hints"></div>
+    </div>
   </div>
   <button class="wbtn" id="startBtn" style="margin-top:12px">▶ RANDOM WORD</button>
   <button class="wbtn s" id="customBtn">✏ CUSTOM WORD</button>
@@ -409,7 +390,13 @@ function startRound(customWord,customClue){
 
   guesses=[];current='';keyState={};running=true;
   buildGrid();buildKB();updateCurrentRow();
-  clueEl.textContent=(clueText?'💡 '+clueText:'')+' ('+wordLen+' letters)';
+  // Hint is click-to-reveal when hints enabled, hidden when hints off
+  clueEl.textContent='';
+  var hBtn=document.getElementById('hintBtn');
+  if(hBtn){
+    hBtn.style.display=(clueText&&advOpts.hints)?'inline-block':'none';
+    hBtn.disabled=false;hBtn.textContent='💡 REVEAL HINT';
+  }
   msgEl.textContent='';lfEl.textContent=MAX_GUESSES;
   rnEl.textContent=round;
 }
@@ -473,7 +460,104 @@ function roundWin(){
       <button class="wbtn s" id="customBtn2">✏ CUSTOM WORD</button>
       <p style="margin-top:10px"><a href="index.html" style="color:#00fff2">◄ HUB</a></p>`;
     ov.style.display='flex';
-    document.getElementById('startBtn').onclick=()=>{ov.style.display='none';startRound();};
+    // ── ADVANCED OPTIONS ──
+var advOpts={dict:false,hints:true};
+window.toggleAdv=function(key){
+  advOpts[key]=!advOpts[key];
+  document.getElementById('pill-'+key).classList.toggle('on',advOpts[key]);
+  document.getElementById('tog'+key.charAt(0).toUpperCase()+key.slice(1)).classList.toggle('on',advOpts[key]);
+};
+
+window.revealHint=function(){
+  if(!clueText)return;
+  clueEl.textContent='💡 '+clueText;
+  var hBtn=document.getElementById('hintBtn');
+  if(hBtn){hBtn.disabled=true;hBtn.textContent='Hint revealed';}
+};
+
+// Dictionary validation - check if guess is in our word lists (basic check)
+function isValidWord(guess,len){
+  if(!advOpts.dict)return true; // dictionary mode off = any letters ok
+  var pool=WORDS[len]||[];
+  var lowerGuess=guess.toUpperCase();
+  // Check against known words
+  if(pool.some(function(w){return (w.w||w)===lowerGuess;}))return true;
+  // Also allow the answer itself always
+  if(lowerGuess===word)return true;
+  // Extra common 5-letter words for dictionary mode
+  var common5=['ABOUT','ABOVE','ABUSE','ACTOR','ACUTE','ADMIT','ADOPT','ADULT','AFTER','AGAIN',
+    'AGENT','AGREE','AHEAD','ALARM','ALBUM','ALERT','ALIEN','ALIGN','ALIVE','ALLEY',
+    'ALLOW','ALONE','ALONG','ALTER','ANGEL','ANGER','ANGLE','ANGRY','ANIME','ANKLE',
+    'ANNEX','ANTIC','ANVIL','APART','APPLE','APPLY','ARENA','ARGUE','ARISE','ARMOR',
+    'ARRAY','AROSE','ARROW','ASHEN','ASSET','ATLAS','ATONE','ATTIC','AUDIO','AUDIT',
+    'AVAIL','AVOID','AWAKE','AWARD','AWARE','AWFUL','BADLY','BAKER','BASIC','BASIS',
+    'BATCH','BEACH','BEARD','BEAST','BEGAN','BEGIN','BEING','BELOW','BERRY','BIRTH',
+    'BISON','BITER','BLADE','BLAME','BLAND','BLANK','BLAST','BLAZE','BLEAK','BLEND',
+    'BLESS','BLISS','BLOCK','BLOOD','BLOOM','BLOWN','BOARD','BONUS','BOOST','BOOTH',
+    'BOUND','BRAIN','BRAND','BRAVE','BREAD','BREAK','BREED','BRICK','BRIEF','BRING',
+    'BROOK','BROTH','BROWN','BRUTE','BUILD','BUILT','BURST','BUYER','CABIN','CAMEL',
+    'CANDY','CARGO','CARRY','CATCH','CAUSE','CEASE','CHAIN','CHAIR','CHAOS','CHARM',
+    'CHART','CHASE','CHEAP','CHECK','CHEER','CHESS','CHEST','CHIEF','CHILD','CHILL',
+    'CHOIR','CIVIC','CIVIL','CLAIM','CLASH','CLASS','CLEAN','CLEAR','CLERK','CLICK',
+    'CLIFF','CLIMB','CLING','CLOSE','CLOTH','CLOUD','CLOWN','COACH','COAST','CORAL',
+    'COUNT','COURT','COVER','CRACK','CRAFT','CRASH','CRAZY','CREAM','CREEP','CRIME',
+    'CROSS','CROWD','CROWN','CRUEL','CRUSH','CURVE','CYCLE','DAILY','DANCE','DARES',
+    'DECOY','DELAY','DELTA','DEPTH','DEVIL','DISCO','DIZZY','DODGE','DOING','DOUBT',
+    'DOUGH','DRAFT','DRAIN','DRAPE','DRAWN','DREAD','DREAM','DRESS','DRIFT','DRINK',
+    'DRIVE','DROVE','DROWN','DWARF','EARLY','EARTH','EIGHT','ELITE','EMBER','EMPTY',
+    'ENEMY','ENJOY','ENTER','ENTRY','EQUAL','ERROR','EVENT','EXACT','EXIST','EXTRA',
+    'FABLE','FAINT','FAITH','FANCY','FAULT','FEAST','FENCE','FEVER','FIELD','FIEND',
+    'FIFTH','FIFTY','FIGHT','FINAL','FIRST','FIXED','FLARE','FLASH','FLASK','FLAIR',
+    'FLAME','FLANK','FLEET','FLESH','FLICK','FLOCK','FLOOD','FLOOR','FLUNG','FOCUS',
+    'FORCE','FORGE','FORTH','FORUM','FOUND','FRAME','FRESH','FRONT','FROST','FROZE',
+    'FRUIT','FULLY','FUNNY','GIANT','GIVEN','GLAND','GLOAM','GLOBE','GLOOMY','GLORY',
+    'GLOSS','GLYPH','GRACE','GRADE','GRAIN','GRAND','GRANT','GRASP','GRASS','GRAVE',
+    'GREAT','GREED','GREET','GRIND','GROAN','GROIN','GROUP','GROVE','GROWN','GUARD',
+    'GUESS','GUEST','GUIDE','GUILD','GUILE','GUILT','GUISE','GUSTO','HASTE','HAVEN',
+    'HEART','HEAVY','HENCE','HERBS','HORDE','HORNS','HORSE','HOTEL','HOUSE','HUMAN',
+    'HUMOR','HURRY','HYPER','IDEAL','IMAGE','IMPLY','INDEX','INNER','INPUT','IRONY',
+    'IVORY','JEWEL','JUDGE','JUICE','JUICY','KARMA','KINDA','KNEEL','KNIFE','KNOCK',
+    'KNOWN','LARGE','LASER','LATER','LAUGH','LAYER','LEARN','LEAVE','LEVEL','LIGHT',
+    'LIMIT','LINGO','LINKS','LOCAL','LODGE','LOGIC','LOSER','LOUSY','LOVER','LOWER',
+    'LUCID','LUCKY','MAGIC','MAJOR','MANOR','MAPLE','MARCH','MATCH','MAYBE','MEDAL',
+    'MEDIA','MERCY','MERGE','METAL','MIGHT','MINER','MINOR','MINUS','MIRTH','MIXED',
+    'MODEL','MONEY','MONTH','MORAL','MOUNT','MOUTH','MOVIE','MUDDY','MULTI','MUSIC',
+    'NAMED','NAVAL','NEVER','NIGHT','NINJA','NOBLE','NOISE','NORTH','NOTED','NOVEL',
+    'NURSE','OCCUR','OCEAN','OFFER','OFTEN','ORDER','OTHER','OUTER','OWNED','OWNER',
+    'OZONE','PAINT','PANIC','PAPER','PARTY','PATCH','PAUSE','PEACE','PERCH','PETTY',
+    'PHASE','PILOT','PINCH','PITCH','PIXEL','PIZZA','PLACE','PLAID','PLAIN','PLANE',
+    'PLANT','PLATE','PLAZA','PLEAD','PLUCK','POINT','POLAR','POWER','PRESS','PRICE',
+    'PRIDE','PRIME','PRINT','PRIZE','PROBE','PRONE','PROOF','PROVE','PULSE','PUNCH',
+    'PUPIL','PURGE','QUEEN','QUERY','QUEST','QUEUE','QUICK','QUIET','QUOTA','QUOTE',
+    'RADAR','RADIO','RAISE','RALLY','RANGE','RAPID','RATIO','REACH','READY','REALM',
+    'REBEL','REFER','REIGN','RELAX','REPAY','REPEL','REPOT','REUSE','RIDER','RIDGE',
+    'RIGID','RISEN','RISKY','RIVAL','RIVER','ROAST','ROBOT','ROCKY','ROGUE','ROUND',
+    'ROUTE','ROYAL','RULED','RULER','RURAL','SADLY','SAINT','SALON','SAUCE','SCALE',
+    'SCARE','SCENE','SCORE','SCOUT','SCRAP','SEIZE','SENSE','SERVE','SEVEN','SHADE',
+    'SHAKE','SHAME','SHAPE','SHARE','SHARP','SHEER','SHELF','SHELL','SHIFT','SHINE',
+    'SHOOT','SHORE','SHORT','SHOUT','SIEGE','SIGHT','SILLY','SINCE','SIXTH','SIXTY',
+    'SIZED','SKILL','SKULL','SKUNK','SLACK','SLAIN','SLANT','SLASH','SLEEK','SLEEP',
+    'SLIDE','SLIME','SMALL','SMART','SMELL','SMILE','SMOKE','SNAKE','SOLAR','SOLID',
+    'SOLVE','SORRY','SOUTH','SPACE','SPARE','SPEAK','SPEAR','SPEED','SPEND','SPICE',
+    'SPILL','SPINE','SPITE','SPOIL','SPOOK','SPOON','SPORT','SQUID','STACK','STAFF',
+    'STAGE','STAIN','STAKE','STALE','STALL','STAMP','STAND','START','STATE','STEEL',
+    'STEEP','STERN','STICK','STONE','STOOD','STORM','STORY','STOUT','STRAP','STRIP',
+    'STUCK','STUDY','STYLE','SURGE','SWAMP','SWEEP','SWEET','SWEPT','SWING','SWIPE',
+    'TABLE','TAKEN','TASTE','TEACH','TENSE','TERMS','THEIR','THERE','THESE','THICK',
+    'THING','THINK','THIRD','THOSE','THREW','THROW','TOTAL','TOUCH','TOUGH','TOWER',
+    'TOXIC','TRACE','TRACK','TRADE','TRAIL','TRAIN','TRAIT','TRAMP','TRASH','TREAD',
+    'TREND','TRIAL','TRIBE','TRICK','TRIED','TRITE','TROOP','TROVE','TRUCE','TRULY',
+    'TRUMP','TRUNK','TRUST','TRUTH','TULIP','TUNER','TWIRL','TWIST','UNIFY','UNION',
+    'UNITY','UNTIL','UPPER','UPSET','USHER','USUAL','UNTIL','UTTER','VALID','VALUE',
+    'VALVE','VAPOR','VAULT','VERSE','VIBES','VIOLA','VIRAL','VISTA','VITAL','VIVID',
+    'VOCAL','VOICE','VOTER','VOWED','WAKEN','WASTE','WATCH','WEARY','WEAVE','WEIRD',
+    'WHILE','WHITE','WHOLE','WIDER','WIELD','WITCH','WORLD','WORSE','WORST','WORTH',
+    'WOULD','WOUND','WRATH','WRITE','WRONG','YOUTH','ZEALOT','ZESTY'];
+  if(len===5&&common5.indexOf(lowerGuess)>=0)return true;
+  return false;
+}
+
+document.getElementById('startBtn').onclick=document.getElementById('startBtn').onclick=()=>{ov.style.display='none';startRound();};
     document.getElementById('customBtn2').onclick=()=>{ov.style.display='none';customPanel.style.display='flex';document.getElementById('cwInput').value='';document.getElementById('cwClue').value='';document.getElementById('cwError').textContent='';};
   },1800);
 }
@@ -504,81 +588,6 @@ document.getElementById('customBtn').onclick=()=>{customPanel.style.display='fle
 buildKB();
 })();
 </script>
-
-// ── MOBILE CONTROLS ──
-(function(){
-  var isMobile=('ontouchstart' in window)||navigator.maxTouchPoints>0;
-  var cfg={mobile:isMobile};
-  try{var s=JSON.parse(localStorage.getItem('gh_mob_'+location.pathname.split('/').pop())||'{}');if(typeof s.mobile==='boolean')cfg.mobile=s.mobile;}catch(e){}
-
-  function saveM(){try{localStorage.setItem('gh_mob_'+location.pathname.split('/').pop(),JSON.stringify(cfg));}catch(e){}}
-
-  // Expose toggle for settings panels
-  window.ghMobileEnabled=function(){return cfg.mobile;};
-  window.ghToggleMobile=function(on){cfg.mobile=on;saveM();applyMobile();};
-
-  function applyMobile(){
-    var el=document.getElementById('mobileCtrl');
-    if(!el)return;
-    if(cfg.mobile){el.classList.add('show');}
-    else{el.classList.remove('show');}
-  }
-
-  // Build control overlay once DOM is ready
-  function buildOverlay(){
-    if(document.getElementById('mobileCtrl'))return;
-    var div=document.createElement('div');div.id='mobileCtrl';
-    div.innerHTML=
-      '<div class="mc-dpad">'+
-        '<div class="mc-btn" id="mcUp">▲</div>'+
-        '<div class="mc-btn" id="mcDown">▼</div>'+
-        '<div class="mc-btn" id="mcLeft">◀</div>'+
-        '<div class="mc-btn" id="mcRight">▶</div>'+
-      '</div>'+
-      '<div class="mc-actions">'+
-        '<div class="mc-btn" id="mcAction1">🅰</div>'+
-        '<div class="mc-btn" id="mcAction2">🅱</div>'+
-        '<div class="mc-btn" id="mcAction3">✕</div>'+
-      '</div>';
-    document.body.appendChild(div);
-    applyMobile();
-
-    // Wire touch → key events
-    function touch(id,downKey,upKey){
-      var el=document.getElementById(id);if(!el)return;
-      function dn(e){e.preventDefault();if(downKey)document.dispatchEvent(new KeyboardEvent('keydown',{key:downKey,bubbles:true}));if(window.ghMcTap)window.ghMcTap(id);}
-      function up(e){e.preventDefault();if(upKey!==undefined)document.dispatchEvent(new KeyboardEvent('keyup',{key:upKey!==null?upKey:downKey,bubbles:true}));}
-      el.addEventListener('touchstart',dn,{passive:false});
-      el.addEventListener('touchend',up,{passive:false});
-      el.addEventListener('mousedown',dn);el.addEventListener('mouseup',up);
-    }
-    touch('mcUp','ArrowUp','ArrowUp');
-    touch('mcDown','ArrowDown','ArrowDown');
-    touch('mcLeft','ArrowLeft','ArrowLeft');
-    touch('mcRight','ArrowRight','ArrowRight');
-    // Action buttons — game overrides via window.ghMcTap(id)
-    touch('mcAction1',' ',' ');   // default: Space = fire/jump
-    touch('mcAction2','r','r');    // default: r = reload/restart
-    touch('mcAction3','Escape',null); // default: Esc = pause
-  }
-
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',buildOverlay);}
-  else{buildOverlay();}
-})();
-
-
-  <!-- Floating settings -->
-  <button id="floatSettings" onclick="document.getElementById('floatSettingsPanel').style.display=document.getElementById('floatSettingsPanel').style.display==='block'?'none':'block'">⚙</button>
-  <div id="floatSettingsPanel">
-    <h3>⚙ SETTINGS</h3>
-    <div class="fs-row"><span>MOBILE CONTROLS</span><div class="pill" id="t-mobile" onclick="(function(){var on=!window.ghMobileEnabled();window.ghToggleMobile(on);document.getElementById('t-mobile').classList.toggle('on',on);})()"></div></div>
-    <div class="fs-row"><span>NEON GLOW</span><div class="pill on" id="fsGlow" onclick="(function(){var p=document.getElementById('fsGlow');p.classList.toggle('on');})()"></div></div>
-    <button onclick="document.getElementById('floatSettingsPanel').style.display='none'">✓ DONE</button>
-  </div>
-  <script>
-  // Init float settings mobile pill
-  (function(){setTimeout(function(){var p=document.getElementById('t-mobile');if(p&&window.ghMobileEnabled)p.classList.toggle('on',window.ghMobileEnabled());},200);})();
-  </script>
 
 </body>
 </html>
