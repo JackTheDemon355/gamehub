@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="icon" href="https://raw.githubusercontent.com/JackTheDemon355/gamehub/refs/heads/main/favicon.ico" type="image/x-icon">
+<link rel="shortcut icon" href="https://uploads.onecompiler.io/44md3ywr8/1790746237660/favicon%20(1).ico" type="image/x-icon">
+<title>UNSUBSCRIBE — GAME HUB</title>
+<style>
+:root{--bg:#03030c;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;color:#fff;
+  background-image:radial-gradient(ellipse at 30% 0%,#0a0a2e,transparent 55%),radial-gradient(ellipse at 80% 100%,#0a001a,transparent 55%);}
+body{display:flex;align-items:center;justify-content:center;padding:20px;}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,255,242,.02) 0,rgba(0,255,242,.02) 1px,transparent 1px,transparent 4px);}
+.card{position:relative;z-index:1;width:min(460px,100%);background:rgba(255,255,255,.03);border:1px solid rgba(0,255,242,.2);border-radius:14px;padding:28px 26px;text-align:center;box-shadow:0 0 40px rgba(0,255,242,.06);}
+h1{font-size:clamp(20px,5vw,28px);letter-spacing:6px;color:var(--cyan);text-shadow:0 0 12px var(--cyan);}
+.sub{font-size:10px;letter-spacing:4px;color:var(--mag);margin:6px 0 18px;}
+p{font-size:13px;color:var(--sub);line-height:1.8;margin:8px 0;}
+input{width:100%;background:rgba(0,0,0,.55);border:2px solid rgba(0,255,242,.3);color:#fff;padding:12px 14px;font-family:inherit;font-size:15px;border-radius:6px;outline:none;margin:10px 0 4px;text-align:center;}
+input:focus{border-color:var(--cyan);}
+button{cursor:pointer;width:100%;background:transparent;border:2px solid var(--yellow);color:var(--yellow);padding:12px;font-family:inherit;font-size:13px;letter-spacing:3px;border-radius:5px;margin-top:8px;}
+button:hover:not(:disabled){background:var(--yellow);color:#000;}
+button:disabled{opacity:.4;cursor:not-allowed;}
+#msg{min-height:44px;margin-top:14px;font-size:13px;line-height:1.7;letter-spacing:1px;}
+.ok{color:var(--green);}.err{color:var(--red);}.info{color:var(--cyan);}
+a.link{display:inline-block;margin-top:16px;color:var(--cyan);font-size:11px;letter-spacing:2px;text-decoration:none;}
+.hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>UNSUBSCRIBE</h1>
+  <div class="sub">GAME HUB NEWSLETTER</div>
+
+  <div id="autoBox" class="hidden"><p id="autoMsg" class="info">Unsubscribing…</p></div>
+
+  <div id="formBox">
+    <p>Enter the email address you signed up with and we'll stop sending you new-game emails.</p>
+    <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" maxlength="254">
+    <button id="btn">🔕 UNSUBSCRIBE ME</button>
+  </div>
+  <div id="msg"></div>
+  <a class="link" href="index.html">◄ BACK TO GAME HUB</a>
+</div>
+
+<script>
+const SB_URL='https://rxdkdylcfspmiljicwdd.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4ZGtkeWxjZnNwbWlsamljd2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNjQxMDAsImV4cCI6MjEwNTk0MDEwMH0.ifhyyUye28DlGEOcScRDz5lpFW_1soXjzPaS1PrMxmU';
+const $=id=>document.getElementById(id);
+
+async function rpc(fn,args){
+  const r=await fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify(args)});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+function show(text,cls){const m=$('msg');m.textContent=text;m.className=cls||'';}
+
+// One-click link from an email: unsubscribe.html?t=<token>
+const token=new URLSearchParams(location.search).get('t');
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+if(token&&UUID.test(token)){
+  $('autoBox').classList.remove('hidden');$('formBox').classList.add('hidden');
+  rpc('unsubscribe_by_token',{p_token:token}).then(res=>{
+    $('autoMsg').className='ok';
+    $('autoMsg').textContent=res==='ok'?'✓ You have been unsubscribed. No more emails from Game Hub.':'✓ You were already unsubscribed.';
+  }).catch(()=>{
+    $('autoMsg').className='err';$('autoMsg').textContent='Something went wrong. Please enter your email below instead.';
+    $('formBox').classList.remove('hidden');
+  });
+}
+
+$('btn').addEventListener('click',async()=>{
+  const email=$('email').value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){show('Please enter a valid email address.','err');return;}
+  $('btn').disabled=true;show('Working…','info');
+  try{
+    await rpc('unsubscribe_by_email',{p_email:email});
+    show('✓ Done. If that address was subscribed, it will not get any more emails.','ok');
+  }catch(e){
+    show('Could not reach the server. Please try again in a moment.','err');
+  }
+  $('btn').disabled=false;
+});
+$('email').addEventListener('keydown',e=>{if(e.key==='Enter')$('btn').click();});
+</script>
+</body>
+</html>
