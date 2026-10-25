@@ -251,7 +251,10 @@ async function signOut(){
   msg('Signed out.','info');
 }
 
-function goToHub(){window.location.href='index.html';}
+function goToHub(){// Check if came from Stripe payment or pro page
+const urlParams=new URLSearchParams(window.location.search);
+const fromPayment=urlParams.get('from')==='payment'||document.referrer.includes('stripe.com')||document.referrer.includes('buy.stripe.com');
+window.location.href=fromPayment?'pro.html?payment=success':'index.html';}
 
 // Count localStorage save slots
 function countSaves(){
@@ -297,15 +300,14 @@ async function showLoggedIn(user){
 sb.auth.onAuthStateChange(async(event,session)=>{
   if(session?.user){
     await showLoggedIn(session.user);
-    // Upsert profile row
+    // Refresh display name / avatar only. The signup trigger creates the row,
+    // and is_pro can only be changed by the Stripe webhook (service role).
     try{
-      await sb.from('profiles').upsert({
-        id:session.user.id,
-        email:session.user.email?.toLowerCase(),
+      await sb.from('profiles').update({
         display_name:session.user.user_metadata?.display_name||session.user.user_metadata?.full_name||session.user.email.split('@')[0],
         avatar_url:session.user.user_metadata?.avatar_url||session.user.user_metadata?.picture||null,
         updated_at:new Date().toISOString()
-      },{onConflict:'id'});
+      }).eq('id',session.user.id);
     }catch(e){}
   }
 });
