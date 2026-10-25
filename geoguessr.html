@@ -72,30 +72,16 @@ html,body{height:100%;background:var(--bg);font-family:'Consolas','Courier New',
 #scoreTotal{position:absolute;top:14px;right:18px;z-index:50;font-size:13px;letter-spacing:2px;
   background:rgba(0,0,0,.6);padding:8px 14px;border-radius:6px;border:1px solid rgba(0,255,242,.15);}
 
-  /* ── MOBILE CONTROLS (toggle in settings) ── */
-  #mobileCtrl{display:none;position:fixed;inset:0;pointer-events:none;z-index:50;}
-  #mobileCtrl.show{display:block;}
-  .mc-btn{position:absolute;pointer-events:auto;background:rgba(0,0,0,.45);
-    border-radius:50%;display:flex;align-items:center;justify-content:center;
-    font-size:22px;color:rgba(255,255,255,.8);border:2px solid rgba(255,255,255,.25);
-    -webkit-tap-highlight-color:transparent;user-select:none;}
-  .mc-btn:active{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.6);}
-  .mc-dpad{position:absolute;bottom:20px;left:18px;}
-  .mc-dpad .mc-btn{width:52px;height:52px;}
-  .mc-dpad #mcUp   {bottom:110px;left:54px;}
-  .mc-dpad #mcDown {bottom:4px;  left:54px;}
-  .mc-dpad #mcLeft {bottom:57px; left:0;}
-  .mc-dpad #mcRight{bottom:57px; left:108px;}
-  .mc-actions{position:absolute;bottom:20px;right:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
-  .mc-actions .mc-btn{width:56px;height:56px;}
-  #mcAction1{background:rgba(0,255,242,.18);border-color:rgba(0,255,242,.5);}
-  #mcAction2{background:rgba(255,47,208,.18);border-color:rgba(255,47,208,.5);}
-  #mcAction3{background:rgba(255,230,0,.18);border-color:rgba(255,230,0,.5);}
-  .mc-detect-msg{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);
-    font-family:Consolas,monospace;font-size:11px;letter-spacing:2px;color:rgba(0,255,242,.7);
-    pointer-events:none;opacity:0;transition:opacity .5s;}
+#sceneWrap.pano{cursor:grab;}#sceneWrap.pano:active{cursor:grabbing;}
+#srcBadge{position:absolute;left:18px;bottom:14px;z-index:15;font-size:10px;letter-spacing:1px;color:rgba(255,255,255,.7);
+  background:rgba(0,0,0,.6);padding:6px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.12);max-width:60vw;}
+#srcBadge a{color:var(--cyan);text-decoration:none;}
+#loadMsg{position:absolute;inset:0;z-index:12;display:none;align-items:center;justify-content:center;background:rgba(3,3,10,.85);
+  color:var(--cyan);font-size:15px;letter-spacing:5px;animation:flicker 1.4s infinite;}
+.srcBtn{cursor:pointer;background:transparent;border:2px solid #555;color:#999;padding:9px 16px;font-family:inherit;font-size:12px;letter-spacing:2px;border-radius:4px;margin:4px;}
+.srcBtn.on{border-color:var(--green);color:var(--green);}
 
-</style>
+  </style>
 </head>
 <body>
 <div id="wrap">
@@ -110,6 +96,8 @@ html,body{height:100%;background:var(--bg);font-family:'Consolas','Courier New',
   </div>
   <div id="scoreTotal"><span class="lbl">TOTAL </span><span class="val" id="totalEl">0</span><span class="lbl"> PTS</span></div>
   <a id="back" href="index.html">◄ HUB</a>
+  <div id="srcBadge"></div>
+  <div id="loadMsg">📷 FINDING A STREET PHOTO…</div>
 
   <!-- Map panel -->
   <div id="mapPanel">
@@ -138,12 +126,13 @@ html,body{height:100%;background:var(--bg);font-family:'Consolas','Courier New',
   <div id="startOv">
     <h1>GEOGUESSR</h1>
     <h2>◄ FIND YOUR LOCATION ►</h2>
-    <p>You'll see a generated world scene. Click the map to drop your guess. Closer = more points!</p>
+    <p>Look at the photo, then click the world map to guess where it was taken. Closer = more points!</p>
+    <div id="srcRow"><button class="srcBtn on" data-src="street">📷 STREET PHOTOS</button><button class="srcBtn" data-src="landmark">🏛 LANDMARKS</button></div>
     <p style="margin-top:8px;font-size:11px;color:#445">5 rounds · 60 seconds per round · 5000 points max each</p>
     <button class="sbtn" id="startBtn">▶ START GAME</button>
-    <p style="margin-top:16px;font-size:11px;color:#334">
-      Note: Uses landmark images from Wikipedia. Real Street View requires a Google Maps API key (paid).<br>
-      You can add your own images — see README.
+    <p style="margin-top:14px;font-size:11px;color:#445;max-width:460px;line-height:1.7">
+      Street photos come from <a href="https://kartaview.org" target="ghExt" style="color:var(--cyan)">KartaView</a> (crowdsourced, CC BY-SA).
+      Coverage is patchy, so a round may use a famous landmark photo instead.
     </p>
     <a href="index.html" style="color:var(--cyan);font-size:11px;letter-spacing:2px;margin-top:12px;text-decoration:none;">◄ BACK TO HUB</a>
   </div>
@@ -405,34 +394,181 @@ function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.ra
 
 function startGame(){
   document.getElementById('startOv').style.display='none';
-  totalScore=0;round=0;usedIdxs=[];
+  totalScore=0;round=0;usedIdxs=[];kvUsed=new Set();kvDown=false;
   roundOrder=shuffle([...Array(LOCATIONS.length).keys()]).slice(0,5);
   document.getElementById('totalEl').textContent=0;
   nextRound();
 }
 
-function nextRound(){
-  document.getElementById('resultOv').style.display='none';
-  guessPin=null;
-  document.getElementById('guessBtn').disabled=true;
-  if(round>=5){gameEnd();return;}
-  const loc=LOCATIONS[roundOrder[round]];
-  round++;
-  document.getElementById('roundEl').textContent=round;
-  gameRunning=true;
-  // Load image
+// ── KARTAVIEW STREET PHOTOS ──────────────────────────────
+// Keyless v1 endpoint (POST form lat/lng/radius). Imagery © KartaView contributors, CC BY-SA.
+// If KartaView can't be reached (network/CORS) or has no photo nearby, the round
+// quietly falls back to a landmark photo, so a round never fails.
+const KV_API='https://api.openstreetcam.org/';
+const KV_POOL=[ // [lat,lng,label] — search centres; the ANSWER is the photo's own coordinates
+ [52.3676,4.9041,'Amsterdam, Netherlands'],[51.9244,4.4777,'Rotterdam, Netherlands'],[52.52,13.405,'Berlin, Germany'],
+ [48.1351,11.582,'Munich, Germany'],[53.5511,9.9937,'Hamburg, Germany'],[48.8566,2.3522,'Paris, France'],
+ [45.764,4.8357,'Lyon, France'],[40.4168,-3.7038,'Madrid, Spain'],[41.3874,2.1686,'Barcelona, Spain'],
+ [38.7223,-9.1393,'Lisbon, Portugal'],[41.9028,12.4964,'Rome, Italy'],[45.4642,9.19,'Milan, Italy'],
+ [48.2082,16.3738,'Vienna, Austria'],[50.0755,14.4378,'Prague, Czechia'],[52.2297,21.0122,'Warsaw, Poland'],
+ [50.0647,19.945,'Krakow, Poland'],[47.4979,19.0402,'Budapest, Hungary'],[44.4268,26.1025,'Bucharest, Romania'],
+ [42.6977,23.3219,'Sofia, Bulgaria'],[37.9838,23.7275,'Athens, Greece'],[59.3293,18.0686,'Stockholm, Sweden'],
+ [59.9139,10.7522,'Oslo, Norway'],[55.6761,12.5683,'Copenhagen, Denmark'],[60.1699,24.9384,'Helsinki, Finland'],
+ [53.3498,-6.2603,'Dublin, Ireland'],[51.5072,-0.1276,'London, UK'],[53.4808,-2.2426,'Manchester, UK'],
+ [45.815,15.9819,'Zagreb, Croatia'],[44.7866,20.4489,'Belgrade, Serbia'],[50.4501,30.5234,'Kyiv, Ukraine'],
+ [40.7128,-74.006,'New York, USA'],[41.8781,-87.6298,'Chicago, USA'],[29.7604,-95.3698,'Houston, USA'],
+ [34.0522,-118.2437,'Los Angeles, USA'],[37.7749,-122.4194,'San Francisco, USA'],[47.6062,-122.3321,'Seattle, USA'],
+ [43.6532,-79.3832,'Toronto, Canada'],[49.2827,-123.1207,'Vancouver, Canada'],[19.4326,-99.1332,'Mexico City, Mexico'],
+ [4.711,-74.0721,'Bogotá, Colombia'],[-23.5505,-46.6333,'São Paulo, Brazil'],[-34.6037,-58.3816,'Buenos Aires, Argentina'],
+ [-33.4489,-70.6693,'Santiago, Chile'],[-12.0464,-77.0428,'Lima, Peru'],[35.6762,139.6503,'Tokyo, Japan'],
+ [37.5665,126.978,'Seoul, South Korea'],[13.7563,100.5018,'Bangkok, Thailand'],[3.139,101.6869,'Kuala Lumpur, Malaysia'],
+ [-6.2088,106.8456,'Jakarta, Indonesia'],[14.5995,120.9842,'Manila, Philippines'],[10.8231,106.6297,'Ho Chi Minh City, Vietnam'],
+ [1.3521,103.8198,'Singapore'],[21.0278,105.8342,'Hanoi, Vietnam'],[19.076,72.8777,'Mumbai, India'],
+ [28.6139,77.209,'Delhi, India'],[-33.9249,18.4241,'Cape Town, South Africa'],[-1.2921,36.8219,'Nairobi, Kenya'],
+ [6.5244,3.3792,'Lagos, Nigeria'],[30.0444,31.2357,'Cairo, Egypt'],[-33.8688,151.2093,'Sydney, Australia'],
+ [-37.8136,144.9631,'Melbourne, Australia'],[-31.9505,115.8605,'Perth, Australia'],[-36.8485,174.7633,'Auckland, New Zealand']
+];
+let srcMode='street',kvDown=false,kvUsed=new Set(),current=null;
+try{const s=localStorage.getItem('geo_src');if(s==='street'||s==='landmark')srcMode=s;}catch(e){}
+
+function kvPath(p){
+  if(!p)return null;
+  p=String(p);
+  if(/^https?:/i.test(p))return p.replace(/^http:/i,'https:');
+  return KV_API+p.replace(/^\/+/,'');
+}
+// The response wrapper isn't documented for v1, so find the photo list wherever it lives.
+function kvFindPhotos(o,depth){
+  depth=depth||0;if(depth>5||o==null)return null;
+  if(Array.isArray(o)){
+    if(o.length&&o.some(x=>x&&typeof x==='object'&&'lat' in x&&('lng' in x||'lon' in x)))return o;
+    for(const x of o){const r=kvFindPhotos(x,depth+1);if(r)return r;}
+    return null;
+  }
+  if(typeof o==='object'){for(const k of Object.keys(o)){const r=kvFindPhotos(o[k],depth+1);if(r)return r;}}
+  return null;
+}
+function kvNormalize(p){
+  if(!p||typeof p!=='object')return null;
+  const lat=parseFloat(p.lat),lon=parseFloat(p.lng!==undefined?p.lng:p.lon);
+  if(!isFinite(lat)||!isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180||(lat===0&&lon===0))return null;
+  const urls=[p.lth_name,p.fileurlLTh,p.name,p.fileurlProc,p.th_name,p.fileurlTh].map(kvPath).filter(Boolean);
+  if(!urls.length)return null;
+  const proj=String(p.projection||'').toUpperCase();
+  return{lat,lon,urls:[...new Set(urls)],sphere:proj==='SPHERE'||proj==='EQUIRECTANGULAR'||proj==='360',date:String(p.shot_date||p.shotDate||'').slice(0,10)};
+}
+async function kvNearby(lat,lng,radius){
+  const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),7000);
+  try{
+    const r=await fetch(KV_API+'1.0/list/nearby-photos/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'lat='+lat+'&lng='+lng+'&radius='+radius,signal:ctrl.signal});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return kvFindPhotos(await r.json())||[];
+  }finally{clearTimeout(t);}
+}
+function loadImgAny(urls){
+  return new Promise(resolve=>{
+    let i=0;
+    (function tryNext(){
+      if(i>=urls.length)return resolve(null);
+      const url=urls[i++],img=new Image(),timer=setTimeout(()=>{img.onload=img.onerror=null;tryNext();},9000);
+      img.onload=()=>{clearTimeout(timer);(img.naturalWidth>=300)?resolve({url,w:img.naturalWidth,h:img.naturalHeight}):tryNext();};
+      img.onerror=()=>{clearTimeout(timer);tryNext();};
+      img.src=url;
+    })();
+  });
+}
+async function findStreetRound(){
+  const pool=shuffle([...KV_POOL.keys()].filter(i=>!kvUsed.has(i)));
+  for(let b=0;b<2;b++){                                   // up to 2 batches of 3 places, searched in parallel
+    const batch=pool.slice(b*3,b*3+3);if(!batch.length)break;
+    let netFail=0;
+    const results=await Promise.all(batch.map(async i=>{
+      const [lat,lng,name]=KV_POOL[i];
+      for(const rad of [1500,6000]){
+        try{
+          const cands=(await kvNearby(lat,lng,rad)).map(kvNormalize).filter(Boolean);
+          if(cands.length)return{i,name,cands};
+        }catch(e){netFail++;console.warn('[KartaView]',e&&e.message?e.message:e);return null;}
+      }
+      return null;
+    }));
+    for(const r of results){
+      if(!r)continue;
+      shuffle(r.cands);
+      for(const c of r.cands.slice(0,3)){
+        const img=await loadImgAny(c.urls);
+        if(img){kvUsed.add(r.i);return Object.assign({},c,{name:r.name,img});}
+      }
+    }
+    if(netFail>=batch.length){kvDown=true;break;}        // every request failed → KartaView unreachable this session
+  }
+  return null;
+}
+
+// ── scene display ──
+let panX=0,dragging=false,dragX=0;
+const sceneWrap=document.getElementById('sceneWrap');
+function applyPan(){sceneWrap.style.backgroundPosition=panX+'px 50%';}
+sceneWrap.addEventListener('pointerdown',e=>{if(!sceneWrap.classList.contains('pano'))return;dragging=true;dragX=e.clientX;try{sceneWrap.setPointerCapture(e.pointerId);}catch(_){}});
+sceneWrap.addEventListener('pointermove',e=>{if(!dragging)return;panX+=e.clientX-dragX;dragX=e.clientX;applyPan();});
+['pointerup','pointercancel'].forEach(t=>sceneWrap.addEventListener(t,()=>{dragging=false;}));
+function setBadge(html){document.getElementById('srcBadge').innerHTML=html;}
+function showStreet(f){
+  document.getElementById('scenePan').style.display='none';
+  sceneWrap.style.backgroundImage='url("'+f.img.url+'")';
+  sceneWrap.style.backgroundRepeat=f.sphere?'repeat-x':'no-repeat';
+  sceneWrap.style.backgroundSize=f.sphere?'auto 100%':'cover';
+  sceneWrap.classList.toggle('pano',!!f.sphere);
+  panX=0;applyPan();
+  document.getElementById('panHint').style.display=f.sphere?'block':'none';
+  setBadge('📷 <a href="https://kartaview.org" target="ghExt">KartaView</a> · © contributors · CC BY-SA');
+}
+function showLandmark(loc,why){
+  sceneWrap.classList.remove('pano');panX=0;
+  sceneWrap.style.backgroundRepeat='no-repeat';
+  document.getElementById('panHint').style.display='none';
+  setBadge('🏛 Landmark photo'+(why?' · '+why:''));
   const img=new Image();img.crossOrigin='anonymous';
   img.onload=function(){
-    const pv=document.getElementById('sceneWrap');
-    pv.style.backgroundImage='url('+loc.img+')';
-    pv.style.backgroundSize='cover';pv.style.backgroundPosition='center';
+    sceneWrap.style.backgroundImage='url('+loc.img+')';
+    sceneWrap.style.backgroundSize='cover';sceneWrap.style.backgroundPosition='center';
     document.getElementById('scenePan').style.display='none';
   };
   img.onerror=function(){
+    sceneWrap.style.backgroundImage='none';
     document.getElementById('scenePan').style.display='block';
     drawPlaceholder(loc);
   };
   img.src=loc.img;
+}
+
+async function nextRound(){
+  document.getElementById('resultOv').style.display='none';
+  guessPin=null;
+  document.getElementById('guessBtn').disabled=true;
+  if(round>=5){gameEnd();return;}
+  const lm=LOCATIONS[roundOrder[round]];
+  round++;
+  document.getElementById('roundEl').textContent=round;
+  gameRunning=false;                                      // map clicks ignored while the photo loads
+  let found=null,why='';
+  if(srcMode==='street'){
+    if(kvDown)why='KartaView unreachable';
+    else{
+      document.getElementById('loadMsg').style.display='flex';
+      try{found=await findStreetRound();}catch(e){console.warn('[KartaView]',e);}
+      document.getElementById('loadMsg').style.display='none';
+      if(!found)why=kvDown?'KartaView unreachable':'no street photo nearby';
+    }
+  }
+  if(found){
+    current={name:'Near '+found.name,lat:found.lat,lon:found.lon,source:'street',date:found.date};
+    showStreet(found);
+  }else{
+    current={name:lm.name,lat:lm.lat,lon:lm.lon,source:'landmark'};
+    showLandmark(lm,srcMode==='street'?why:'');
+  }
+  gameRunning=true;
   drawMap();
   startTimer();
 }
@@ -466,9 +602,10 @@ function haversine(lat1,lon1,lat2,lon2){
 }
 
 function submitGuess(){
+  if(!gameRunning||!current)return;   // ignore while a photo is loading / after already submitted
   if(!guessPin)guessPin={lat:0,lon:0};
   clearInterval(timerInt);gameRunning=false;
-  const loc=LOCATIONS[roundOrder[round-1]];
+  const loc=current;
   const distKm=Math.round(haversine(guessPin.lat,guessPin.lon,loc.lat,loc.lon));
   // Score: 5000 for <1km, linear falloff to 0 at 10000km
   const pts=Math.max(0,Math.round(5000*Math.max(0,1-distKm/10000)));
@@ -481,7 +618,7 @@ function submitGuess(){
   document.getElementById('resultTitle').textContent=round<5?'ROUND '+round+' RESULT':'FINAL ROUND!';
   document.getElementById('resultPts').textContent='+'+pts.toLocaleString()+' pts';
   document.getElementById('resultDist').textContent=distKm.toLocaleString()+' km from the answer';
-  document.getElementById('resultLoc').textContent='📍 '+loc.name;
+  document.getElementById('resultLoc').textContent='📍 '+loc.name+(loc.source==='street'?'  ·  '+loc.lat.toFixed(3)+', '+loc.lon.toFixed(3)+(loc.date?'  ·  photo '+loc.date:''):'');
   document.getElementById('nextRoundBtn').textContent=round>=5?'🏆 SEE FINAL SCORE':'▶ NEXT ROUND';
 
   // Draw result map
@@ -515,70 +652,14 @@ function gameEnd(){
   try{const hi=Math.max(totalScore,parseInt(localStorage.getItem('geo_hi')||'0'));localStorage.setItem('geo_hi',hi);}catch(e){}
 }
 
+document.querySelectorAll('.srcBtn').forEach(b=>{
+  b.classList.toggle('on',b.dataset.src===srcMode);
+  b.addEventListener('click',()=>{srcMode=b.dataset.src;try{localStorage.setItem('geo_src',srcMode);}catch(e){}
+    document.querySelectorAll('.srcBtn').forEach(x=>x.classList.toggle('on',x===b));});
+});
 document.getElementById('startBtn').onclick=startGame;
 drawMap();
 </script>
-
-// ── MOBILE CONTROLS ──
-(function(){
-  var isMobile=('ontouchstart' in window)||navigator.maxTouchPoints>0;
-  var cfg={mobile:isMobile};
-  try{var s=JSON.parse(localStorage.getItem('gh_mob_'+location.pathname.split('/').pop())||'{}');if(typeof s.mobile==='boolean')cfg.mobile=s.mobile;}catch(e){}
-
-  function saveM(){try{localStorage.setItem('gh_mob_'+location.pathname.split('/').pop(),JSON.stringify(cfg));}catch(e){}}
-
-  // Expose toggle for settings panels
-  window.ghMobileEnabled=function(){return cfg.mobile;};
-  window.ghToggleMobile=function(on){cfg.mobile=on;saveM();applyMobile();};
-
-  function applyMobile(){
-    var el=document.getElementById('mobileCtrl');
-    if(!el)return;
-    if(cfg.mobile){el.classList.add('show');}
-    else{el.classList.remove('show');}
-  }
-
-  // Build control overlay once DOM is ready
-  function buildOverlay(){
-    if(document.getElementById('mobileCtrl'))return;
-    var div=document.createElement('div');div.id='mobileCtrl';
-    div.innerHTML=
-      '<div class="mc-dpad">'+
-        '<div class="mc-btn" id="mcUp">▲</div>'+
-        '<div class="mc-btn" id="mcDown">▼</div>'+
-        '<div class="mc-btn" id="mcLeft">◀</div>'+
-        '<div class="mc-btn" id="mcRight">▶</div>'+
-      '</div>'+
-      '<div class="mc-actions">'+
-        '<div class="mc-btn" id="mcAction1">🅰</div>'+
-        '<div class="mc-btn" id="mcAction2">🅱</div>'+
-        '<div class="mc-btn" id="mcAction3">✕</div>'+
-      '</div>';
-    document.body.appendChild(div);
-    applyMobile();
-
-    // Wire touch → key events
-    function touch(id,downKey,upKey){
-      var el=document.getElementById(id);if(!el)return;
-      function dn(e){e.preventDefault();if(downKey)document.dispatchEvent(new KeyboardEvent('keydown',{key:downKey,bubbles:true}));if(window.ghMcTap)window.ghMcTap(id);}
-      function up(e){e.preventDefault();if(upKey!==undefined)document.dispatchEvent(new KeyboardEvent('keyup',{key:upKey!==null?upKey:downKey,bubbles:true}));}
-      el.addEventListener('touchstart',dn,{passive:false});
-      el.addEventListener('touchend',up,{passive:false});
-      el.addEventListener('mousedown',dn);el.addEventListener('mouseup',up);
-    }
-    touch('mcUp','ArrowUp','ArrowUp');
-    touch('mcDown','ArrowDown','ArrowDown');
-    touch('mcLeft','ArrowLeft','ArrowLeft');
-    touch('mcRight','ArrowRight','ArrowRight');
-    // Action buttons — game overrides via window.ghMcTap(id)
-    touch('mcAction1',' ',' ');   // default: Space = fire/jump
-    touch('mcAction2','r','r');    // default: r = reload/restart
-    touch('mcAction3','Escape',null); // default: Esc = pause
-  }
-
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',buildOverlay);}
-  else{buildOverlay();}
-})();
 
 </body>
 </html>
