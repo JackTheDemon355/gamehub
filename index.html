@@ -165,6 +165,7 @@
     <button class="flt" data-cat="puzzle" onclick="setFilter(this)">PUZZLE</button>
     <button class="flt" data-cat="arcade" onclick="setFilter(this)">ARCADE</button>
     <button class="flt" data-cat="word" onclick="setFilter(this)">WORD</button>
+    <button class="flt" data-cat="creative" onclick="setFilter(this)">CREATIVE</button>
     <button class="flt" data-cat="idle" onclick="setFilter(this)">IDLE</button>
     <button class="flt" data-cat="strategy" onclick="setFilter(this)">STRATEGY</button>
   </div>
@@ -178,9 +179,10 @@
   <input id="nlEmail" type="email" placeholder="your@email.com">
   <button id="nlBtn" onclick="subscribeNL()">▶ SUBSCRIBE</button>
   <div id="nlMsg">✓ You're subscribed! We'll email you when new games are added.</div>
+  <div style="flex-basis:100%;width:100%;text-align:center;font-size:10px;letter-spacing:1px;color:#556">Only new-game emails · <a href="unsubscribe.html" style="color:var(--cyan)">unsubscribe any time</a></div>
 </div>
 
-<div class="sec-lbl" id="secLbl">— 19 GAMES AVAILABLE —</div>
+<div class="sec-lbl" id="secLbl">— 28 GAMES AVAILABLE —</div>
 <div id="grid">
 
   <a class="card" href="neonrunner.html" style="--c:var(--green)" data-cat="action" data-name="neon runner platformer jump wall">
@@ -314,15 +316,85 @@
     <span class="badge">COMBO</span><span class="badge">POWER METER</span><span class="badge">LEVELS</span><br><span class="play">▶ PLAY</span>
   </a>
 
-  <a class="card new-card" href="ballcourse.html" style="--c:var(--cyan)" data-cat="arcade" data-name="ball course roll obstacle jump spring coin platformer">
-    <span class="tag">NEW</span><span class="icon">⚽</span>
-    <h2>BALL COURSE</h2>
-    <p>Roll a glowing ball through 15 obstacle courses. Jump, bounce on springs, collect coins. Beat your best time! From Peter.</p>
-    <span class="badge">15 LEVELS</span><span class="badge">SPRINGS</span><span class="badge">BEST TIME</span>
+  <a class="card new-card" href="slidepuzzle.html" style="--c:var(--purple)" data-cat="puzzle" data-name="slide puzzle 15 tile number sliding brain teaser">
+    <span class="tag">NEW</span><span class="icon">🔢</span>
+    <h2>SLIDE PUZZLE</h2>
+    <p>Neon 15-puzzle. Choose 3×3, 4×4, 5×5 or 6×6. Click tiles to slide them. Arrow keys work too. Race the clock — beat your best time!</p>
+    <span class="badge">4 SIZES</span><span class="badge">BEST TIMES</span><span class="badge">KEYBOARD</span>
     <br><span class="play">▶ PLAY</span>
   </a>
 
-  <a class="card new-card" href="guessthelogo.html" style="--c:var(--yellow)" data-cat="puzzle" data-name="guess logo brand recognition blurry timer hints categories">
+  <a class="card new-card" href="minesweeper.html" style="--c:var(--red)" data-cat="puzzle" data-name="neon mines minesweeper bombs flag logic classic">
+    <span class="tag">NEW</span><span class="icon">💣</span>
+    <h2>NEON MINES</h2>
+    <p>Classic Minesweeper with neon style. Easy, Medium and Hard boards, safe first click, chord-clearing, best times. Long-press or Flag Mode on phones.</p>
+    <span class="badge">3 LEVELS</span><span class="badge">BEST TIMES</span><span class="badge">TOUCH FLAGS</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card new-card" href="neonflap.html" style="--c:var(--yellow)" data-cat="arcade" data-name="neon flap flappy bird one tap pipes fly gap endless">
+    <span class="tag">NEW</span><span class="icon">🐦</span>
+    <h2>NEON FLAP</h2>
+    <p>One-tap arcade. Flap through glowing pipes that get tighter the further you go. Tap, click or Space. Medals at 10, 20 and 40!</p>
+    <span class="badge">ONE TAP</span><span class="badge">ENDLESS</span><span class="badge">MEDALS</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card new-card" href="neon2048.html" style="--c:var(--mag)" data-cat="puzzle" data-name="neon 2048 merge tiles number slide swipe">
+    <span class="tag">NEW</span><span class="icon">🔷</span>
+    <h2>NEON 2048</h2>
+    <p>Slide and merge glowing tiles to reach 2048. Swipe or arrow keys, undo your last move, and pick 3×3 up to 6×6 boards.</p>
+    <span class="badge">SWIPE</span><span class="badge">UNDO</span><span class="badge">4 SIZES</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card new-card" href="connectfour.html" style="--c:var(--cyan)" data-cat="strategy" data-name="connect 4 four in a row drop disc cpu two player">
+    <span class="tag">NEW</span><span class="icon">🔴</span>
+    <h2>CONNECT 4</h2>
+    <p>Drop discs and get four in a row. Play a CPU on Easy, Medium or Hard (it really looks ahead), or pass the device for 2 players.</p>
+    <span class="badge">VS CPU</span><span class="badge">2 PLAYER</span><span class="badge">3 LEVELS</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+    <a class="card new-card" href="simon.html" style="--c:var(--green)" data-cat="puzzle" data-name="neon simon memory pattern repeat colors sound">
+    <span class="tag">NEW</span><span class="icon">🎵</span>
+    <h2>NEON SIMON</h2>
+    <p>Watch the glowing pattern, then repeat it. It grows every round! Classic, Reverse (backwards!) and Speed modes.</p>
+    <span class="badge">3 MODES</span><span class="badge">SOUND</span><span class="badge">BEST SCORES</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card new-card" href="roadhopper.html" style="--c:var(--green)" data-cat="arcade" data-name="road hopper frogger frog cross road river logs turtles">
+    <span class="tag">NEW</span><span class="icon">🐸</span>
+    <h2>ROAD HOPPER</h2>
+    <p>Frogger-style! Dodge traffic, ride logs and sinking turtles across the river, and fill all 5 home bays. Arrow keys or swipe.</p>
+    <span class="badge">10 LANES</span><span class="badge">LEVELS</span><span class="badge">SWIPE</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+
+    <a class="card new-card" href="ballcourse.html" style="--c:var(--cyan)" data-cat="arcade" data-name="ball course mini golf neon bounce wall aim shoot flag">
+    <span class="tag">NEW</span><span class="icon">⛳</span>
+    <h2>BALL COURSE</h2>
+    <p>Neon mini golf! Aim with mouse, hold &amp; release to shoot. Ball bounces off walls, hits bumpers. Collect coins. 15 holes — beat par! From Peter.</p>
+    <span class="badge">15 HOLES</span><span class="badge">BOUNCY WALLS</span><span class="badge">PAR SCORING</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card new-card" href="phonemaker.html" style="--c:var(--purple)" data-cat="creative" data-name="phone maker smartphone design specs camera battery build">
+    <span class="tag">NEW</span><span class="icon">📱</span>
+    <h2>PHONE MAKER</h2>
+    <p>Design your dream smartphone. Adjust screen, RAM, CPU, cameras, battery, frame material and features. Live canvas render, price calculator, export/import JSON.</p>
+    <span class="badge">LIVE RENDER</span><span class="badge">8 PRESETS</span><span class="badge">PRICE CALC</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+
+  <a class="card new-card" href="pixelinvaders.html" style="--c:var(--green)" data-cat="arcade" data-name="pixel invaders space aliens shoot invader retro arcade classic">
+    <span class="tag">NEW</span><span class="icon">👾</span>
+    <h2>PIXEL INVADERS</h2>
+    <p>Classic Space Invaders with neon pixel alien art. 3 alien types, shields, UFO for 150 pts, 20 waves. Kill them before they reach the bottom!</p>
+    <span class="badge">20 WAVES</span><span class="badge">PIXEL ART</span><span class="badge">SHIELDS</span>
+    <br><span class="play">▶ PLAY</span>
+  </a>
+    <a class="card new-card" href="guessthelogo.html" style="--c:var(--yellow)" data-cat="puzzle" data-name="guess logo brand recognition blurry timer hints categories">
     <span class="tag">NEW</span><span class="icon">🏷️</span>
     <h2>GUESS THE LOGO</h2>
     <p>Identify 32 brand logos from blurry images. Timer reveals clarity. Categories, hints, combo streaks. From Jack!</p>
@@ -330,11 +402,11 @@
     <br><span class="play">▶ PLAY</span>
   </a>
 
-  <a class="card new-card" href="stickburrow.html" style="--c:var(--orange)" data-cat="action" data-name="stick burrow dig tunnel evade predator fox hawk snake survival">
+  <a class="card new-card" href="stickburrow.html" style="--c:var(--orange)" data-cat="action" data-name="stick burrow dig tunnel evade predator fox hawk snake survival underground">
     <span class="tag">NEW</span><span class="icon">🕳️</span>
     <h2>STICK BURROW</h2>
-    <p>Dig tunnels underground as a stick figure. Collect food gems, avoid foxes, hawks and snakes. Endless survival — how deep can you go? From Carter.</p>
-    <span class="badge">ENDLESS</span><span class="badge">DIG</span><span class="badge">3 PREDATORS</span>
+    <p>Dig underground as a stick figure. WASD to move, Space to dig tunnels. Collect gems, manage hunger. Foxes, hawks &amp; snakes hunt you — hide underground! From Carter.</p>
+    <span class="badge">DIG TUNNELS</span><span class="badge">3 PREDATORS</span><span class="badge">ENDLESS</span>
     <br><span class="play">▶ PLAY</span>
   </a>
 
@@ -353,8 +425,10 @@
   <br><br>
   <a href="contact.html">📧 CONTACT</a>
   <a href="contact.html">🐛 BUG REPORT</a>
-  <a href="https://github.com/JackTheDemon355/gamehub" target="_blank">🐙 GITHUB</a>
+  <a href="https://github.com/JackTheDemon355/gamehub">🐙 GITHUB</a>
+  <a href="changelog.html">📜 CHANGELOG</a>
   <a href="login.html">👤 ACCOUNT</a>
+  <a href="unsubscribe.html">🔕 UNSUBSCRIBE</a>
   <a href="staff.html" style="color:var(--red)">🛡 STAFF</a>
   <br><br>
   <div id="remoteAccessFooter" style="display:inline-block;cursor:pointer;font-size:10px;letter-spacing:2px;color:#334;border:1px solid #222;border-radius:4px;padding:5px 12px;" onclick="showRemoteAccess()">📡 REMOTE ACCESS</div>
@@ -492,57 +566,141 @@ window.filterCards=function(){
   document.getElementById('secLbl').textContent=`— ${v} GAME${v!==1?'S':''} SHOWN —`;
 };
 
-// Newsletter
-window.subscribeNL=function(){
-  const email=document.getElementById('nlEmail').value.trim();
-  if(!email||!email.includes('@')){alert('Please enter a valid email.');return;}
-  // Store locally
-  const subs=JSON.parse(localStorage.getItem('hub_newsletter')||'[]');
-  if(!subs.includes(email)){subs.push(email);localStorage.setItem('hub_newsletter',JSON.stringify(subs));}
-  document.getElementById('nlEmail').value='';
-  document.getElementById('nlBtn').style.display='none';
-  document.getElementById('nlMsg').style.display='block';
-  // Also send to formspree
-  fetch('https://formspree.io/f/xaennwkb',{method:'POST',body:JSON.stringify({email,subject:'Newsletter Subscription',message:'New Game Hub newsletter subscriber: '+email}),headers:{'Content-Type':'application/json','Accept':'application/json'}}).catch(()=>{});
+// ── Supabase (public anon key — safe to expose; the database rules protect the data) ──
+const SB_URL='https://rxdkdylcfspmiljicwdd.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4ZGtkeWxjZnNwbWlsamljd2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNjQxMDAsImV4cCI6MjEwNTk0MDEwMH0.ifhyyUye28DlGEOcScRDz5lpFW_1soXjzPaS1PrMxmU';
+async function sbRpc(fn,args){
+  const r=await fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify(args)});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+// Newsletter → saved in Supabase (no email is sent to the site owner)
+window.subscribeNL=async function(){
+  const input=document.getElementById('nlEmail'),btn=document.getElementById('nlBtn'),msg=document.getElementById('nlMsg');
+  const email=input.value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){alert('Please enter a valid email.');return;}
+  btn.disabled=true;
+  try{
+    const res=await sbRpc('subscribe_newsletter',{p_email:email});
+    if(res==='invalid')throw new Error('invalid');
+    input.value='';btn.style.display='none';
+    msg.style.color='';msg.textContent="✓ You're subscribed! We'll email you when new games are added. Unsubscribe any time.";msg.style.display='block';
+  }catch(err){
+    btn.disabled=false;
+    msg.style.color='var(--red)';msg.textContent='Could not subscribe right now — please try again in a moment.';msg.style.display='block';
+  }
 };
-// Remote Access modal
+
+// ── Remote Access: a SIGNED-IN user makes a 6-digit code (stored in Supabase) and gives it to staff ──
+function ghSession(){
+  try{
+    const raw=localStorage.getItem('sb-rxdkdylcfspmiljicwdd-auth-token');if(!raw)return null;
+    const j=JSON.parse(raw),s=(j&&j.currentSession)||j;
+    if(!s||!s.access_token||!s.user)return null;
+    if(s.expires_at&&s.expires_at*1000<Date.now())return {expired:true};
+    return s;
+  }catch(e){return null;}
+}
 window.showRemoteAccess=function(){
-  // USER generates a code and gives it to staff
-  var el=document.createElement('div');
+  const el=document.createElement('div');
+  el.id='raModal';
   el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;align-items:center;justify-content:center;';
-  // Gather user info to attach to code
-  var userInfo={};try{userInfo=JSON.parse(localStorage.getItem('gh_user')||'{}');}catch(e){}
-  var saves=0;['neonrunner','galaxia','snake','brickbreaker','blockfall','pong','asteroids','memorymatch','wordjump','strangerthingsclicker','towerdefense','zombieapocalypse','hoopshot'].forEach(function(g){if(localStorage.getItem('save_'+g))saves++;});
-  userInfo.saves=saves;
+  const s=ghSession();
+  let body;
+  if(!s||s.expired){
+    body='<div style="font-size:12px;color:#b9c4cc;line-height:1.9;margin:10px 0 16px">'+(s&&s.expired?'Your login has expired. Open the Account page once to refresh it, then come back.':'You need to be signed in so staff can find your account.')+'</div>'
+      +'<a href="login.html" style="display:inline-block;color:#00fff2;border:2px solid #00fff2;padding:10px 24px;text-decoration:none;letter-spacing:3px;border-radius:4px;font-size:13px">👤 OPEN ACCOUNT PAGE</a>';
+  }else{
+    body='<div style="font-size:11px;color:#b9c4cc;margin-bottom:16px;line-height:1.9">Click <strong style="color:#ffe600">Generate Code</strong>, then give the 6-digit code to a staff member. They enter it in the staff panel to see your account and help you. It works for 15 minutes.</div>'
+      +'<button id="raGenBtn" onclick="generateUserCode(this)" style="background:rgba(0,255,242,.12);color:#00fff2;border:2px solid #00fff2;padding:10px 24px;font-family:Consolas,monospace;font-size:13px;letter-spacing:3px;border-radius:4px;cursor:pointer;width:100%;">🔑 GENERATE CODE</button>'
+      +'<div id="raCodeDisplay" style="font-size:52px;letter-spacing:14px;color:#ffe600;font-weight:bold;text-shadow:0 0 20px #ffe600;padding:14px 0;display:none;"></div>'
+      +'<div id="raTimer" style="font-size:11px;color:#667;letter-spacing:2px;margin-bottom:6px;"></div>'
+      +'<div id="raMsg" style="font-size:11px;color:#39ff14;min-height:16px;"></div>';
+  }
   el.innerHTML='<div style="background:#03030c;border:2px solid rgba(0,255,242,.25);border-radius:12px;padding:28px 32px;max-width:380px;width:92%;text-align:center;font-family:Consolas,monospace;color:#fff;">'
-    +'<div style="font-size:14px;letter-spacing:4px;color:#00fff2;margin-bottom:8px">📡 REMOTE ACCESS</div>'
-    +'<div style="font-size:11px;color:#b9c4cc;margin-bottom:16px;line-height:1.9">Click <strong style="color:#ffe600">Generate Code</strong> then give the 6-digit code to a staff member. They\'ll enter it in the staff panel to view your account and help you.</div>'
-    +'<button id="raGenBtn" onclick="generateUserCode(this)" style="background:rgba(0,255,242,.12);color:#00fff2;border:2px solid #00fff2;padding:10px 24px;font-family:Consolas,monospace;font-size:13px;letter-spacing:3px;border-radius:4px;cursor:pointer;width:100%;">🔑 GENERATE CODE</button>'
-    +'<div id="raCodeDisplay" style="font-size:52px;letter-spacing:14px;color:#ffe600;font-weight:bold;text-shadow:0 0 20px #ffe600;padding:14px 0;display:none;"></div>'
-    +'<div id="raTimer" style="font-size:11px;color:#667;letter-spacing:2px;margin-bottom:6px;"></div>'
-    +'<div id="raMsg" style="font-size:11px;color:#39ff14;min-height:16px;"></div>'
-    +'<button onclick="this.parentElement.parentElement.remove()" style="background:transparent;border:1px solid #333;color:#555;padding:7px 16px;font-family:Consolas,monospace;font-size:11px;border-radius:4px;cursor:pointer;margin-top:14px;">✕ CLOSE</button>'
-    +'</div>';
+    +'<div style="font-size:14px;letter-spacing:4px;color:#00fff2;margin-bottom:8px">📡 REMOTE ACCESS</div>'+body
+    +'<button onclick="document.getElementById(\'raModal\').remove()" style="background:transparent;border:1px solid #333;color:#555;padding:7px 16px;font-family:Consolas,monospace;font-size:11px;border-radius:4px;cursor:pointer;margin-top:14px;">✕ CLOSE</button></div>';
   document.body.appendChild(el);
-  window._raUserInfo=userInfo;
 };
 var _raTimerInt=null;
-window.generateUserCode=function(btn){
-  var code=String(Math.floor(100000+Math.random()*900000));
-  var expiry=Date.now()+5*60*1000;
-  var userInfo=window._raUserInfo||{};
-  try{localStorage.setItem('gh_staff_code',JSON.stringify({code:code,expiry:expiry,userInfo:userInfo}));}catch(e){}
-  document.getElementById('raCodeDisplay').style.display='block';
-  document.getElementById('raCodeDisplay').textContent=code;
-  document.getElementById('raMsg').textContent='Show this code to staff — expires in 5 min';
-  btn.style.display='none';
-  clearInterval(_raTimerInt);
-  _raTimerInt=setInterval(function(){
-    var rem=Math.max(0,Math.ceil((expiry-Date.now())/1000));
-    document.getElementById('raTimer').textContent=rem>0?'Expires in '+rem+'s':'Code expired';
-    if(rem<=0)clearInterval(_raTimerInt);
-  },1000);
+window.generateUserCode=async function(btn){
+  const s=ghSession(),msg=document.getElementById('raMsg');
+  if(!s||s.expired){msg.style.color='#ff003c';msg.textContent='Please sign in first.';return;}
+  btn.disabled=true;msg.style.color='#667';msg.textContent='Creating code…';
+  const H={apikey:SB_KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',Prefer:'return=minimal'};
+  try{
+    await fetch(SB_URL+'/rest/v1/help_codes?user_id=eq.'+encodeURIComponent(s.user.id),{method:'DELETE',headers:H}); // remove my old codes
+    let code=null,expiry=0;
+    for(let attempt=0;attempt<5&&!code;attempt++){
+      const c=String(Math.floor(100000+Math.random()*900000));
+      expiry=Date.now()+15*60*1000;
+      const r=await fetch(SB_URL+'/rest/v1/help_codes',{method:'POST',headers:H,body:JSON.stringify({code:c,user_id:s.user.id,expires_at:new Date(expiry).toISOString()})});
+      if(r.status===201||r.status===204)code=c;
+      else if(r.status!==409)throw new Error('HTTP '+r.status);   // 409 = code already used by someone, try another
+    }
+    if(!code)throw new Error('no free code');
+    document.getElementById('raCodeDisplay').style.display='block';
+    document.getElementById('raCodeDisplay').textContent=code;
+    msg.style.color='#39ff14';msg.textContent='Give this code to staff';
+    btn.style.display='none';
+    clearInterval(_raTimerInt);
+    _raTimerInt=setInterval(function(){
+      const t=document.getElementById('raTimer');if(!t){clearInterval(_raTimerInt);return;}
+      const rem=Math.max(0,Math.ceil((expiry-Date.now())/1000));
+      t.textContent=rem>0?'Expires in '+Math.floor(rem/60)+':'+String(rem%60).padStart(2,'0'):'Code expired';
+      if(rem<=0)clearInterval(_raTimerInt);
+    },1000);
+  }catch(err){
+    btn.disabled=false;msg.style.color='#ff003c';msg.textContent='Could not create a code ('+err.message+'). Try again.';
+  }
 };
+
+// ── Site settings from the staff panel: banner / maintenance / switched-off games ──
+function applySiteSettings(S){
+  const b=S.banner;
+  if(b&&b.msg){
+    const colors={info:'#00fff2',success:'#39ff14',warn:'#ffe600',event:'#ff2fd0'},col=colors[b.type]||colors.info;
+    const el=document.createElement('div');el.id='siteBanner';
+    el.style.cssText='position:relative;z-index:200;text-align:center;padding:10px 40px 10px 16px;font-size:12px;letter-spacing:2px;color:'+col+';background:rgba(0,0,0,.88);border-bottom:1px solid '+col+';font-family:Consolas,monospace;';
+    el.textContent=b.msg;
+    const x=document.createElement('span');x.textContent='✕';x.style.cssText='position:absolute;right:14px;top:9px;cursor:pointer;opacity:.7';
+    x.onclick=function(){el.remove();};el.appendChild(x);
+    document.body.insertBefore(el,document.body.firstChild);
+  }
+  const m=S.maintenance;
+  if(m&&m.on){
+    const o=document.createElement('div');o.id='maintOverlay';
+    o.style.cssText='position:fixed;inset:0;z-index:9000;background:#03030c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;font-family:Consolas,monospace;color:#00fff2;';
+    const h=document.createElement('div');h.textContent='🔧 MAINTENANCE';h.style.cssText='font-size:clamp(24px,6vw,42px);letter-spacing:6px;color:#ffe600;text-shadow:0 0 14px #ffe600;font-weight:bold';
+    const t=document.createElement('div');t.textContent=m.message||"We're doing some updates. Back soon!";t.style.cssText='font-size:13px;color:#b9c4cc;max-width:460px;line-height:1.8';
+    o.appendChild(h);o.appendChild(t);document.body.appendChild(o);document.body.style.overflow='hidden';
+  }
+  const off=Array.isArray(S.disabled_games)?S.disabled_games:[];
+  if(off.length){
+    const st=document.createElement('style');
+    st.textContent='a.card.gh-off{opacity:.28;pointer-events:none;filter:grayscale(.7);position:relative}a.card.gh-off::after{content:"TEMPORARILY OFF";position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:2px;background:#ff003c;color:#fff;padding:3px 7px;border-radius:3px}';
+    document.head.appendChild(st);
+    off.forEach(function(f){
+      if(!/^[a-z0-9_-]+\.html$/i.test(String(f)))return;
+      document.querySelectorAll('a.card[href="'+f+'"]').forEach(function(a){a.classList.add('gh-off');a.removeAttribute('href');a.title='Temporarily unavailable';});
+    });
+  }
+}
+fetch(SB_URL+'/rest/v1/site_settings?select=key,value',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}})
+  .then(function(r){return r.ok?r.json():[];})
+  .then(function(rows){const S={};(rows||[]).forEach(function(x){S[x.key]=x.value;});applySiteSettings(S);})
+  .catch(function(){});
+
+// External links always reuse ONE tab
+document.addEventListener('click',function(e){
+  var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;
+  var u;try{u=new URL(a.href,location.href);}catch(_){return;}
+  if(u.origin===location.origin||!/^https?:$/.test(u.protocol))return;
+  e.preventDefault();window.open(u.href,'ghExt');
+});
 
 // Auth badge
 (function(){
