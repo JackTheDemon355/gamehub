@@ -335,11 +335,12 @@ async function grantPro(){
   status('proStatus','Working…','info');
   try{
     const r=await fetch(SUPABASE_URL+'/rest/v1/profiles?email=eq.'+encodeURIComponent(email),{
-      method:'PATCH',headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json','Prefer':'return=minimal'},
+      method:'PATCH',headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json','Prefer':'return=representation'},
       body:JSON.stringify({is_pro:true,pro_since:new Date().toISOString()})
     });
-    if(r.ok){status('proStatus','✓ Pro granted to '+email,'ok');log('Pro granted: '+email,'ok');}
-    else status('proStatus','Error (may need service role key for RLS bypass)','err');
+    const rows=r.ok?await r.json():[];
+    if(Array.isArray(rows)&&rows.length){status('proStatus','✓ Pro granted to '+email,'ok');log('Pro granted: '+email,'ok');}
+    else status('proStatus','Not applied: the public key can no longer edit profiles (by design). Set is_pro in Supabase > Table Editor > profiles for now.','err');
   }catch(e){status('proStatus','Error: '+e.message,'err');}
 }
 async function revokePro(){
@@ -348,11 +349,12 @@ async function revokePro(){
   status('proStatus','Working…','info');
   try{
     const r=await fetch(SUPABASE_URL+'/rest/v1/profiles?email=eq.'+encodeURIComponent(email),{
-      method:'PATCH',headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json','Prefer':'return=minimal'},
+      method:'PATCH',headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json','Prefer':'return=representation'},
       body:JSON.stringify({is_pro:false})
     });
-    if(r.ok){status('proStatus','✓ Pro revoked from '+email,'ok');log('Pro revoked: '+email,'info');}
-    else status('proStatus','Error: '+r.status,'err');
+    const rows=r.ok?await r.json():[];
+    if(Array.isArray(rows)&&rows.length){status('proStatus','✓ Pro revoked from '+email,'ok');log('Pro revoked: '+email,'info');}
+    else status('proStatus','Not applied: the public key can no longer edit profiles (by design). Set is_pro in Supabase > Table Editor > profiles for now.','err');
   }catch(e){status('proStatus','Error: '+e.message,'err');}
 }
 window.grantPro=grantPro;window.revokePro=revokePro;
@@ -518,7 +520,7 @@ async function lookupUser(){
         +'<div><span style="color:var(--sub)">ID</span> <span style="color:#445;font-size:9px">'+(u.id||'—')+'</span></div>'
         +'<div><span style="color:var(--sub)">SINCE</span> <span style="color:#445">'+(u.created_at?new Date(u.created_at).toLocaleDateString():'—')+'</span></div>';
       document.getElementById('proEmail').value=email;
-    }else{out.innerHTML='<span style="color:var(--red)">No user found with that email</span>';}
+    }else{out.innerHTML='<span style="color:var(--red)">No result (the public key can no longer read profiles; use Supabase > Table Editor)</span>';}
   }catch(e){out.innerHTML='<span style="color:var(--red)">Error: '+e.message+'</span>';}
 }
 window.lookupUser=lookupUser;
