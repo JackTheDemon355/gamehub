@@ -78,7 +78,7 @@
   #touch #jBtn{background:rgba(255,47,208,.15);border-color:var(--hud-lbl);color:var(--hud-lbl);}
   @media(max-width:900px){#touch{display:flex;}}
 
-  /* ── MOBILE CONTROLS (toggle in settings) ── */
+  
   #mobileCtrl{display:none;position:fixed;inset:0;pointer-events:none;z-index:50;}
   #mobileCtrl.show{display:block;}
   .mc-btn{position:absolute;pointer-events:auto;background:rgba(0,0,0,.45);
@@ -100,6 +100,43 @@
   .mc-detect-msg{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);
     font-family:Consolas,monospace;font-size:11px;letter-spacing:2px;color:rgba(0,255,242,.7);
     pointer-events:none;opacity:0;transition:opacity .5s;}
+
+
+  /* ── DPAD ── */
+  #ghDpad{position:fixed;inset:0;pointer-events:none;z-index:200;display:none;}
+  .gh-d{position:absolute;pointer-events:auto;width:58px;height:58px;border-radius:50%;
+    background:rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.25);
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;color:rgba(255,255,255,.8);
+    -webkit-tap-highlight-color:transparent;user-select:none;cursor:pointer;}
+  .gh-d:active{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.6);}
+  #ghD-left {bottom:26px;left:14px;}
+  #ghD-right{bottom:26px;left:90px;}
+  #ghD-up   {bottom:96px;left:52px;}
+  #ghD-a1   {bottom:26px;right:14px;background:rgba(0,255,242,.18);border-color:rgba(0,255,242,.5);}
+  #ghD-a2   {bottom:96px;right:14px;background:rgba(255,47,208,.18);border-color:rgba(255,47,208,.5);}
+  /* Settings icon */
+  #ghSettingsBtn{position:fixed;top:12px;right:12px;z-index:201;width:36px;height:36px;
+    border-radius:50%;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);
+    display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;
+    pointer-events:auto;-webkit-tap-highlight-color:transparent;}
+  #ghSettingsBtn:active{background:rgba(255,255,255,.15);}
+  #ghSettingsPanel{position:fixed;top:54px;right:10px;z-index:202;background:rgba(5,5,20,.97);
+    border:1px solid rgba(0,255,242,.2);border-radius:10px;padding:14px 16px;width:220px;
+    font-family:Consolas,monospace;display:none;}
+  #ghSettingsPanel h3{font-size:11px;letter-spacing:4px;color:#00fff2;margin-bottom:10px;}
+  #ghSettingsPanel .gsr{display:flex;justify-content:space-between;align-items:center;
+    padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;letter-spacing:2px;color:#b9c4cc;}
+  #ghSettingsPanel .gsr:last-of-type{border:none;}
+  #ghSettingsPanel .pill{width:36px;height:20px;border-radius:10px;background:#222;
+    position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+  #ghSettingsPanel .pill.on{background:#00fff2;}
+  #ghSettingsPanel .pill::after{content:"";position:absolute;left:2px;top:2px;width:16px;
+    height:16px;border-radius:50%;background:#fff;transition:left .2s;}
+  #ghSettingsPanel .pill.on::after{left:18px;}
+  #ghSettingsPanel .done-btn{width:100%;margin-top:10px;padding:7px;background:transparent;
+    border:1px solid #00fff2;color:#00fff2;font-family:Consolas,monospace;font-size:11px;
+    letter-spacing:2px;border-radius:4px;cursor:pointer;}
 
 </style>
 </head>
@@ -1066,5 +1103,120 @@ requestAnimationFrame(loop);
   else{buildOverlay();}
 })();
 
+
+<script>
+
+// ── MOBILE CONTROLS MODULE ──────────────────────────────
+// ── GH MOBILE MODULE v2 (dpad + drag) ─────────────────────────────
+window.GHMobile=(function(){
+  var isMobileDevice=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+  var _mode='off';
+  try{
+    var s=localStorage.getItem('gh_mobile_mode');
+    if(s==='dpad'||s==='drag'||s==='off')_mode=s;
+    else _mode=isMobileDevice?'dpad':'off';
+  }catch(e){_mode=isMobileDevice?'dpad':'off';}
+  function save(){try{localStorage.setItem('gh_mobile_mode',_mode);}catch(e){}}
+  function apply(){
+    var dpad=document.getElementById('ghDpad');
+    if(dpad)dpad.style.display=(_mode==='dpad')?'block':'none';
+    ['off','dpad','drag'].forEach(function(m){
+      var el=document.getElementById('ghMode-'+m);
+      if(el)el.classList.toggle('active',m===_mode);
+    });
+  }
+  var dragState={active:false,sx:0,sy:0};
+  var THRESH=30;
+  function startDrag(e){if(_mode!=='drag')return;var t=e.touches?e.touches[0]:e;dragState={active:true,sx:t.clientX,sy:t.clientY};}
+  function moveDrag(e){
+    if(!dragState.active||_mode!=='drag')return;
+    e.preventDefault();
+    var t=e.touches?e.touches[0]:e;
+    var dx=t.clientX-dragState.sx,dy=t.clientY-dragState.sy;
+    if(Math.abs(dx)<THRESH&&Math.abs(dy)<THRESH)return;
+    var key=Math.abs(dx)>Math.abs(dy)?(dx>0?'ArrowRight':'ArrowLeft'):(dy>0?'ArrowDown':'ArrowUp');
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:key,bubbles:true}));
+    setTimeout(function(){document.dispatchEvent(new KeyboardEvent('keyup',{key:key,bubbles:true}));},80);
+    dragState.sx=t.clientX;dragState.sy=t.clientY;
+  }
+  function endDrag(){dragState.active=false;}
+  function tapFire(e){
+    if(_mode!=='drag')return;
+    var x=e.touches?e.touches[0].clientX:e.clientX;
+    if(x>window.innerWidth*0.65){
+      e.preventDefault();
+      document.dispatchEvent(new KeyboardEvent('keydown',{key:' ',bubbles:true}));
+      setTimeout(function(){document.dispatchEvent(new KeyboardEvent('keyup',{key:' ',bubbles:true}));},80);
+    }
+  }
+  function initDrag(){
+    var el=document.querySelector('canvas')||document.body;
+    el.addEventListener('touchstart',startDrag,{passive:false});
+    el.addEventListener('touchmove',moveDrag,{passive:false});
+    el.addEventListener('touchend',endDrag,{passive:true});
+    el.addEventListener('touchstart',tapFire,{passive:false});
+  }
+  return{
+    mode:function(){return _mode;},
+    enabled:function(){return _mode!=='off';},
+    setMode:function(m){_mode=m;save();apply();},
+    toggle:function(){_mode=_mode==='off'?'dpad':_mode==='dpad'?'drag':'off';save();apply();},
+    init:function(){apply();initDrag();}
+  };
+})();
+window.ghMobileEnabled=function(){return window.GHMobile.enabled();};
+window.ghToggleMobile=function(v){if(v===true)window.GHMobile.setMode('dpad');else if(v===false)window.GHMobile.setMode('off');else window.GHMobile.toggle();};
+// ── END MOBILE MODULE ──────────────────────────────────────────────
+
+</script>
+<div id="ghDpad">
+  <div class="gh-d" id="ghD-left">◀</div>
+  <div class="gh-d" id="ghD-right">▶</div>
+  <div class="gh-d" id="ghD-up">⬆</div>
+  <div class="gh-d" id="ghD-a1">↺ RETRY</div>
+</div>
+<div id="ghSettingsBtn" onclick="ghToggleSettingsPanel()">⚙</div>
+<div id="ghSettingsPanel">
+  <h3>⚙ SETTINGS</h3>
+  <div class="gsr"><span>MOBILE CONTROLS</span>
+    <div class="pill" id="t-mobile" onclick="(function(){GHMobile.toggle();})()"></div>
+  </div>
+  <button class="done-btn" onclick="ghToggleSettingsPanel()">✓ DONE</button>
+</div>
+
+<script>
+
+// ── DPAD WIRING ──
+(function(){
+  function bindD(id, downKey, upKey){
+    var el=document.getElementById(id);
+    if(!el)return;
+    var uk=upKey!==undefined?upKey:downKey;
+    el.addEventListener('touchstart',function(e){e.preventDefault();
+      document.dispatchEvent(new KeyboardEvent('keydown',{key:downKey,bubbles:true}));
+    },{passive:false});
+    el.addEventListener('touchend',function(e){e.preventDefault();
+      if(uk)document.dispatchEvent(new KeyboardEvent('keyup',{key:uk,bubbles:true}));
+    },{passive:false});
+    el.addEventListener('mousedown',function(e){
+      document.dispatchEvent(new KeyboardEvent('keydown',{key:downKey,bubbles:true}));
+    });
+    el.addEventListener('mouseup',function(e){
+      if(uk)document.dispatchEvent(new KeyboardEvent('keyup',{key:uk,bubbles:true}));
+    });
+  }
+  bindD('ghD-left', 'ArrowLeft', 'ArrowLeft');
+  bindD('ghD-right', 'ArrowRight', 'ArrowRight');
+  bindD('ghD-up', 'ArrowUp', 'ArrowUp');
+  bindD('ghD-a1', 'r', 'r');
+  GHMobile.init();
+})();
+window.ghToggleSettingsPanel=function(){
+  var p=document.getElementById('ghSettingsPanel');
+  if(p)p.style.display=p.style.display==='block'?'none':'block';
+};
+// ── END DPAD ──
+
+</script>
 </body>
 </html>
