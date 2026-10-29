@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="1rNDahd3JgJCYe4UGAdNJqAAZM_oOawfSZ-I2i2_mPs" />
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>SLIDE PUZZLE — GAME HUB</title>
+<style>
+:root{--bg:#03030c;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--purple:#9d4edd;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;color:#fff;display:flex;flex-direction:column;align-items:center;
+  background-image:radial-gradient(ellipse at 30% 0%,#0a0a2e,transparent 55%);}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,255,242,.02) 0,rgba(0,255,242,.02) 1px,transparent 1px,transparent 4px);}
+header{text-align:center;padding:24px 20px 10px;position:relative;z-index:1;}
+header h1{font-size:clamp(22px,5vw,42px);letter-spacing:8px;color:var(--cyan);text-shadow:0 0 12px var(--cyan);}
+header p{font-size:11px;letter-spacing:4px;color:var(--mag);margin-top:4px;}
+#back{position:fixed;top:14px;left:14px;z-index:50;color:var(--cyan);text-decoration:none;border:1px solid var(--cyan);padding:7px 14px;font-size:11px;letter-spacing:2px;border-radius:4px;background:rgba(0,0,0,.7);}
+#back:hover{background:var(--cyan);color:#000;}
+/* Controls bar */
+#controls{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 16px;position:relative;z-index:1;}
+.cbtn{cursor:pointer;background:transparent;border:1px solid rgba(0,255,242,.3);color:var(--sub);padding:7px 14px;font-family:inherit;font-size:11px;letter-spacing:2px;border-radius:4px;transition:.15s;}
+.cbtn:hover,.cbtn.active{border-color:var(--cyan);color:var(--cyan);}
+.cbtn.go{border-color:var(--yellow);color:var(--yellow);}.cbtn.go:hover{background:var(--yellow);color:#000;}
+select{background:rgba(0,0,0,.5);border:1px solid rgba(0,255,242,.25);color:var(--cyan);padding:7px 12px;font-family:inherit;font-size:11px;letter-spacing:2px;border-radius:4px;outline:none;cursor:pointer;}
+/* Stats */
+#stats{display:flex;gap:20px;font-size:12px;letter-spacing:2px;justify-content:center;padding:6px;position:relative;z-index:1;}
+.lbl{color:var(--mag);}.val{color:var(--yellow);font-weight:bold;}
+/* Puzzle grid */
+#gameWrap{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding:10px 16px 40px;}
+#grid{display:grid;gap:4px;margin:10px 0;}
+.tile{display:flex;align-items:center;justify-content:center;font-weight:bold;letter-spacing:2px;cursor:pointer;border-radius:8px;transition:transform .08s,box-shadow .08s;user-select:none;-webkit-tap-highlight-color:transparent;
+  background:rgba(0,255,242,.07);border:2px solid rgba(0,255,242,.2);color:var(--cyan);}
+.tile:hover{border-color:var(--cyan);box-shadow:0 0 14px rgba(0,255,242,.3);}
+.tile:active{transform:scale(.94);}
+.tile.empty{background:rgba(0,0,0,.6);border:2px dashed rgba(0,255,242,.08);cursor:default;}
+.tile.movable{background:rgba(0,255,242,.12);border-color:rgba(0,255,242,.4);cursor:pointer;}
+.tile.movable:hover{background:rgba(0,255,242,.2);}
+/* Solved animation */
+.tile.solved{animation:solvedPop .5s ease forwards;}
+@keyframes solvedPop{0%{transform:scale(1);}50%{transform:scale(1.1);}100%{transform:scale(1);}}
+/* Win overlay */
+#winOv{display:none;position:fixed;inset:0;background:rgba(3,3,15,.94);z-index:30;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;}
+#winOv h2{font-size:clamp(26px,6vw,48px);letter-spacing:8px;color:var(--yellow);text-shadow:0 0 16px var(--yellow);}
+.wbtn{cursor:pointer;background:transparent;border:2px solid var(--cyan);color:var(--cyan);padding:11px 26px;font-family:inherit;font-size:13px;letter-spacing:3px;border-radius:4px;margin:4px;}
+.wbtn:hover{background:var(--cyan);color:#000;}
+.wbtn.y{border-color:var(--yellow);color:var(--yellow);}.wbtn.y:hover{background:var(--yellow);color:#000;}
+/* Best times */
+#bestTimes{display:none;position:fixed;inset:0;background:rgba(3,3,15,.96);z-index:30;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;}
+#bestTimes h2{font-size:18px;letter-spacing:6px;color:var(--cyan);}
+.bt-row{display:flex;justify-content:space-between;width:280px;padding:7px 12px;background:rgba(255,255,255,.04);border-radius:6px;border:1px solid rgba(255,255,255,.07);font-size:12px;letter-spacing:2px;}
+.bt-row .bk{color:var(--sub);}.bt-row .bv{color:var(--yellow);}
+</style>
+</head>
+<body>
+<a id="back" href="index.html">◄ HUB</a>
+<header>
+  <h1>SLIDE PUZZLE</h1>
+  <p>◄ NEON 15-PUZZLE ►</p>
+</header>
+
+<div id="controls">
+  <select id="sizeSelect" onchange="changeSize()">
+    <option value="3">3×3 (8-tile)</option>
+    <option value="4" selected>4×4 (15-tile)</option>
+    <option value="5">5×5 (24-tile)</option>
+    <option value="6">6×6 (35-tile)</option>
+  </select>
+  <button class="cbtn go" onclick="newGame()">▶ NEW GAME</button>
+  <button class="cbtn" onclick="showBest()">🏆 BEST TIMES</button>
+</div>
+<div id="stats">
+  <span><span class="lbl">MOVES </span><span class="val" id="movesEl">0</span></span>
+  <span><span class="lbl">TIME </span><span class="val" id="timeEl">0:00</span></span>
+  <span><span class="lbl">BEST </span><span class="val" id="bestEl">—</span></span>
+</div>
+<div id="gameWrap"><div id="grid"></div></div>
+
+<!-- Win overlay -->
+<div id="winOv">
+  <h2>SOLVED! 🎉</h2>
+  <div id="winStats" style="font-size:13px;letter-spacing:2px;color:var(--sub);"></div>
+  <div id="winRecord" style="font-size:12px;color:var(--green);min-height:18px;"></div>
+  <button class="wbtn y" onclick="newGame();closeWin()">▶ PLAY AGAIN</button>
+  <a href="index.html" style="color:var(--cyan);font-size:11px;letter-spacing:2px;margin-top:8px;text-decoration:none;">◄ GAME HUB</a>
+</div>
+
+<!-- Best times overlay -->
+<div id="bestTimes">
+  <h2>🏆 BEST TIMES</h2>
+  <div id="bestList"></div>
+  <button class="wbtn" style="margin-top:14px" onclick="document.getElementById('bestTimes').style.display='none'">✕ CLOSE</button>
+</div>
+
+<script>
+// ── LOCK ──
+(function(){var P=['gamehub234','oscarmccumstie','user13579'];function isSH(){var n=new Date(),a=new Date(n.getTime()+28800000),d=a.getUTCDay();if(!d||d===6)return false;var m=a.getUTCHours()*60+a.getUTCMinutes();return m>=495&&m<915;}function chk(){fetch('lock.json?nc='+Date.now()).then(r=>r.json()).then(d=>{if(d.locked===true||d.school_hours_lock===true&&isSH())showL(d.message||'Locked.');}).catch(()=>{});}function showL(msg){var el=document.createElement('div');el.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:24px;';el.innerHTML='<div style="font-size:40px;color:#ff003c;letter-spacing:6px;font-weight:bold">LOCKED 🔒</div><div style="font-size:13px;color:#888;max-width:460px;line-height:1.7">'+msg+'</div><div style="font-size:11px;color:#334">Hold SHIFT + key · tap 3×</div>';document.body.appendChild(el);document.body.style.overflow='hidden';var sh=false;document.addEventListener('keydown',function kd(e){if(e.key==='Shift'){sh=true;return;}if(sh){document.removeEventListener('keydown',kd);pw(el);}});var t=0,tc=0;el.addEventListener('click',function(){var n=Date.now();if(n-t>700)tc=0;t=n;if(++tc>=3){tc=0;pw(el);}});}function pw(el){el.innerHTML='<div style="font-size:30px;color:#ffe600;letter-spacing:6px;font-weight:bold">PASSWORD 🔑</div><input id="lpi" type="password" autocomplete="off" style="background:rgba(0,0,0,.65);border:2px solid rgba(0,255,242,.4);color:#fff;padding:13px 20px;font-family:Consolas,monospace;font-size:20px;letter-spacing:6px;border-radius:6px;outline:none;width:280px;text-align:center;" placeholder="••••••••"><button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:11px 28px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:4px;">▶ UNLOCK</button><div id="lpe" style="color:#ff003c;font-size:12px;min-height:18px;"></div>';var i=document.getElementById('lpi'),b=document.getElementById('lpb'),e=document.getElementById('lpe');i.focus();function go(){if(P.map(p=>p.toLowerCase()).indexOf((i.value||'').trim().toLowerCase())>=0){el.remove();document.body.style.overflow='';}else{e.textContent='Incorrect';i.value='';i.focus();setTimeout(()=>e.textContent='',2200);}}b.addEventListener('click',go);i.addEventListener('keydown',ev=>{if(ev.key==='Enter')go();});}chk();})();
+
+let size=4,tiles=[],emptyIdx=0,moves=0,startTime=0,timerInt=null,solved=false;
+
+function getSize(){return parseInt(document.getElementById('sizeSelect').value)||4;}
+function changeSize(){size=getSize();newGame();}
+
+function getTileSize(){
+  const maxW=Math.min(window.innerWidth-40,460);
+  const maxH=window.innerHeight-240;
+  const max=Math.min(maxW,maxH);
+  return Math.floor((max-size*4)/size);
+}
+
+function getBestKey(){return 'sp_best_'+size+'x'+size;}
+function getBest(){try{return parseInt(localStorage.getItem(getBestKey()))||null;}catch(e){return null;}}
+function saveBest(secs){try{const b=getBest();if(!b||secs<b){localStorage.setItem(getBestKey(),String(secs));return true;}}catch(e){}return false;}
+
+function shuffle(arr,n){
+  // Perform n random valid moves from goal state (guarantees solvable)
+  let blank=arr.indexOf(0);
+  const N=size;
+  let prev=-1;
+  for(let i=0;i<n;i++){
+    const r=Math.floor(blank/N),c=blank%N;
+    const neighbors=[];
+    if(r>0)neighbors.push(blank-N);
+    if(r<N-1)neighbors.push(blank+N);
+    if(c>0)neighbors.push(blank-1);
+    if(c<N-1)neighbors.push(blank+1);
+    const choices=neighbors.filter(x=>x!==prev);
+    const next=choices[Math.floor(Math.random()*choices.length)];
+    [arr[blank],arr[next]]=[arr[next],arr[blank]];
+    prev=blank;blank=next;
+  }
+  return blank;
+}
+
+function newGame(){
+  size=getSize();solved=false;moves=0;
+  clearInterval(timerInt);startTime=Date.now();
+  document.getElementById('movesEl').textContent=0;
+  document.getElementById('timeEl').textContent='0:00';
+  const best=getBest();
+  document.getElementById('bestEl').textContent=best?formatTime(best):'—';
+
+  // Create goal state
+  tiles=[];
+  for(let i=1;i<size*size;i++)tiles.push(i);
+  tiles.push(0);
+
+  // Shuffle with many moves
+  const shuffleMoves=size<=3?80:size<=4?200:size<=5?400:800;
+  emptyIdx=shuffle(tiles,shuffleMoves);
+
+  timerInt=setInterval(updateTimer,1000);
+  renderGrid();
+  findMovable();
+}
+window.newGame=newGame;
+
+function formatTime(s){const m=Math.floor(s/60);return m+':'+(s%60<10?'0':'')+(s%60);}
+function updateTimer(){
+  if(solved)return;
+  const s=Math.floor((Date.now()-startTime)/1000);
+  document.getElementById('timeEl').textContent=formatTime(s);
+}
+
+function isSolved(){
+  for(let i=0;i<tiles.length-1;i++)if(tiles[i]!==i+1)return false;
+  return tiles[tiles.length-1]===0;
+}
+
+function findMovable(){
+  const N=size;
+  const er=Math.floor(emptyIdx/N),ec=emptyIdx%N;
+  document.querySelectorAll('.tile').forEach((el,i)=>{
+    const r=Math.floor(i/N),c=i%N;
+    const adj=(r===er&&Math.abs(c-ec)===1)||(c===ec&&Math.abs(r-er)===1);
+    el.classList.toggle('movable',adj&&i!==emptyIdx);
+  });
+}
+
+function clickTile(i){
+  if(solved)return;
+  const N=size;
+  const er=Math.floor(emptyIdx/N),ec=emptyIdx%N;
+  const r=Math.floor(i/N),c=i%N;
+  // Can move whole row/col
+  if(r===er&&c!==ec){
+    const dir=c>ec?1:-1;
+    let cur=ec;
+    while(cur!==c){
+      const next=cur+dir;
+      [tiles[r*N+cur],tiles[r*N+next]]=[tiles[r*N+next],tiles[r*N+cur]];
+      cur=next;moves++;
+    }
+    emptyIdx=r*N+ec+(c-ec>0?0:0);emptyIdx=r*N+c;
+    // Find new empty
+    emptyIdx=tiles.indexOf(0);
+  }else if(c===ec&&r!==er){
+    const dir=r>er?1:-1;
+    let cur=er;
+    while(cur!==r){
+      const next=cur+dir;
+      [tiles[cur*N+c],tiles[next*N+c]]=[tiles[next*N+c],tiles[cur*N+c]];
+      cur=next;moves++;
+    }
+    emptyIdx=tiles.indexOf(0);
+  }else return;
+
+  document.getElementById('movesEl').textContent=moves;
+  renderGrid();
+  if(isSolved())winGame();
+  else findMovable();
+}
+
+function renderGrid(){
+  const N=size;
+  const ts=getTileSize();
+  const grid=document.getElementById('grid');
+  grid.style.gridTemplateColumns=`repeat(${N},${ts}px)`;
+  grid.innerHTML='';
+  const fontSize=ts>80?Math.floor(ts*.3):ts>60?Math.floor(ts*.32):Math.floor(ts*.35);
+  tiles.forEach((val,i)=>{
+    const el=document.createElement('div');
+    el.className='tile'+(val===0?' empty':'');
+    el.style.width=ts+'px';el.style.height=ts+'px';
+    el.style.fontSize=fontSize+'px';
+    if(val!==0){
+      el.textContent=val;
+      // Colour based on position (neon gradient)
+      const hue=Math.floor((val/(N*N))*280);
+      el.style.color=`hsl(${hue},100%,70%)`;
+      el.style.borderColor=`hsla(${hue},100%,60%,.4)`;
+      el.style.background=`hsla(${hue},80%,12%,.8)`;
+      el.style.boxShadow=`inset 0 0 20px hsla(${hue},100%,50%,.06)`;
+      el.addEventListener('click',()=>clickTile(i));
+    }
+    grid.appendChild(el);
+  });
+  findMovable();
+}
+
+function winGame(){
+  solved=true;clearInterval(timerInt);
+  const secs=Math.floor((Date.now()-startTime)/1000);
+  const isRecord=saveBest(secs);
+  document.getElementById('bestEl').textContent=formatTime(getBest());
+  document.querySelectorAll('.tile').forEach((el,i)=>{if(!el.classList.contains('empty'))el.classList.add('solved');});
+  setTimeout(()=>{
+    document.getElementById('winStats').textContent=moves+' moves · '+formatTime(secs);
+    document.getElementById('winRecord').textContent=isRecord?'🏆 NEW BEST TIME!':'';
+    document.getElementById('winOv').style.display='flex';
+  },600);
+}
+
+function closeWin(){document.getElementById('winOv').style.display='none';}
+window.closeWin=closeWin;
+
+function showBest(){
+  const sizes=['3','4','5','6'];
+  const names={'3':'3×3 (8-tile)','4':'4×4 (15-tile)','5':'5×5 (24-tile)','6':'6×6 (35-tile)'};
+  let html='';
+  sizes.forEach(s=>{
+    const key='sp_best_'+s+'x'+s;
+    let best=null;try{best=parseInt(localStorage.getItem(key))||null;}catch(e){}
+    html+='<div class="bt-row"><span class="bk">'+names[s]+'</span><span class="bv">'+(best?formatTime(best):'—')+'</span></div>';
+  });
+  document.getElementById('bestList').innerHTML=html;
+  document.getElementById('bestTimes').style.display='flex';
+}
+window.showBest=showBest;
+
+// Keyboard arrow support
+document.addEventListener('keydown',e=>{
+  if(solved||document.getElementById('winOv').style.display==='flex')return;
+  const N=size;const er=Math.floor(emptyIdx/N),ec=emptyIdx%N;
+  let target=-1;
+  if(e.key==='ArrowUp'&&er<N-1)target=(er+1)*N+ec;
+  else if(e.key==='ArrowDown'&&er>0)target=(er-1)*N+ec;
+  else if(e.key==='ArrowLeft'&&ec<N-1)target=er*N+(ec+1);
+  else if(e.key==='ArrowRight'&&ec>0)target=er*N+(ec-1);
+  if(target>=0){e.preventDefault();clickTile(target);}
+});
+
+window.addEventListener('resize',()=>{if(tiles.length)renderGrid();});
+newGame();
+</script>
+</body>
+</html>
