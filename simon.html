@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="google-site-verification" content="1rNDahd3JgJCYe4UGAdNJqAAZM_oOawfSZ-I2i2_mPs" />
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="icon" href="https://raw.githubusercontent.com/JackTheDemon355/gamehub/refs/heads/main/favicon.ico" type="image/x-icon">
+<link rel="shortcut icon" href="https://uploads.onecompiler.io/44md3ywr8/1790746237660/favicon%20(1).ico" type="image/x-icon">
+<title>NEON SIMON — GAME HUB</title>
+<style>
+:root{--bg:#03030c;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{min-height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;color:#fff;
+  background-image:radial-gradient(ellipse at 30% 0%,#0a0a2e,transparent 55%),radial-gradient(ellipse at 80% 100%,#0a001a,transparent 55%);}
+body{display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-user-select:none;}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,255,242,.02) 0,rgba(0,255,242,.02) 1px,transparent 1px,transparent 4px);}
+#back{position:fixed;top:12px;left:12px;z-index:50;color:var(--cyan);text-decoration:none;border:1px solid var(--cyan);padding:7px 14px;font-size:11px;letter-spacing:2px;border-radius:4px;background:rgba(0,0,0,.7);}
+#back:hover{background:var(--cyan);color:#000;}
+header{text-align:center;padding:20px 10px 4px;position:relative;z-index:1;}
+header h1{font-size:clamp(24px,6vw,42px);letter-spacing:8px;color:var(--cyan);text-shadow:0 0 12px var(--cyan),0 0 30px rgba(0,255,242,.35);}
+header p{font-size:10px;letter-spacing:4px;color:var(--mag);margin-top:4px;}
+#hud{display:flex;gap:26px;font-size:13px;letter-spacing:2px;padding:10px;position:relative;z-index:1;}
+.lbl{color:var(--mag);}.val{color:var(--yellow);font-weight:bold;}
+#status{min-height:24px;font-size:14px;letter-spacing:3px;color:var(--sub);position:relative;z-index:1;text-align:center;padding:2px 10px;}
+#boardWrap{position:relative;z-index:1;padding:10px;}
+#board{position:relative;width:min(88vw,calc(100vh - 290px),420px);aspect-ratio:1/1;min-width:240px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;}
+.pad{border:3px solid currentColor;background:currentColor;opacity:.32;cursor:pointer;transition:opacity .06s,filter .06s,box-shadow .06s;}
+.pad[data-i="0"]{color:#39ff14;border-radius:100% 8px 8px 8px;}
+.pad[data-i="1"]{color:#ff2fd0;border-radius:8px 100% 8px 8px;}
+.pad[data-i="2"]{color:#ffe600;border-radius:8px 8px 8px 100%;}
+.pad[data-i="3"]{color:#00fff2;border-radius:8px 8px 100% 8px;}
+.pad.lit{opacity:1;filter:brightness(1.5);box-shadow:0 0 50px currentColor,inset 0 0 30px rgba(255,255,255,.35);}
+.pad:disabled{cursor:default;}
+#core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34%;aspect-ratio:1/1;border-radius:50%;background:#05050f;border:3px solid rgba(0,255,242,.4);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;box-shadow:0 0 24px rgba(0,255,242,.25);}
+#core .big{font-size:clamp(22px,7vw,40px);font-weight:bold;color:var(--yellow);text-shadow:0 0 14px var(--yellow);}
+#core .sm{font-size:9px;letter-spacing:3px;color:var(--sub);}
+#ov{position:fixed;inset:0;background:rgba(3,3,12,.95);z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;gap:8px;}
+#ov h2{font-size:clamp(26px,7vw,48px);letter-spacing:8px;color:var(--cyan);text-shadow:0 0 14px var(--cyan);}
+#ov p{font-size:12px;color:var(--sub);max-width:420px;line-height:1.8;}
+.btn{cursor:pointer;background:transparent;border:2px solid var(--cyan);color:var(--cyan);padding:11px 26px;font-family:inherit;font-size:14px;letter-spacing:3px;border-radius:4px;margin:4px;}
+.btn:hover{background:var(--cyan);color:#000;}
+.btn.go{border-color:var(--yellow);color:var(--yellow);}.btn.go:hover{background:var(--yellow);color:#000;}
+.mode{cursor:pointer;background:transparent;border:2px solid #555;color:#999;padding:9px 16px;font-family:inherit;font-size:12px;letter-spacing:2px;border-radius:4px;margin:3px;}
+.mode.on{border-color:var(--green);color:var(--green);}
+#modeDesc{min-height:34px;font-size:11px;color:#667;}
+</style>
+</head>
+<body>
+<a id="back" href="index.html">◄ HUB</a>
+<header><h1>NEON SIMON</h1><p>◄ WATCH · REMEMBER · REPEAT ►</p></header>
+<div id="hud">
+  <span><span class="lbl">ROUND </span><span class="val" id="roundEl">0</span></span>
+  <span><span class="lbl">BEST </span><span class="val" id="bestEl">0</span></span>
+  <span><span class="lbl">MODE </span><span class="val" id="modeEl">CLASSIC</span></span>
+</div>
+<div id="status">&nbsp;</div>
+<div id="boardWrap">
+  <div id="board">
+    <button class="pad" data-i="0" aria-label="Green"></button>
+    <button class="pad" data-i="1" aria-label="Magenta"></button>
+    <button class="pad" data-i="2" aria-label="Yellow"></button>
+    <button class="pad" data-i="3" aria-label="Cyan"></button>
+    <div id="core"><div class="big" id="coreNum">·</div><div class="sm">SIMON</div></div>
+  </div>
+</div>
+
+<div id="ov">
+  <h2>NEON SIMON</h2>
+  <p>Watch the pattern, then repeat it. It grows by one every round. One mistake and it's over!</p>
+  <div>
+    <button class="mode on" data-mode="classic">CLASSIC</button>
+    <button class="mode" data-mode="reverse">REVERSE</button>
+    <button class="mode" data-mode="speed">SPEED</button>
+  </div>
+  <div id="modeDesc">Repeat the pattern in the same order.</div>
+  <p style="font-size:11px;color:#556">Tap the pads · or keys <b>1 2 3 4</b> / <b>Q W A S</b> · sound on</p>
+  <button class="btn go" id="startBtn">▶ START</button>
+</div>
+
+<script>
+(function(){
+  // GAME HUB LOCK v4 — settings AND passwords come from lock.json (nothing hard-coded here)
+  var CFG={};
+  function norm(s){return String(s==null?'':s).trim().toLowerCase();}
+  function isSchoolHours(){var n=new Date(),a=new Date(n.getTime()+28800000),d=a.getUTCDay();if(d===0||d===6)return false;var m=a.getUTCHours()*60+a.getUTCMinutes();return m>=495&&m<915;}
+  function sha256(s){
+    if(!(window.crypto&&window.crypto.subtle&&window.TextEncoder))return Promise.resolve(null);
+    return window.crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf),function(b){return ('0'+b.toString(16)).slice(-2);}).join('');
+    });
+  }
+  function passwordOk(v){
+    v=norm(v);if(!v)return Promise.resolve(false);
+    if((CFG.passwords||[]).map(norm).indexOf(v)>=0)return Promise.resolve(true);
+    var hashes=(CFG.password_hashes||[]).map(norm);
+    if(!hashes.length)return Promise.resolve(false);
+    return sha256(v).then(function(h){return h!==null&&hashes.indexOf(h)>=0;});
+  }
+  function check(){
+    fetch('lock.json?nc='+Date.now()).then(function(r){return r.json();}).then(function(d){
+      CFG=d||{};
+      if(CFG.locked===true||(CFG.school_hours_lock===true&&isSchoolHours()))showLock(CFG.message||'Locked.');
+    }).catch(function(){});
+  }
+  function showLock(msg){
+    var el=document.createElement('div');
+    el.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:24px;';
+    el.innerHTML='<div style="font-size:clamp(26px,6vw,46px);color:#ff003c;letter-spacing:6px;font-weight:bold;text-shadow:0 0 16px #ff003c">LOCKED 🔒</div><div id="lkMsg" style="font-size:13px;color:#888;max-width:460px;line-height:1.7"></div><div style="font-size:11px;color:#334">Hold SHIFT + any key · or tap 3×</div>';
+    el.querySelector('#lkMsg').textContent=msg;
+    document.body.appendChild(el);document.body.style.overflow='hidden';
+    var sh=false;
+    function kd(e){if(e.key==='Shift'){sh=true;return;}if(sh){document.removeEventListener('keydown',kd);ask(el);}}
+    document.addEventListener('keydown',kd);
+    document.addEventListener('keyup',function(e){if(e.key==='Shift')sh=false;});
+    var t=0,tc=0;
+    el.addEventListener('click',function(){var n=Date.now();if(n-t>700)tc=0;t=n;if(++tc>=3){tc=0;ask(el);}});
+  }
+  function ask(el){
+    el.innerHTML='<div style="font-size:clamp(22px,5vw,34px);color:#ffe600;letter-spacing:6px;font-weight:bold">PASSWORD 🔑</div><input id="lpi" type="password" autocomplete="off" spellcheck="false" style="background:rgba(0,0,0,.65);border:2px solid rgba(0,255,242,.4);color:#fff;padding:13px 20px;font-family:Consolas,monospace;font-size:20px;letter-spacing:6px;border-radius:6px;outline:none;width:280px;max-width:90vw;text-align:center;" placeholder="••••••••"><button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:11px 28px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:4px;">▶ UNLOCK</button><div id="lpe" style="color:#ff003c;font-size:12px;min-height:18px;"></div>';
+    var i=el.querySelector('#lpi'),b=el.querySelector('#lpb'),e=el.querySelector('#lpe');i.focus();
+    function go(){
+      passwordOk(i.value).then(function(good){
+        if(good){el.remove();document.body.style.overflow='';}
+        else{e.textContent='Incorrect';i.value='';i.focus();setTimeout(function(){e.textContent='';},2200);}
+      });
+    }
+    b.addEventListener('click',go);
+    i.addEventListener('keydown',function(ev){if(ev.key==='Enter')go();});
+  }
+  check();
+})();
+
+
+const MODES={
+  classic:{label:'CLASSIC',desc:'Repeat the pattern in the same order.'},
+  reverse:{label:'REVERSE',desc:'Repeat the pattern BACKWARDS — last one first!'},
+  speed:{label:'SPEED',desc:'Same as classic, but the pattern speeds up fast.'}
+};
+const FREQ=[392,523.25,329.63,659.25];
+let mode='classic',seq=[],pos=0,state='idle',token=0,tempoScale=1,inputMs=6000,inputTimer=null,actx=null;
+const pads=[...document.querySelectorAll('.pad')];
+const statusEl=document.getElementById('status'),ov=document.getElementById('ov');
+
+function bestKey(){return 'simon_best_'+mode;}
+function getBest(){try{return parseInt(localStorage.getItem(bestKey()))||0;}catch(e){return 0;}}
+function hud(){
+  document.getElementById('roundEl').textContent=seq.length>0&&state!=='over'?seq.length:(state==='over'?Math.max(0,seq.length-1):0);
+  document.getElementById('bestEl').textContent=getBest();
+  document.getElementById('modeEl').textContent=MODES[mode].label;
+  document.getElementById('coreNum').textContent=state==='idle'?'·':Math.max(0,state==='over'?seq.length-1:seq.length);
+}
+function say(t,col){statusEl.textContent=t;statusEl.style.color=col||'var(--sub)';}
+
+function tone(i,ms){
+  try{
+    if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.type='sine';o.frequency.value=FREQ[i];g.gain.value=.12;
+    o.connect(g);g.connect(actx.destination);
+    g.gain.setValueAtTime(.12,actx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+Math.max(.08,ms/1000));
+    o.start();o.stop(actx.currentTime+Math.max(.08,ms/1000)+.02);
+  }catch(e){}
+}
+function buzz(){
+  try{
+    if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(),g=actx.createGain();o.type='sawtooth';o.frequency.value=110;g.gain.value=.1;
+    o.connect(g);g.connect(actx.destination);g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+.5);o.start();o.stop(actx.currentTime+.5);
+  }catch(e){}
+}
+function flash(i,ms){
+  pads[i].classList.add('lit');tone(i,ms);
+  setTimeout(()=>pads[i].classList.remove('lit'),Math.max(40,ms));
+}
+function tempo(){
+  const n=seq.length;
+  const t=mode==='speed'?Math.max(150,480-n*24):Math.max(280,640-n*14);
+  return t*tempoScale;
+}
+function setPads(on){pads.forEach(p=>p.disabled=!on);}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function newGame(){
+  token++;clearTimeout(inputTimer);
+  seq=[];pos=0;state='idle';hud();
+  ov.style.display='none';
+  nextRound();
+}
+async function nextRound(){
+  const my=token;
+  seq.push(Math.floor(Math.random()*4));pos=0;state='show';setPads(false);hud();
+  say('WATCH…','var(--cyan)');
+  await sleep(550*tempoScale);
+  for(let k=0;k<seq.length;k++){
+    if(my!==token)return;
+    const t=tempo();
+    flash(seq[k],t*.7);
+    await sleep(t);
+  }
+  if(my!==token)return;
+  state='input';setPads(true);
+  say(mode==='reverse'?'YOUR TURN — BACKWARDS!':'YOUR TURN','var(--green)');
+  armTimer();
+}
+function armTimer(){
+  clearTimeout(inputTimer);
+  inputTimer=setTimeout(()=>{if(state==='input')gameOver('TOO SLOW!');},inputMs);
+}
+function expected(){return mode==='reverse'?seq[seq.length-1-pos]:seq[pos];}
+function press(i){
+  if(state!=='input')return;
+  flash(i,220*tempoScale+60);
+  if(i!==expected()){gameOver('WRONG PAD!');return;}
+  pos++;
+  if(pos>=seq.length){
+    state='wait';setPads(false);clearTimeout(inputTimer);
+    say('✓ NICE!','var(--yellow)');
+    const my=token;
+    setTimeout(()=>{if(my===token)nextRound();},700*tempoScale);
+  }else armTimer();
+}
+function gameOver(reason){
+  token++;clearTimeout(inputTimer);state='over';setPads(false);buzz();
+  const score=Math.max(0,seq.length-1);
+  let rec='';
+  if(score>getBest()){try{localStorage.setItem(bestKey(),String(score));}catch(e){}rec='🏆 NEW BEST!';}
+  hud();say(reason,'var(--red)');
+  ov.style.display='flex';
+  ov.innerHTML='<h2 style="color:var(--red);text-shadow:0 0 14px var(--red)">'+reason+'</h2>'
+    +'<div style="font-size:42px;color:var(--yellow);font-weight:bold;text-shadow:0 0 14px var(--yellow)">'+score+'</div>'
+    +'<p>rounds completed · '+MODES[mode].label+' · best '+getBest()+'</p><p style="color:var(--green)">'+rec+'</p>'
+    +'<div><button class="btn go" id="againBtn">↻ PLAY AGAIN</button><button class="btn" id="menuBtn">⚙ MODES</button></div>'
+    +'<a href="index.html" style="color:var(--cyan);font-size:11px;letter-spacing:2px;text-decoration:none;margin-top:6px">◄ GAME HUB</a>';
+  document.getElementById('againBtn').onclick=newGame;
+  document.getElementById('menuBtn').onclick=()=>location.reload();
+}
+
+pads.forEach(p=>{
+  p.addEventListener('pointerdown',e=>{e.preventDefault();press(parseInt(p.dataset.i));});
+});
+const KEYMAP={'1':0,'2':1,'3':2,'4':3,q:0,w:1,a:2,s:3};
+document.addEventListener('keydown',e=>{
+  if(e.repeat)return;
+  const k=e.key.toLowerCase();
+  if(k in KEYMAP)press(KEYMAP[k]);
+  else if((k==='enter'||k===' ')&&ov.style.display!=='none'&&document.getElementById('startBtn'))document.getElementById('startBtn').click();
+});
+document.querySelectorAll('.mode').forEach(b=>b.addEventListener('click',()=>{
+  mode=b.dataset.mode;
+  document.querySelectorAll('.mode').forEach(x=>x.classList.toggle('on',x===b));
+  document.getElementById('modeDesc').textContent=MODES[mode].desc;hud();
+}));
+document.getElementById('startBtn').onclick=newGame;
+setPads(false);hud();
+</script>
+</body>
+</html>
