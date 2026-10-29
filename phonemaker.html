@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="1rNDahd3JgJCYe4UGAdNJqAAZM_oOawfSZ-I2i2_mPs" />
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<title>PHONE MAKER — GAME HUB</title>
+<style>
+:root{--bg:#03030c;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--purple:#9d4edd;--orange:#ff6a00;--blue:#4da6ff;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;color:#fff;
+  background-image:radial-gradient(ellipse at 20% 0%,#0a0a2e,transparent 55%),radial-gradient(ellipse at 80% 100%,#0a001a,transparent 55%);}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,rgba(0,255,242,.02) 0,rgba(0,255,242,.02) 1px,transparent 1px,transparent 4px);}
+#wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:20px 16px 60px;}
+header{text-align:center;padding:20px 0 24px;}
+header h1{font-size:clamp(22px,5vw,42px);letter-spacing:8px;color:var(--cyan);text-shadow:0 0 12px var(--cyan),0 0 30px rgba(0,255,242,.4);}
+header p{font-size:11px;letter-spacing:4px;color:var(--mag);margin-top:5px;}
+#back{position:fixed;top:14px;left:14px;z-index:50;color:var(--cyan);text-decoration:none;border:1px solid var(--cyan);padding:7px 14px;font-size:11px;letter-spacing:2px;border-radius:4px;background:rgba(0,0,0,.7);}
+#back:hover{background:var(--cyan);color:#000;}
+/* Layout */
+.main{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
+@media(max-width:760px){.main{grid-template-columns:1fr;}}
+/* Spec panel */
+.spec-panel{background:rgba(255,255,255,.03);border:1px solid rgba(0,255,242,.14);border-radius:12px;padding:18px;}
+.spec-panel h2{font-size:12px;letter-spacing:4px;color:var(--cyan);margin-bottom:16px;border-bottom:1px solid rgba(0,255,242,.12);padding-bottom:9px;}
+.spec-group{margin-bottom:18px;}
+.spec-label{font-size:10px;letter-spacing:2px;color:var(--sub);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;}
+.spec-val{color:var(--yellow);font-weight:bold;font-size:11px;}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;background:rgba(0,255,242,.12);border-radius:2px;outline:none;cursor:pointer;margin:3px 0;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--cyan);border:none;}
+/* Color picker */
+.color-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:5px;}
+.cc{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.15s;}
+.cc:hover,.cc.active{border-color:#fff;transform:scale(1.18);}
+/* Toggle */
+.tog-row{display:flex;justify-content:space-between;align-items:center;margin:6px 0;}
+.tog-row span{font-size:10px;letter-spacing:2px;color:var(--sub);}
+.pill{width:36px;height:20px;border-radius:10px;background:#222;position:relative;cursor:pointer;transition:background .2s;}
+.pill.on{background:var(--cyan);}
+.pill::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s;}
+.pill.on::after{left:18px;}
+/* Presets */
+.preset-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.preset{cursor:pointer;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:5px 9px;font-size:10px;letter-spacing:1px;color:var(--sub);transition:.15s;}
+.preset:hover{border-color:var(--cyan);color:var(--cyan);}
+/* Stat grid */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.stat-box{background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:9px 12px;}
+.stat-box .sk{font-size:9px;letter-spacing:2px;color:#555;margin-bottom:3px;}
+.stat-box .sv{font-size:13px;font-weight:bold;}
+.s-green{color:var(--green);}.s-yellow{color:var(--yellow);}.s-red{color:var(--red);}.s-cyan{color:var(--cyan);}.s-orange{color:var(--orange);}.s-purple{color:var(--purple);}
+/* Score bar */
+.score-bar{margin-top:14px;background:rgba(0,0,0,.4);border:1px solid rgba(0,255,242,.12);border-radius:8px;padding:12px;}
+.score-bar h3{font-size:10px;letter-spacing:3px;color:var(--cyan);margin-bottom:10px;}
+.bar-row{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:10px;letter-spacing:1px;}
+.bar-row .bl{width:80px;color:#555;flex-shrink:0;}
+.bar-bg{flex:1;height:8px;background:#111;border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s;}
+.bar-row .bv{width:36px;text-align:right;flex-shrink:0;}
+/* Save section */
+.save-row{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+.sbtn{flex:1;padding:9px;background:transparent;font-family:inherit;font-size:10px;letter-spacing:2px;border-radius:5px;cursor:pointer;transition:.15s;border:1px solid;}
+.sbtn.cyan{color:var(--cyan);border-color:var(--cyan);}.sbtn.cyan:hover{background:var(--cyan);color:#000;}
+.sbtn.green{color:var(--green);border-color:var(--green);}.sbtn.green:hover{background:var(--green);color:#000;}
+.sbtn.yellow{color:var(--yellow);border-color:var(--yellow);}.sbtn.yellow:hover{background:var(--yellow);color:#000;}
+input[type=file]{display:none;}
+#statusMsg{font-size:10px;letter-spacing:1px;min-height:14px;margin-top:6px;color:var(--green);}
+/* Saved list */
+.saved-item{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:5px;margin:3px 0;font-size:10px;letter-spacing:1px;}
+.saved-item button{background:transparent;border:1px solid #333;color:#555;padding:2px 7px;font-family:inherit;font-size:9px;border-radius:3px;cursor:pointer;margin-left:3px;}
+.saved-item button:hover{border-color:var(--cyan);color:var(--cyan);}
+.saved-item button.del:hover{border-color:var(--red);color:var(--red);}
+/* Phone render */
+.phone-col{display:flex;flex-direction:column;align-items:center;gap:16px;position:sticky;top:24px;}
+canvas#phoneCanvas{border-radius:8px;display:block;}
+#phoneName{font-size:clamp(14px,3vw,22px);letter-spacing:6px;color:var(--cyan);text-shadow:0 0 10px var(--cyan);text-align:center;}
+#phoneRating{font-size:12px;letter-spacing:3px;text-align:center;margin-top:4px;}
+#priceTag{font-size:18px;font-weight:bold;color:var(--yellow);text-shadow:0 0 10px var(--yellow);letter-spacing:4px;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <h1>📱 PHONE MAKER</h1>
+    <p>◄ DESIGN YOUR SMARTPHONE ►</p>
+  </header>
+  <a id="back" href="index.html">◄ HUB</a>
+
+  <div class="main">
+    <!-- Left: Specs -->
+    <div>
+      <div class="spec-panel">
+        <h2>✏️ NAME</h2>
+        <input type="text" id="phoneName" value="NEXUS PRO MAX" maxlength="24" oninput="update()"
+          style="width:100%;background:rgba(0,0,0,.5);border:1px solid rgba(0,255,242,.25);color:var(--cyan);padding:9px 12px;font-family:inherit;font-size:14px;letter-spacing:4px;border-radius:6px;outline:none;text-align:center;text-transform:uppercase;margin-bottom:0;">
+
+        <h2 style="margin-top:16px">🔧 HARDWARE</h2>
+        <div class="spec-group">
+          <div class="spec-label">SCREEN SIZE <span class="spec-val" id="vScreen">6.7"</span></div>
+          <input type="range" id="rScreen" min="40" max="80" value="67" oninput="update()">
+        </div>
+        <div class="spec-group">
+          <div class="spec-label">RAM <span class="spec-val" id="vRam">8 GB</span></div>
+          <input type="range" id="rRam" min="1" max="16" value="4" oninput="update()">
+        </div>
+        <div class="spec-group">
+          <div class="spec-label">STORAGE <span class="spec-val" id="vStorage">256 GB</span></div>
+          <input type="range" id="rStorage" min="0" max="6" step="1" value="3" oninput="update()">
+        </div>
+        <div class="spec-group">
+          <div class="spec-label">PROCESSOR SPEED <span class="spec-val" id="vCpu">3.0 GHz</span></div>
+          <input type="range" id="rCpu" min="10" max="40" value="25" oninput="update()">
+        </div>
+        <div class="spec-group">
+          <div class="spec-label">BATTERY <span class="spec-val" id="vBattery">4500 mAh</span></div>
+          <input type="range" id="rBattery" min="1000" max="8000" step="100" value="4500" oninput="update()">
+        </div>
+
+        <h2 style="margin-top:16px">📷 CAMERAS</h2>
+        <div class="spec-group">
+          <div class="spec-label">MAIN CAMERA <span class="spec-val" id="vCam">50 MP</span></div>
+          <input type="range" id="rCam" min="2" max="200" value="50" oninput="update()">
+        </div>
+        <div class="spec-group">
+          <div class="spec-label">FRONT CAMERA <span class="spec-val" id="vFCam">12 MP</span></div>
+          <input type="range" id="rFCam" min="2" max="50" value="12" oninput="update()">
+        </div>
+        <div class="spec-group">
+          <div class="spec-label">CAMERA COUNT <span class="spec-val" id="vCamN">3</span></div>
+          <input type="range" id="rCamN" min="1" max="5" step="1" value="3" oninput="update()">
+        </div>
+
+        <h2 style="margin-top:16px">🎨 DESIGN</h2>
+        <div class="spec-group">
+          <div class="spec-label">BODY COLOUR</div>
+          <div class="color-row" id="bodyColors"></div>
+        </div>
+        <div class="spec-group">
+          <div class="spec-label">FRAME MATERIAL</div>
+          <div class="preset-row" id="frameRow">
+            <div class="preset active" data-frame="plastic" onclick="setFrame(this)">🪶 Plastic</div>
+            <div class="preset" data-frame="aluminum" onclick="setFrame(this)">🔩 Aluminium</div>
+            <div class="preset" data-frame="titanium" onclick="setFrame(this)">⚙️ Titanium</div>
+            <div class="preset" data-frame="glass" onclick="setFrame(this)">💎 Glass</div>
+          </div>
+        </div>
+        <div class="spec-group">
+          <div class="spec-label">SCREEN TYPE</div>
+          <div class="preset-row" id="screenTypeRow">
+            <div class="preset active" data-stype="lcd" onclick="setScreenType(this)">LCD</div>
+            <div class="preset" data-stype="oled" onclick="setScreenType(this)">OLED</div>
+            <div class="preset" data-stype="amoled" onclick="setScreenType(this)">AMOLED</div>
+            <div class="preset" data-stype="ltpo" onclick="setScreenType(this)">LTPO</div>
+          </div>
+        </div>
+        <div class="spec-group">
+          <div class="spec-label">REFRESH RATE <span class="spec-val" id="vHz">120 Hz</span></div>
+          <input type="range" id="rHz" min="0" max="3" step="1" value="2" oninput="update()">
+        </div>
+        <div class="tog-row"><span>5G</span><div class="pill on" id="p5g" onclick="togFeat('5g',this)"></div></div>
+        <div class="tog-row"><span>WIRELESS CHARGING</span><div class="pill" id="pWc" onclick="togFeat('wc',this)"></div></div>
+        <div class="tog-row"><span>HEADPHONE JACK</span><div class="pill on" id="pJack" onclick="togFeat('jack',this)"></div></div>
+        <div class="tog-row"><span>UNDER-DISPLAY FINGERPRINT</span><div class="pill" id="pUdf" onclick="togFeat('udf',this)"></div></div>
+        <div class="tog-row"><span>FACE ID</span><div class="pill" id="pFaceid" onclick="togFeat('faceid',this)"></div></div>
+        <div class="tog-row"><span>RUGGED / IP68</span><div class="pill" id="pIp" onclick="togFeat('ip',this)"></div></div>
+        <div class="tog-row"><span>SATELLITE SOS</span><div class="pill" id="pSat" onclick="togFeat('sat',this)"></div></div>
+        <div class="tog-row"><span>FOLDABLE</span><div class="pill" id="pFold" onclick="togFeat('fold',this)"></div></div>
+
+        <h2 style="margin-top:16px">📦 PRESETS</h2>
+        <div class="preset-row">
+          <div class="preset" onclick="applyPreset('budget')">💰 Budget</div>
+          <div class="preset" onclick="applyPreset('mid')">📱 Mid-Range</div>
+          <div class="preset" onclick="applyPreset('flagship')">🏆 Flagship</div>
+          <div class="preset" onclick="applyPreset('gaming')">🎮 Gaming</div>
+          <div class="preset" onclick="applyPreset('camera')">📷 Camera</div>
+          <div class="preset" onclick="applyPreset('fold')">📂 Foldable</div>
+          <div class="preset" onclick="applyPreset('rugged')">🦺 Rugged</div>
+          <div class="preset" onclick="applyPreset('mini')">🤏 Mini</div>
+        </div>
+      </div>
+
+      <!-- Save/Export -->
+      <div class="spec-panel" style="margin-top:16px;">
+        <h2>💾 MY PHONES</h2>
+        <div class="save-row">
+          <button class="sbtn cyan" onclick="savePhone()">💾 SAVE</button>
+          <button class="sbtn green" onclick="exportPhone()">⬇ JSON</button>
+          <button class="sbtn yellow" onclick="document.getElementById('importFile').click()">⬆ IMPORT</button>
+        </div>
+        <input type="file" id="importFile" accept=".json" onchange="importPhone(event)">
+        <div id="statusMsg"></div>
+        <div id="savedList" style="margin-top:8px;max-height:150px;overflow-y:auto;"></div>
+      </div>
+    </div>
+
+    <!-- Right: Phone render + stats -->
+    <div class="phone-col">
+      <canvas id="phoneCanvas" width="280" height="560"></canvas>
+      <div id="phoneName">NEXUS PRO MAX</div>
+      <div id="priceTag">$799</div>
+      <div id="phoneRating"></div>
+
+      <div class="spec-panel" style="width:100%;">
+        <h2>📊 RATINGS</h2>
+        <div id="ratingsContent"></div>
+      </div>
+
+      <div class="spec-panel" style="width:100%;">
+        <h2>⚙️ FULL SPECS</h2>
+        <div id="specsList" style="font-size:10px;letter-spacing:1px;line-height:2.2;color:var(--sub);"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── LOCK ──
+(function(){var P=['gamehub234','oscarmccumstie','user13579'];function isSH(){var n=new Date(),a=new Date(n.getTime()+28800000),d=a.getUTCDay();if(!d||d===6)return false;var m=a.getUTCHours()*60+a.getUTCMinutes();return m>=495&&m<915;}function chk(){fetch('lock.json?nc='+Date.now()).then(r=>r.json()).then(d=>{if(d.locked===true||d.school_hours_lock===true&&isSH())showL(d.message||'Locked.');}).catch(()=>{});}function showL(msg){var el=document.createElement('div');el.style.cssText='position:fixed;inset:0;background:#03030c;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Consolas,monospace;color:#00fff2;text-align:center;gap:14px;padding:24px;';el.innerHTML='<div style="font-size:40px;color:#ff003c;letter-spacing:6px;font-weight:bold">LOCKED 🔒</div><div style="font-size:13px;color:#888;max-width:460px;line-height:1.7">'+msg+'</div><div style="font-size:11px;color:#334">Hold SHIFT + key · tap 3×</div>';document.body.appendChild(el);document.body.style.overflow='hidden';var sh=false;document.addEventListener('keydown',function kd(e){if(e.key==='Shift'){sh=true;return;}if(sh){document.removeEventListener('keydown',kd);pw(el);}});var t=0,tc=0;el.addEventListener('click',function(){var n=Date.now();if(n-t>700)tc=0;t=n;if(++tc>=3){tc=0;pw(el);}});}function pw(el){el.innerHTML='<div style="font-size:30px;color:#ffe600;letter-spacing:6px;font-weight:bold">PASSWORD 🔑</div><input id="lpi" type="password" autocomplete="off" style="background:rgba(0,0,0,.65);border:2px solid rgba(0,255,242,.4);color:#fff;padding:13px 20px;font-family:Consolas,monospace;font-size:20px;letter-spacing:6px;border-radius:6px;outline:none;width:280px;text-align:center;" placeholder="••••••••"><button id="lpb" style="background:transparent;color:#00fff2;border:2px solid #00fff2;padding:11px 28px;font-family:Consolas,monospace;font-size:14px;letter-spacing:3px;border-radius:4px;cursor:pointer;margin-top:4px;">▶ UNLOCK</button><div id="lpe" style="color:#ff003c;font-size:12px;min-height:18px;"></div>';var i=document.getElementById('lpi'),b=document.getElementById('lpb'),e=document.getElementById('lpe');i.focus();function go(){if(P.map(p=>p.toLowerCase()).indexOf((i.value||'').trim().toLowerCase())>=0){el.remove();document.body.style.overflow='';}else{e.textContent='Incorrect';i.value='';i.focus();setTimeout(()=>e.textContent='',2200);}}b.addEventListener('click',go);i.addEventListener('keydown',ev=>{if(ev.key==='Enter')go();});}chk();})();
+
+// ── STATE ──
+var feats={f5g:true,wc:false,jack:true,udf:false,faceid:false,ip:false,sat:false,fold:false};
+var bodyColor=0,frameType='plastic',screenType='lcd';
+
+var BODY_COLORS=[
+  {name:'Midnight Black',hex:'#111114'},
+  {name:'Space Silver',hex:'#9a9ea8'},
+  {name:'Deep Blue',hex:'#1a2560'},
+  {name:'Forest Green',hex:'#1a3d20'},
+  {name:'Rose Gold',hex:'#c4927a'},
+  {name:'Lavender',hex:'#6b5b9e'},
+  {name:'Coral Red',hex:'#c73030'},
+  {name:'Pearl White',hex:'#e8e8f0'},
+  {name:'Neon Cyan',hex:'#003a3a'},
+  {name:'Titanium Gray',hex:'#5a5a62'},
+];
+
+var STORAGE_VALS=[16,32,64,128,256,512,1024];
+var HZ_VALS=[60,90,120,165];
+
+var PRESETS={
+  budget:{nm:'BUDGET BASIC',sc:55,ram:2,st:1,cpu:15,bat:4000,cam:13,fcam:5,cn:1,hz:0,col:7,frame:'plastic',stype:'lcd',feats:{f5g:false,wc:false,jack:true,udf:false,faceid:false,ip:false,sat:false,fold:false}},
+  mid:{nm:'MID RANGER',sc:65,ram:4,st:3,cpu:22,bat:4500,cam:48,fcam:12,cn:2,hz:1,col:0,frame:'aluminum',stype:'lcd',feats:{f5g:true,wc:false,jack:true,udf:false,faceid:false,ip:false,sat:false,fold:false}},
+  flagship:{nm:'ULTRA FLAGSHIP',sc:67,ram:12,st:4,cpu:36,bat:4800,cam:108,fcam:32,cn:4,hz:2,col:3,frame:'titanium',stype:'ltpo',feats:{f5g:true,wc:true,jack:false,udf:true,faceid:false,ip:true,sat:true,fold:false}},
+  gaming:{nm:'GAME BEAST',sc:68,ram:16,st:4,cpu:40,bat:6000,cam:64,fcam:16,cn:2,hz:3,col:6,frame:'aluminum',stype:'amoled',feats:{f5g:true,wc:true,jack:true,udf:false,faceid:false,ip:false,sat:false,fold:false}},
+  camera:{nm:'LENS MASTER',sc:65,ram:8,st:4,cpu:32,bat:4500,cam:200,fcam:50,cn:5,hz:2,col:0,frame:'glass',stype:'oled',feats:{f5g:true,wc:true,jack:false,udf:true,faceid:false,ip:true,sat:false,fold:false}},
+  fold:{nm:'FOLD PRO',sc:75,ram:12,st:4,cpu:36,bat:4400,cam:50,fcam:10,cn:3,hz:2,col:9,frame:'titanium',stype:'amoled',feats:{f5g:true,wc:true,jack:false,udf:true,faceid:false,ip:true,sat:false,fold:true}},
+  rugged:{nm:'IRON SHIELD',sc:60,ram:8,st:3,cpu:24,bat:7000,cam:48,fcam:8,cn:3,hz:0,col:8,frame:'aluminum',stype:'lcd',feats:{f5g:true,wc:false,jack:true,udf:false,faceid:false,ip:true,sat:true,fold:false}},
+  mini:{nm:'POCKET PRO',sc:47,ram:6,st:3,cpu:32,bat:2800,cam:12,fcam:12,cn:1,hz:2,col:4,frame:'aluminum',stype:'oled',feats:{f5g:true,wc:true,jack:false,udf:false,faceid:true,ip:true,sat:false,fold:false}},
+};
+
+// Build body color buttons
+(function(){
+  var cr=document.getElementById('bodyColors');
+  BODY_COLORS.forEach(function(col,i){
+    var b=document.createElement('div');b.className='cc'+(i===0?' active':'');
+    b.style.background=col.hex;b.title=col.name;
+    b.onclick=function(){bodyColor=i;document.querySelectorAll('.cc').forEach(function(x,j){x.classList.toggle('active',j===i);});update();};
+    cr.appendChild(b);
+  });
+})();
+
+function setFrame(el){frameType=el.dataset.frame;document.querySelectorAll('[data-frame]').forEach(function(x){x.classList.toggle('active',x===el);});update();}
+function setScreenType(el){screenType=el.dataset.stype;document.querySelectorAll('[data-stype]').forEach(function(x){x.classList.toggle('active',x===el);});update();}
+function togFeat(key,pill){feats['f'+key]=!feats['f'+key];pill.classList.toggle('on',feats['f'+key]);update();}
+window.setFrame=setFrame;window.setScreenType=setScreenType;window.togFeat=togFeat;
+
+function getV(){
+  return{
+    name:(document.getElementById('phoneName').value.trim().toUpperCase()||'UNNAMED'),
+    screen:+document.getElementById('rScreen').value/10,
+    ram:Math.pow(2,+document.getElementById('rRam').value),
+    storage:STORAGE_VALS[+document.getElementById('rStorage').value],
+    cpu:+document.getElementById('rCpu').value/10,
+    battery:+document.getElementById('rBattery').value,
+    cam:+document.getElementById('rCam').value,
+    fcam:+document.getElementById('rFCam').value,
+    camN:+document.getElementById('rCamN').value,
+    hz:HZ_VALS[+document.getElementById('rHz').value],
+    color:bodyColor,frame:frameType,stype:screenType,
+    feats:{...feats},
+  };
+}
+
+function calcPrice(v){
+  var p=100;
+  p+=v.screen*30;
+  p+=v.ram*8;
+  p+=v.storage*.3;
+  p+=v.cpu*15;
+  p+=(v.battery-3000)*.02;
+  p+=v.cam*.5;p+=v.fcam*1.5;p+=v.camN*40;
+  p+={lcd:0,oled:60,amoled:80,ltpo:120}[v.stype];
+  p+={plastic:0,aluminum:50,titanium:150,glass:80}[v.frame];
+  if(v.hz>=120)p+=40;if(v.hz>=165)p+=60;
+  if(v.feats.ff5g)p+=50;if(v.feats.fwc)p+=30;
+  if(v.feats.fudf)p+=80;if(v.feats.ffaceid)p+=60;
+  if(v.feats.fip)p+=60;if(v.feats.fsat)p+=120;
+  if(v.feats.ffold)p+=400;
+  if(!v.feats.fjack)p+=0; // no jack doesn't add value
+  return Math.round(p);
+}
+
+function calcRatings(v){
+  var performance=Math.min(100,Math.round((v.ram/16*30)+(v.cpu/4*30)+(v.storage/1024*10)+({lcd:0,oled:10,amoled:15,ltpo:20}[v.stype]||0)+(v.hz/165*15)));
+  var battery=Math.min(100,Math.round((v.battery/8000*70)+(v.feats.fwc?15:0)));
+  var camera=Math.min(100,Math.round((v.cam/200*40)+(v.fcam/50*20)+(v.camN/5*20)+20));
+  var design=Math.min(100,Math.round(({plastic:40,aluminum:60,titanium:85,glass:70}[v.frame]||40)+(v.feats.fip?15:0)+(v.feats.ffold?10:0)));
+  var features=Math.min(100,Math.round((v.feats.ff5g?15:0)+(v.feats.fwc?10:0)+(v.feats.fudf?12:0)+(v.feats.ffaceid?10:0)+(v.feats.fsat?15:0)+(v.feats.fip?12:0)+(v.feats.ffold?15:0)+10));
+  var valueScore=Math.min(100,Math.round(((performance+battery+camera+design+features)/5)/(calcPrice(v)/500)*60));
+  return{performance,battery,camera,design,features,value:valueScore,
+    overall:Math.round((performance+battery+camera+design+features)/5)};
+}
+
+function updateLabels(v){
+  document.getElementById('vScreen').textContent=v.screen.toFixed(1)+'"';
+  document.getElementById('vRam').textContent=v.ram+' GB';
+  document.getElementById('vStorage').textContent=(v.storage>=1024?(v.storage/1024)+' TB':v.storage+' GB');
+  document.getElementById('vCpu').textContent=(v.cpu).toFixed(1)+' GHz';
+  document.getElementById('vBattery').textContent=v.battery.toLocaleString()+' mAh';
+  document.getElementById('vCam').textContent=v.cam+' MP';
+  document.getElementById('vFCam').textContent=v.fcam+' MP';
+  document.getElementById('vCamN').textContent=v.camN;
+  document.getElementById('vHz').textContent=v.hz+' Hz';
+}
+
+function drawPhone(v){
+  var cv2=document.getElementById('phoneCanvas');
+  var ctx=cv2.getContext('2d');
+  var W2=cv2.width,H2=cv2.height;
+  ctx.clearRect(0,0,W2,H2);
+
+  var bodyHex=BODY_COLORS[v.color].hex;
+  var fold=v.feats.ffold;
+  var PW=fold?W2*.75:W2*.68;
+  var PH=fold?H2*.82:H2*.88;
+  var PX=(W2-PW)/2,PY=(H2-PH)/2;
+  var R2=fold?20:30;
+
+  // Shadow
+  ctx.shadowColor='rgba(0,0,0,.8)';ctx.shadowBlur=24;
+
+  // Frame
+  var frameColors={plastic:'#333',aluminum:'#888',titanium:'#6a6a75',glass:'#dde'};
+  ctx.fillStyle=frameColors[v.frame]||'#333';
+  ctx.beginPath();ctx.roundRect(PX-3,PY-3,PW+6,PH+6,R2+3);ctx.fill();
+
+  // Body
+  var gradient=ctx.createLinearGradient(PX,PY,PX+PW,PY+PH);
+  gradient.addColorStop(0,lighten(bodyHex,30));
+  gradient.addColorStop(.4,bodyHex);
+  gradient.addColorStop(1,darken(bodyHex,20));
+  ctx.fillStyle=gradient;
+  ctx.beginPath();ctx.roundRect(PX,PY,PW,PH,R2);ctx.fill();
+  ctx.shadowBlur=0;
+
+  // Fold crease
+  if(fold){ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(PX,PY+PH/2);ctx.lineTo(PX+PW,PY+PH/2);ctx.stroke();}
+
+  // Screen
+  var SX=PX+8,SY=PY+40,SW=PW-16,SH=PH-80;
+  var screenColors={lcd:'#0a0a14',oled:'#000',amoled:'#000508',ltpo:'#000306'};
+  var sg=ctx.createLinearGradient(SX,SY,SX+SW,SY+SH);
+  sg.addColorStop(0,'#0a1020');sg.addColorStop(.5,screenColors[v.stype]||'#000');sg.addColorStop(1,'#080614');
+  ctx.fillStyle=sg;
+  ctx.beginPath();ctx.roundRect(SX,SY,SW,SH,16);ctx.fill();
+
+  // Screen glow / content
+  ctx.shadowColor='rgba(0,255,242,.2)';ctx.shadowBlur=12;
+  var cg=ctx.createRadialGradient(SX+SW/2,SY+SH/2,0,SX+SW/2,SY+SH/2,SW/2);
+  cg.addColorStop(0,'rgba(0,120,160,.12)');cg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=cg;ctx.beginPath();ctx.roundRect(SX,SY,SW,SH,16);ctx.fill();
+  ctx.shadowBlur=0;
+
+  // Wallpaper icons (simplified)
+  var icons=['🎮','📸','🎵','🌐','📧','🗓️','⚙️','🔦'];
+  ctx.font='16px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  var iconX=SX+20,iconY=SY+50;
+  for(var i=0;i<Math.min(8,icons.length);i++){
+    ctx.fillText(icons[i],iconX+(i%4)*((SW-24)/3),iconY+Math.floor(i/4)*46);
+  }
+
+  // Status bar
+  ctx.fillStyle='rgba(255,255,255,.65)';ctx.font='8px monospace';ctx.textAlign='left';
+  ctx.fillText('9:41',SX+8,SY+12);
+  ctx.textAlign='right';
+  if(v.feats.ff5g)ctx.fillText('5G',SX+SW-8,SY+12);
+  else ctx.fillText('4G',SX+SW-8,SY+12);
+
+  // Notch / punch-hole
+  ctx.fillStyle='#000';
+  if(v.feats.ffaceid){// notch
+    ctx.beginPath();ctx.roundRect(SX+SW/2-28,SY,56,22,10);ctx.fill();
+  }else{// punch hole
+    ctx.beginPath();ctx.arc(SX+SW/2,SY+12,5,0,Math.PI*2);ctx.fill();
+  }
+
+  // Side buttons
+  ctx.fillStyle=lighten(bodyHex,20);ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=4;
+  ctx.fillRect(PX-6,PY+80,5,28);// vol up
+  ctx.fillRect(PX-6,PY+116,5,22);// vol down
+  ctx.fillRect(PX+PW+1,PY+90,5,38);// power
+
+  // Bottom: speaker + jack
+  ctx.fillStyle='rgba(255,255,255,.15)';ctx.shadowBlur=0;
+  for(var s=0;s<5;s++){ctx.beginPath();ctx.arc(PX+PW/2-20+s*10,PY+PH-14,2,0,Math.PI*2);ctx.fill();}
+  if(v.feats.fjack){ctx.strokeStyle='rgba(0,0,0,.8)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(PX+PW*.2,PY+PH-14,4,0,Math.PI*2);ctx.stroke();}
+  // USB port
+  ctx.fillStyle='rgba(0,0,0,.8)';ctx.beginPath();ctx.roundRect(PX+PW/2-8,PY+PH-20,16,10,3);ctx.fill();
+
+  // Cameras (back shown as overlay hint)
+  var camX=PX+PW*.7,camY=PY+PH*.12;
+  var camR=v.camN>3?18:14;
+  ctx.shadowColor='rgba(0,0,0,.8)';ctx.shadowBlur=8;
+  ctx.fillStyle='rgba(20,20,30,.95)';ctx.beginPath();ctx.roundRect(camX-camR-6,camY-camR-6,camR*2+12,camR*2+12+(v.camN-1)*18,10);ctx.fill();
+  ctx.shadowBlur=0;
+  for(var c=0;c<v.camN;c++){
+    var cy2=camY+c*18;
+    // Lens ring
+    ctx.strokeStyle='#444';ctx.lineWidth=2;ctx.beginPath();ctx.arc(camX,cy2,camR,0,Math.PI*2);ctx.stroke();
+    // Lens
+    var lg=ctx.createRadialGradient(camX-camR*.3,cy2-camR*.3,0,camX,cy2,camR);
+    lg.addColorStop(0,'#336');lg.addColorStop(.6,'#111');lg.addColorStop(1,'#000');
+    ctx.fillStyle=lg;ctx.beginPath();ctx.arc(camX,cy2,camR-2,0,Math.PI*2);ctx.fill();
+    // Reflection
+    ctx.fillStyle='rgba(255,255,255,.25)';ctx.beginPath();ctx.arc(camX-camR*.4,cy2-camR*.4,camR*.25,0,Math.PI*2);ctx.fill();
+  }
+
+  // Fingerprint sensor
+  if(v.feats.fudf){
+    ctx.fillStyle='rgba(255,255,255,.06)';ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(SX+SW/2,SY+SH-22,12,0,Math.PI*2);ctx.fill();ctx.stroke();
+  }
+}
+
+function lighten(hex,pct){var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);r=Math.min(255,r+pct);g=Math.min(255,g+pct);b=Math.min(255,b+pct);return'#'+[r,g,b].map(v2=>v2.toString(16).padStart(2,'0')).join('');}
+function darken(hex,pct){var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);r=Math.max(0,r-pct);g=Math.max(0,g-pct);b=Math.max(0,b-pct);return'#'+[r,g,b].map(v2=>v2.toString(16).padStart(2,'0')).join('');}
+
+function update(){
+  var v=getV();
+  updateLabels(v);
+  drawPhone(v);
+  var price=calcPrice(v);
+  var ratings=calcRatings(v);
+  document.getElementById('phoneName').querySelector?null:null;
+  document.getElementById('priceTag').textContent='$'+price.toLocaleString();
+
+  var ratingLabel=ratings.overall>=85?'FLAGSHIP 🏆':ratings.overall>=70?'MID-RANGE ⭐':ratings.overall>=55?'BUDGET 👍':'BASIC 📦';
+  document.getElementById('phoneRating').innerHTML='<span style="color:var(--cyan)">'+ratingLabel+'</span> <span style="color:#445">'+ratings.overall+'/100</span>';
+
+  // Bar ratings
+  var bars=[
+    {k:'performance',l:'PERFORMANCE',c:'var(--cyan)'},
+    {k:'battery',l:'BATTERY',c:'var(--green)'},
+    {k:'camera',l:'CAMERA',c:'var(--mag)'},
+    {k:'design',l:'DESIGN',c:'var(--yellow)'},
+    {k:'features',l:'FEATURES',c:'var(--purple)'},
+    {k:'value',l:'VALUE',c:'var(--orange)'},
+  ];
+  var barHtml='';
+  bars.forEach(function(b){
+    var val=ratings[b.k];
+    var col=val>=80?b.c:val>=60?b.c:'var(--red)';
+    barHtml+='<div class="bar-row">'
+      +'<span class="bl">'+b.l+'</span>'
+      +'<div class="bar-bg"><div class="bar-fill" style="width:'+val+'%;background:'+col+'"></div></div>'
+      +'<span class="bv" style="color:'+col+'">'+val+'</span>'
+      +'</div>';
+  });
+  document.getElementById('ratingsContent').innerHTML=barHtml;
+
+  // Specs list
+  var storageStr=v.storage>=1024?(v.storage/1024)+' TB':v.storage+' GB';
+  var featureList=[];
+  if(v.feats.ff5g)featureList.push('5G');if(v.feats.fwc)featureList.push('Wireless Charging');
+  if(v.feats.fjack)featureList.push('3.5mm Jack');if(v.feats.fudf)featureList.push('Under-Display FP');
+  if(v.feats.ffaceid)featureList.push('Face ID');if(v.feats.fip)featureList.push('IP68 Rugged');
+  if(v.feats.fsat)featureList.push('Satellite SOS');if(v.feats.ffold)featureList.push('Foldable');
+  document.getElementById('specsList').innerHTML=
+    '<div><span style="color:#555">DISPLAY</span> '+v.screen.toFixed(1)+'″ '+v.stype.toUpperCase()+' @ '+v.hz+'Hz</div>'
+    +'<div><span style="color:#555">RAM</span> '+v.ram+' GB</div>'
+    +'<div><span style="color:#555">STORAGE</span> '+storageStr+'</div>'
+    +'<div><span style="color:#555">CPU</span> '+v.cpu.toFixed(1)+' GHz Octa-Core</div>'
+    +'<div><span style="color:#555">BATTERY</span> '+v.battery.toLocaleString()+' mAh</div>'
+    +'<div><span style="color:#555">MAIN CAM</span> '+v.cam+' MP × '+v.camN+' lenses</div>'
+    +'<div><span style="color:#555">FRONT CAM</span> '+v.fcam+' MP</div>'
+    +'<div><span style="color:#555">FRAME</span> '+v.frame.charAt(0).toUpperCase()+v.frame.slice(1)+'</div>'
+    +'<div><span style="color:#555">COLOUR</span> '+BODY_COLORS[v.color].name+'</div>'
+    +'<div><span style="color:#555">FEATURES</span> '+(featureList.join(', ')||'None')+'</div>'
+    +'<div><span style="color:#555">RETAIL PRICE</span> <span style="color:var(--yellow)">$'+price.toLocaleString()+'</span></div>';
+}
+window.update=update;
+
+// ── PRESETS ──
+window.applyPreset=function(key){
+  var p=PRESETS[key];if(!p)return;
+  document.getElementById('phoneName').value=p.nm;
+  document.getElementById('rScreen').value=Math.round(p.sc);
+  document.getElementById('rRam').value=Math.log2(p.ram)||2;
+  document.getElementById('rStorage').value=p.st;
+  document.getElementById('rCpu').value=Math.round(p.cpu*10);
+  document.getElementById('rBattery').value=p.bat;
+  document.getElementById('rCam').value=p.cam;
+  document.getElementById('rFCam').value=p.fcam;
+  document.getElementById('rCamN').value=p.cn;
+  document.getElementById('rHz').value=p.hz;
+  bodyColor=p.col;
+  document.querySelectorAll('.cc').forEach(function(x,i){x.classList.toggle('active',i===p.col);});
+  frameType=p.frame;
+  document.querySelectorAll('[data-frame]').forEach(function(x){x.classList.toggle('active',x.dataset.frame===p.frame);});
+  screenType=p.stype;
+  document.querySelectorAll('[data-stype]').forEach(function(x){x.classList.toggle('active',x.dataset.stype===p.stype);});
+  feats={f5g:p.feats.ff5g,fwc:p.feats.fwc,fjack:p.feats.fjack||false,fudf:p.feats.fudf,ffaceid:p.feats.ffaceid,fip:p.feats.fip,fsat:p.feats.fsat,ffold:p.feats.ffold};
+  ['5g','wc','jack','udf','faceid','ip','sat','fold'].forEach(function(k){
+    var p2=document.getElementById('p'+k);if(p2)p2.classList.toggle('on',!!feats['f'+k]);
+  });
+  update();
+};
+
+// ── SAVE / EXPORT / IMPORT ──
+function getPhoneData(){
+  var v=getV();return{version:1,name:v.name,price:calcPrice(v),ratings:calcRatings(v),
+    params:{sc:+document.getElementById('rScreen').value,ram:+document.getElementById('rRam').value,
+    st:+document.getElementById('rStorage').value,cpu:+document.getElementById('rCpu').value,
+    bat:+document.getElementById('rBattery').value,cam:+document.getElementById('rCam').value,
+    fcam:+document.getElementById('rFCam').value,cn:+document.getElementById('rCamN').value,
+    hz:+document.getElementById('rHz').value,col:bodyColor,frame:frameType,stype:screenType,feats:{...feats}},
+    exported:new Date().toISOString()};}
+
+function loadPhoneData(data){
+  if(!data||!data.params)return false;
+  var p=data.params;
+  document.getElementById('phoneName').value=data.name||'PHONE';
+  document.getElementById('rScreen').value=p.sc;document.getElementById('rRam').value=p.ram;
+  document.getElementById('rStorage').value=p.st;document.getElementById('rCpu').value=p.cpu;
+  document.getElementById('rBattery').value=p.bat;document.getElementById('rCam').value=p.cam;
+  document.getElementById('rFCam').value=p.fcam;document.getElementById('rCamN').value=p.cn;
+  document.getElementById('rHz').value=p.hz;
+  bodyColor=p.col||0;document.querySelectorAll('.cc').forEach(function(x,i){x.classList.toggle('active',i===bodyColor);});
+  frameType=p.frame||'aluminum';document.querySelectorAll('[data-frame]').forEach(function(x){x.classList.toggle('active',x.dataset.frame===frameType);});
+  screenType=p.stype||'oled';document.querySelectorAll('[data-stype]').forEach(function(x){x.classList.toggle('active',x.dataset.stype===screenType);});
+  if(p.feats)Object.assign(feats,p.feats);
+  ['5g','wc','jack','udf','faceid','ip','sat','fold'].forEach(function(k){var el=document.getElementById('p'+k);if(el)el.classList.toggle('on',!!feats['f'+k]);});
+  update();return true;
+}
+
+function status(msg,col){var el=document.getElementById('statusMsg');el.textContent=msg;el.style.color=col||'var(--green)';setTimeout(function(){el.textContent='';},2500);}
+
+window.savePhone=function(){
+  var data=getPhoneData();
+  var key='pm_phones';var list=[];try{list=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+  var idx=list.findIndex(function(p){return p.name===data.name;});
+  if(idx>=0)list[idx]=data;else list.push(data);
+  try{localStorage.setItem(key,JSON.stringify(list));renderSaved();status('✓ Saved: '+data.name);}
+  catch(e){status('Save failed','var(--red)');}
+};
+window.exportPhone=function(){
+  var data=getPhoneData();
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=data.name.toLowerCase().replace(/\s+/g,'-')+'.json';a.click();URL.revokeObjectURL(a.href);
+  status('✓ Exported '+a.download,'var(--cyan)');
+};
+window.importPhone=function(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){try{var data=JSON.parse(ev.target.result);if(loadPhoneData(data))status('✓ Loaded: '+(data.name||'Phone'),'var(--cyan)');else status('Invalid file','var(--red)');}catch(err){status('Invalid JSON','var(--red)');}};
+  reader.readAsText(file);e.target.value='';
+};
+
+function renderSaved(){
+  var list=[];try{list=JSON.parse(localStorage.getItem('pm_phones')||'[]');}catch(e){}
+  var el=document.getElementById('savedList');
+  if(!list.length){el.innerHTML='<div style="font-size:10px;color:#334;padding:4px">No saved phones yet.</div>';return;}
+  el.innerHTML=list.map(function(p,i){return'<div class="saved-item"><span style="color:var(--cyan)">'+p.name+'</span><span style="color:#445">$'+p.price+'</span><div><button onclick="loadSaved('+i+')">LOAD</button><button onclick="exportSaved('+i+')" class="cyan">JSON</button><button onclick="deleteSaved('+i+')" class="del">✕</button></div></div>';}).join('');
+}
+window.loadSaved=function(i){var list=[];try{list=JSON.parse(localStorage.getItem('pm_phones')||'[]');}catch(e){}if(list[i])loadPhoneData(list[i]);};
+window.exportSaved=function(i){var list=[];try{list=JSON.parse(localStorage.getItem('pm_phones')||'[]');}catch(e){}if(!list[i])return;var blob=new Blob([JSON.stringify(list[i],null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=list[i].name.toLowerCase().replace(/\s+/g,'-')+'.json';a.click();URL.revokeObjectURL(a.href);};
+window.deleteSaved=function(i){var list=[];try{list=JSON.parse(localStorage.getItem('pm_phones')||'[]');}catch(e){}list.splice(i,1);try{localStorage.setItem('pm_phones',JSON.stringify(list));}catch(e){}renderSaved();};
+
+window.addEventListener('resize',update);
+renderSaved();
+update();
+</script>
+</body>
+</html>
