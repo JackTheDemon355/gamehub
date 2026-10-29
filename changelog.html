@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="1rNDahd3JgJCYe4UGAdNJqAAZM_oOawfSZ-I2i2_mPs" />
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="icon" href="https://raw.githubusercontent.com/JackTheDemon355/gamehub/refs/heads/main/favicon.ico" type="image/x-icon">
+<link rel="shortcut icon" href="https://uploads.onecompiler.io/44md3ywr8/1790746237660/favicon%20(1).ico" type="image/x-icon">
+<title>CHANGELOG — GAME HUB</title>
+<style>
+:root{--bg:#03030c;--cyan:#00fff2;--yellow:#ffe600;--green:#39ff14;--red:#ff003c;--mag:#ff2fd0;--sub:#b9c4cc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);font-family:'Consolas','Courier New',monospace;color:#fff;
+  background-image:radial-gradient(ellipse at 30% 0%,#0a0a2e,transparent 55%),radial-gradient(ellipse at 80% 100%,#0a001a,transparent 55%);}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,255,242,.02) 0,rgba(0,255,242,.02) 1px,transparent 1px,transparent 4px);}
+#back{position:fixed;top:12px;left:12px;z-index:50;color:var(--cyan);text-decoration:none;border:1px solid var(--cyan);padding:7px 14px;font-size:11px;letter-spacing:2px;border-radius:4px;background:rgba(0,0,0,.7);}
+#back:hover{background:var(--cyan);color:#000;}
+#wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:70px 16px 60px;}
+header{text-align:center;margin-bottom:28px;}
+header h1{font-size:clamp(26px,6vw,44px);letter-spacing:10px;color:var(--cyan);text-shadow:0 0 14px var(--cyan),0 0 40px rgba(0,255,242,.35);}
+header p{font-size:11px;letter-spacing:4px;color:var(--mag);margin-top:6px;}
+.rel{background:rgba(255,255,255,.03);border:1px solid rgba(0,255,242,.14);border-radius:12px;padding:18px 20px;margin-bottom:16px;}
+.rel.latest{border-color:rgba(255,230,0,.45);box-shadow:0 0 30px rgba(255,230,0,.06);}
+.rel h2{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:16px;letter-spacing:3px;color:var(--yellow);}
+.rel h2 .v{color:var(--cyan);}
+.tag{font-size:9px;letter-spacing:2px;color:#000;background:var(--green);padding:3px 8px;border-radius:3px;}
+.rel .when{font-size:10px;letter-spacing:2px;color:#667;margin:4px 0 10px;}
+.grp{font-size:10px;letter-spacing:3px;color:var(--mag);margin:12px 0 4px;}
+.rel ul{list-style:none;}
+.rel li{font-size:13px;color:var(--sub);line-height:1.7;padding-left:18px;position:relative;margin:3px 0;}
+.rel li::before{content:"▸";position:absolute;left:0;color:var(--cyan);}
+footer{text-align:center;font-size:10px;letter-spacing:2px;color:#445;margin-top:26px;}
+footer a{color:var(--cyan);text-decoration:none;}
+</style>
+</head>
+<body>
+<a id="back" href="index.html">◄ HUB</a>
+<div id="wrap">
+  <header><h1>CHANGELOG</h1><p>WHAT'S NEW IN GAME HUB</p></header>
+  <div id="log"></div>
+  <footer>WE CODE, YOU GAME · <a href="index.html">GAME HUB</a> · <a href="contact.html">REPORT A BUG</a> · <a href="unsubscribe.html">UNSUBSCRIBE</a></footer>
+</div>
+
+<script>
+// To add a release: copy one block below and put it at the TOP of the list.
+// groups: { "NEW GAMES": ["…"], "IMPROVEMENTS": ["…"], "FIXES": ["…"] }
+const LOG=[
+  {v:'3.3',title:'Newsletter, real staff tools & street photos',latest:true,when:'Latest update',groups:{
+    'NEW GAMES':[
+      'Neon Simon — watch the pattern, repeat it. Classic, Reverse and Speed modes.',
+      'Road Hopper — Frogger-style: dodge traffic, ride logs and sinking turtles, fill all 5 bays.'
+    ],
+    'IMPROVEMENTS':[
+      'GeoGuessr now shows real street-level photos from KartaView (falls back to landmarks when an area has no coverage).',
+      'Newsletter: sign up in the Hub footer and get an email when new games arrive. Unsubscribe any time at unsubscribe.html.',
+      'Staff panel rebuilt: server-side login, working Pro tools, Remote Access that works across devices, site banner, maintenance mode and per-game switches.',
+      'Lock screen passwords now live in lock.json instead of every game file, so they can be changed in one place.',
+      'New changelog page (you are here).'
+    ],
+    'FIXES':[
+      'Closed a security gap in the accounts database that could expose profile data.',
+      'Staff Grant/Revoke Pro buttons no longer report success when nothing changed.'
+    ]}},
+  {v:'3.2',title:'Four new classics',when:'Earlier update',groups:{
+    'NEW GAMES':[
+      'Neon Mines — Minesweeper with 3 difficulty levels, safe first click and chord-clearing.',
+      'Neon Flap — one-tap flyer with medals.',
+      'Neon 2048 — swipe, undo, and boards from 3×3 up to 6×6.',
+      'Connect 4 — play a CPU on Easy/Medium/Hard, or pass the device for 2 players.'
+    ],
+    'IMPROVEMENTS':[
+      'Pro page with membership status.',
+      'Cloud saves for signed-in players.',
+      'Controls setting on games that need it: Off, D-pad or Drag (swipe to move, tap the right side to fire).',
+      'Lighter favicon for faster page loads.'
+    ]}},
+  {v:'3.1',title:'Builders & puzzles',when:'Earlier update',groups:{
+    'NEW GAMES':[
+      'Pixel Invaders — classic Space Invaders with shields and a UFO bonus.',
+      'Slide Puzzle — 15-puzzle in four sizes with best times.',
+      'Phone Maker — design your own smartphone with a live preview and price calculator.'
+    ],
+    'IMPROVEMENTS':[
+      'Word Jump: Dictionary mode (valid words only) and click-to-reveal hints.',
+      'Ball Course rebuilt as neon mini golf.',
+      'Stick Burrow: gravity, clear how-to-play card and smarter predators.'
+    ]}},
+  {v:'3.0',title:'Accounts, Pro & the lock system',when:'Earlier update',groups:{
+    'NEW GAMES':[
+      'Mech Defender, Guess the Logo, Planet Maker.'
+    ],
+    'IMPROVEMENTS':[
+      'Sign in with email, Google or Discord.',
+      'Game Hub Pro membership.',
+      'School-hours lock (AWST) with manual override via lock.json.',
+      'Mobile-friendly controls.'
+    ]}},
+  {v:'1.0',title:'The original arcade',when:'Launch',groups:{
+    'GAMES':[
+      'Neon Runner, Galaxia, Neon Snake, Brick Breaker, Block Fall, Pong Arena, Asteroid Storm, Memory Match, Word Jump, Tower Defense, Zombie Apocalypse, Hoop Shot, GeoGuessr and more.'
+    ]}}
+];
+
+const root=document.getElementById('log');
+LOG.forEach(rel=>{
+  const box=document.createElement('section');box.className='rel'+(rel.latest?' latest':'');
+  const h=document.createElement('h2');
+  const v=document.createElement('span');v.className='v';v.textContent='v'+rel.v;
+  h.appendChild(v);h.appendChild(document.createTextNode(' — '+rel.title));
+  if(rel.latest){const t=document.createElement('span');t.className='tag';t.textContent='LATEST';h.appendChild(t);}
+  box.appendChild(h);
+  if(rel.when){const w=document.createElement('div');w.className='when';w.textContent=rel.when.toUpperCase();box.appendChild(w);}
+  Object.keys(rel.groups).forEach(g=>{
+    const gt=document.createElement('div');gt.className='grp';gt.textContent=g;box.appendChild(gt);
+    const ul=document.createElement('ul');
+    rel.groups[g].forEach(item=>{const li=document.createElement('li');li.textContent=item;ul.appendChild(li);});
+    box.appendChild(ul);
+  });
+  root.appendChild(box);
+});
+</script>
+</body>
+</html>
